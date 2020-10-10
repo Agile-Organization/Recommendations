@@ -1,0 +1,2 @@
+from tests.test_recommendation import TestPlaceHolderClassName
+from tests.test_service import TestPlaceHolderClassNameService
