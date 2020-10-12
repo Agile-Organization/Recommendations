@@ -1,0 +1,5 @@
+# Local environment
+.DS_Store
+
+# Vagrant
+.vagrant/
