@@ -70,17 +70,12 @@ class Recommendation(db.Model):
         logger.info("Saving %s", self.idA)
         db.session.commit()
     
-    # todo. 
-    # As we discuss, delete methods should have three different ways.
     def delete(self):
         """ Removes all recommendation from the data store by using product id"""
         logger.info("Deleting %s", self.idA)
         db.session.delete(self)
         db.session.commit()
 
-    # todo. 
-    # I suppose here should be the GET method.
-    # As we discussed, we may need four different methods to implement it.
     def serialize(self):
         """ Serializes a recommendation into a dictionary """
         return {
@@ -137,14 +132,13 @@ class Recommendation(db.Model):
         logger.info("Processing lookup or 404 for id %s ...", by_id)
         return cls.query.get_or_404(by_id)
 
-    # todo
-    # This method is searching by name, however, as we discuss, we don't need name in a recommendation.
+    @classmethod
+    def find_by_name(cls, name):
+        """ Returns all recommendations with the given name
+        Args:
+            name (string): the name of the recommendations you want to match
+        """
+        logger.info("Processing name query for %s ...", name)
+        return cls.query.filter(cls.name == name)
 
-    # @classmethod
-    # def find_by_name(cls, name):
-    #     """ Returns all recommendations with the given name
-    #     Args:
-    #         name (string): the name of the recommendations you want to match
-    #     """
-    #     logger.info("Processing name query for %s ...", name)
-    #     return cls.query.filter(cls.name == name)
+        
