@@ -24,9 +24,9 @@ Test cases can be run with the following:
 import unittest
 import os
 import logging
-from service.models import Recommendation, db
+from service.model import Recommendation, db
 from service import app
-from service.routes import init_db
+from service.service import init_db
 
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
