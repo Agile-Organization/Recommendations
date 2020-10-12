@@ -22,7 +22,7 @@ Test cases can be run with:
 
 import unittest
 import os
-from service.models import Recommendation, db
+from service.model import Recommendation, db
 from service import app
 
 DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
