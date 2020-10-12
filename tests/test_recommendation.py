@@ -1,4 +1,4 @@
-# Copyright 2016, 2017 Agile Organization All Rights Reserved.
+# Copyright 2020 Agile Organization All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Test cases for PlaceHolderClassName Model
+Test cases for Recommendation Model
 
 Test cases can be run with:
   nosetests
@@ -22,7 +22,7 @@ Test cases can be run with:
 
 import unittest
 import os
-from service.models import PlaceHolderClassName, db
+from service.models import Recommendation, db
 from service import app
 
 DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
@@ -30,8 +30,8 @@ DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
-class TestPlaceHolderClassName(unittest.TestCase):
-    """ Test Cases for PlaceHolderClassName """
+class TestRecommendation(unittest.TestCase):
+    """ Test Cases for Recommendation """
 
     @classmethod
     def setUpClass(cls):
@@ -46,7 +46,7 @@ class TestPlaceHolderClassName(unittest.TestCase):
         pass
 
     def setUp(self):
-        PlaceHolderClassName.init_db(app)
+        Recommendation.init_db(app)
         db.drop_all()  # clean up the last tests
         db.create_all()  # make our sqlalchemy tables
 
@@ -60,3 +60,4 @@ class TestPlaceHolderClassName(unittest.TestCase):
 ######################################################################
 if __name__ == "__main__":
     unittest.main()
+

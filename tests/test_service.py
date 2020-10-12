@@ -1,4 +1,4 @@
-# Copyright 2016, 2017 Agile Organization All Rights Reserved.
+# Copyright 2020 Agile Organization All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-PlaceHolderClassName API Service Test Suite
+Recommendation API Service Test Suite
 
 Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
@@ -24,7 +24,7 @@ Test cases can be run with the following:
 import unittest
 import os
 import logging
-from service.models import PlaceHolderClassName, db
+from service.models import Recommendation, db
 from service import app
 from service.routes import init_db
 
@@ -36,8 +36,8 @@ DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
-class TestPlaceHolderClassNameService(unittest.TestCase):
-    """ PlaceHolderClassName Server Tests """
+class TestRecommendationService(unittest.TestCase):
+    """ Recommendation Server Tests """
 
     @classmethod
     def setUpClass(cls):
@@ -69,3 +69,4 @@ class TestPlaceHolderClassNameService(unittest.TestCase):
 ######################################################################
 if __name__ == "__main__":
     unittest.main()
+
