@@ -9,8 +9,8 @@ Recommendations - The recommendations resource is a representation a product rec
 
 Atttibutes:
 -------
-productA id (int) - a unique number which indicates a product
-productB id (int) - a unique number which indicates the recommended product of product A
+product id (int) - a unique number which indicates a product
+related product id (int) - a unique number which indicates the recommended product of product A
 relationship type id (int) - the numbers which indicates the products' realationship: 0 - accessory, 1 - up-sells, 2 - cross-sells
 active status (boolean) - whether this recommendation pair is actived or not. 
 
@@ -42,8 +42,8 @@ class Recommendation(db.Model):
     # Table Schema
     ##################################################
 
-    idA = db.Column(db.Integer, primary_key=True)
-    idB = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    rel_id = db.Column(db.Integer, primary_key=True)
     typeid = db.Column(db.Integer, primary_key = True)
     status = db.Column(db.Boolean())
 
@@ -52,7 +52,7 @@ class Recommendation(db.Model):
     ##################################################
 
     def __repr__(self):
-        return "<Recommendation %d %d %d>" % (self.idA, self.idB, self.typeid)
+        return "<Recommendation %d %d %d>" % (self.id, self.rel_id, self.typeid)
 
     def create(self):
         """ 
@@ -67,20 +67,20 @@ class Recommendation(db.Model):
         """
         Updates a recommendation to the database
         """
-        logger.info("Saving %s", self.idA)
+        logger.info("Saving %s", self.id)
         db.session.commit()
     
     def delete(self):
         """ Removes all recommendation from the data store by using product id"""
-        logger.info("Deleting %s", self.idA)
+        logger.info("Deleting %s", self.id)
         db.session.delete(self)
         db.session.commit()
 
     def serialize(self):
         """ Serializes a recommendation into a dictionary """
         return {
-            "productA-id": self.idA,
-            "productB-id": self.idB,
+            "product-id": self.id,
+            "related-product-id": self.rel_id,
             "type-id": self.typeid
         }
 
@@ -91,7 +91,7 @@ class Recommendation(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.idA = data["productA-id"]
+            self.id = data["product-id"]
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
         except TypeError as error:
