@@ -7,7 +7,7 @@ Models
 -------
 Recommendations - The recommendations resource is a representation a product recommendation based on another product.
 
-Atttibutes:
+Attributes:
 -------
 product id (int) - a unique number which indicates a product
 related product id (int) - a unique number which indicates the recommended product of product A
@@ -44,7 +44,7 @@ class Recommendation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     rel_id = db.Column(db.Integer, primary_key=True)
-    typeid = db.Column(db.Integer, primary_key = True)
+    typeid = db.Column(db.Integer)
     status = db.Column(db.Boolean())
 
     ##################################################
