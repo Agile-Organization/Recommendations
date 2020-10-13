@@ -1,0 +1,3 @@
+from tests.test_recommendation import TestRecommendation
+from tests.test_service import TestRecommendationService
+
