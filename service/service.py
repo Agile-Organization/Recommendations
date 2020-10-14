@@ -11,6 +11,7 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status  # HTTP Status Codes
+from werkzeug.exceptions import NotFound
 
 # SQLAlchemy supports a variety of backends including SQLite, MySQL, and PostgreSQL
 from flask_sqlalchemy import SQLAlchemy
@@ -27,6 +28,19 @@ def index():
     """ Root URL response """
     return "Some useful information in json format about the recommendations service", status.HTTP_200_OK
 
+######################################################################
+# QUERY RELATED PRODUCTS BY ID
+######################################################################
+@app.route("/recommendations/<int:id>", methods=["GET"])
+def get_related_products(id):
+    """
+    Retrieve all related products by providing a product id
+    """
+    app.logger.info("Request for related products with id: %s", id)
+    products = Recommendation.find(id) # need to replace find method with actual function name from model file
+    if not products:
+        raise NotFound("Product with id '{}' was not found.".format(id))
+    return make_response(jsonify(products.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
