@@ -21,6 +21,15 @@ from service.models import Recommendation, DataValidationError
 from . import app
 
 ######################################################################
+# HELPER CLASSES
+######################################################################
+class RelatedProducts:
+    def __init__(self, typeid, active_product_list, inactive_product_list):
+        self.relationship_id = typeid
+        self.ids = active_product_list
+        self.inactive_ids = inactive_product_list
+
+######################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
@@ -35,12 +44,50 @@ def index():
 def get_related_products(id):
     """
     Retrieve all related products by providing a product id
+    returns a list of 3 objects, showing a list of active ids and inactive ids for each realationship type
+    [
+        {
+            relationship-id: 1,
+            ids: [id1, id2, id3, ...],
+            inactive-ids: [id10, id20, id30, ...]
+        },
+        {
+            relationship-id: 2,
+            ids: [id4, id5, id6, ...],
+            inactive-ids: [id40, id50, id60, ...]
+        },
+        {
+            relationship-id: 3,
+            ids: [id7, id8, id9, ...],
+            inactive-ids: [id70, id80, id90, ...]
+        }
+    ]
     """
     app.logger.info("Request for related products with id: %s", id)
     products = Recommendation.find(id) # need to replace find method with actual function name from model file
+    
     if not products:
         raise NotFound("Product with id '{}' was not found.".format(id))
-    return make_response(jsonify(products.serialize()), status.HTTP_200_OK)
+    
+    # assume model returns recors in format of: [{id: 1, rel_id: 2, typeid: 1, status: true}]
+    relationships = []
+    type_1_active, type_1_inactive = [], []
+    type_2_active, type_2_inactive = [], []
+    type_3_active, type_3_inactive = [], []
+
+    for p in products:
+        if p.typeid == 1:
+            type_1_active.append(p.ref_id) if p.status else type_1_inactive.append(p.ref_id)
+        elif p.typeid == 2:
+            type_2_active.append(p.ref_id) if p.status else type_2_inactive.append(p.ref_id)
+        else:
+            type_3_active.append(p.ref_id) if p.status else type_3_inactive.append(p.ref_id)
+
+    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
+    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
+    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
+
+    return make_response(jsonify(relationships.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
