@@ -15,7 +15,7 @@ from werkzeug.exceptions import NotFound
 
 # SQLAlchemy supports a variety of backends including SQLite, MySQL, and PostgreSQL
 from flask_sqlalchemy import SQLAlchemy
-from service.models import Recommendation, DataValidationError
+from service.model import Recommendation, DataValidationError
 
 # Import Flask application
 from . import app
@@ -88,6 +88,40 @@ def get_related_products(id):
     relationships.append(RelatedProducts(3, type_3_active, type_3_inactive))
 
     return make_response(jsonify(relationships.serialize()), status.HTTP_200_OK)
+
+######################################################################
+# QUERY ACTIVE RECOMMENDATIONS
+######################################################################
+@app.route('/recommendations/active/<int:id>', methods=['GET'])
+def get_active_related_products(id):
+    app.logger.info("Query active recommendations for id: %s", id)
+    recommendations = Recommendation.find_by_id_status(id)
+
+    if not recommendations:
+        raise NotFound("Active recommendations for product {} not found.".format(id))
+
+    app.logger.info("Returning recommendations for product %s", id)
+    type0_products = []
+    type1_products = []
+    type2_products = []
+    for r in recommendations:
+        if r.typeid == 1:
+            type0_products.append(r.rel_id)
+        elif r.typeid == 2:
+            type1_products.append(r.rel_id)
+        else:
+            type2_products.append(r.rel_id)
+
+    result = [
+        {"relation_id": 1, "ids": type0_products},
+        {"relation_id": 2, "ids": type1_products},
+        {"relation_id": 3, "ids": type2_products}
+    ]
+
+    return make_response(jsonify(result), status.HTTP_200_OK)
+    
+
+
 
 
 ######################################################################
