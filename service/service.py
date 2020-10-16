@@ -77,15 +77,15 @@ def get_related_products(id):
 
     for p in products:
         if p.typeid == 1:
-            type_1_active.append(p.ref_id) if p.status else type_1_inactive.append(p.ref_id)
+            type_1_active.append(p.rel_id) if p.status else type_1_inactive.append(p.rel_id)
         elif p.typeid == 2:
-            type_2_active.append(p.ref_id) if p.status else type_2_inactive.append(p.ref_id)
+            type_2_active.append(p.rel_id) if p.status else type_2_inactive.append(p.rel_id)
         else:
-            type_3_active.append(p.ref_id) if p.status else type_3_inactive.append(p.ref_id)
+            type_3_active.append(p.rel_id) if p.status else type_3_inactive.append(p.rel_id)
 
     relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
-    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
-    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
+    relationships.append(RelatedProducts(2, type_2_active, type_2_inactive))
+    relationships.append(RelatedProducts(1, type_3_active, type_3_inactive))
 
     return make_response(jsonify(relationships.serialize()), status.HTTP_200_OK)
 
