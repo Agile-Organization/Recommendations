@@ -69,7 +69,7 @@ def get_related_products(id):
     if not products:
         raise NotFound("Product with id '{}' was not found.".format(id))
     
-    # assume model returns recors in format of: [{id: 1, rel_id: 2, typeid: 1, status: true}]
+    # assume model returns records in format of: [{id: 1, rel_id: 2, typeid: 1, status: true}]
     relationships = []
     type_1_active, type_1_inactive = [], []
     type_2_active, type_2_inactive = [], []
@@ -85,7 +85,7 @@ def get_related_products(id):
 
     relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
     relationships.append(RelatedProducts(2, type_2_active, type_2_inactive))
-    relationships.append(RelatedProducts(1, type_3_active, type_3_inactive))
+    relationships.append(RelatedProducts(3, type_3_active, type_3_inactive))
 
     return make_response(jsonify(relationships.serialize()), status.HTTP_200_OK)
 
