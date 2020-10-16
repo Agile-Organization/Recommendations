@@ -45,17 +45,17 @@ def get_active_related_products(id):
     type1_products = []
     type2_products = []
     for r in recommendations:
-        if r.typeid == 0:
+        if r.typeid == 1:
             type0_products.append(r.rel_id)
-        elif r.typeid == 1:
+        elif r.typeid == 2:
             type1_products.append(r.rel_id)
         else:
             type2_products.append(r.rel_id)
 
     result = [
-        {"relation_id": 0, "ids": type0_products},
-        {"relation_id": 1, "ids": type1_products},
-        {"relation_id": 2, "ids": type2_products}
+        {"relation_id": 1, "ids": type0_products},
+        {"relation_id": 2, "ids": type1_products},
+        {"relation_id": 3, "ids": type2_products}
     ]
 
     return make_response(jsonify(result), status.HTTP_200_OK)
