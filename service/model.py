@@ -58,7 +58,7 @@ class Recommendation(db.Model):
         """ 
         Creates a recommendation pair to the database
         """ 
-        logger.info("Creating %s", self.name)
+        self.logger.info("Creating %s", self.name)
         self.id = None  # id must be none to generate next primary key
         db.session.add(self)
         db.session.commit()
@@ -67,12 +67,12 @@ class Recommendation(db.Model):
         """
         Updates a recommendation to the database
         """
-        logger.info("Saving %s", self.id)
+        self.logger.info("Saving %s", self.id)
         db.session.commit()
     
     def delete(self):
         """ Removes all recommendation from the data store by using product id"""
-        logger.info("Deleting %s", self.id)
+        self.logger.info("Deleting %s", self.id)
         db.session.delete(self)
         db.session.commit()
 
@@ -81,7 +81,8 @@ class Recommendation(db.Model):
         return {
             "product-id": self.id,
             "related-product-id": self.rel_id,
-            "type-id": self.typeid
+            "type-id": self.typeid,
+            "status": self.status
         }
 
     def deserialize(self, data):
@@ -107,7 +108,7 @@ class Recommendation(db.Model):
     @classmethod
     def init_db(cls, app):
         """ Initializes the database session """
-        logger.info("Initializing database")
+        app.logger.info("Initializing database")
         cls.app = app
         # This is where we initialize SQLAlchemy from the Flask app
         db.init_app(app)
@@ -117,18 +118,23 @@ class Recommendation(db.Model):
     @classmethod
     def all(cls):
         """ Returns all of the recommendations in the database """
-        logger.info("Processing all recommendations")
+        cls.logger.info("Processing all recommendations")
         return cls.query.all()
 
     @classmethod
     def find(cls, by_id):
         """ Finds a recommendation by it's ID """
-        logger.info("Processing lookup for id %s ...", by_id)
+        cls.logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.get(by_id)
 
     @classmethod
     def find_or_404(cls, by_id):
         """ Find a recommendation by it's id """
-        logger.info("Processing lookup or 404 for id %s ...", by_id)
+        cls.logger.info("Processing lookup or 404 for id %s ...", by_id)
         return cls.query.get_or_404(by_id)
 
+    @classmethod
+    def find_by_id_status(cls, by_id: int, by_status=True):
+        """ Find active recommendations of a product [id] """
+        cls.logger.info("Processing lookup for id %s with status %s", by_id, by_status)
+        return cls.query.filter(cls.id==by_id, cls.status==by_status)
