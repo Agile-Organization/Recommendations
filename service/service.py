@@ -122,8 +122,32 @@ def get_active_related_products(id):
     
 
 
-
-
+######################################################################
+# CREATE RELATIONSHIP BETWEEN PRODUCTS
+######################################################################
+@app.route('/recommendations', methods=['POST'])
+def create_recommendation_between_products():
+    """
+    Creates a Recommendation
+    This endpoint will create a recommendation based the data in the body that is posted
+    {
+        "product-id" : 1,
+        "related-product-id" : 2,
+        "type-id" : 1,
+        "status" : 1
+    }
+    """
+    app.logger.info("Request to create a recommendation")
+    check_content_type("application/json")
+    recommendation = Recommendation()
+    recommendation.deserialize(request.get_json())
+    recommendation.create()
+    message = recommendation.serialize()
+    location_url = url_for("get_related_products", id=recommendation.id, _external=True)
+    
+    app.logger.info("recommendation from ID [%s] to ID [%s] created.", recommendation.id, recommendation.rel_id)
+    return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url} )
+    
 ######################################################################
 # Error Handlers
 ######################################################################

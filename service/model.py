@@ -58,8 +58,7 @@ class Recommendation(db.Model):
         """ 
         Creates a recommendation pair to the database
         """ 
-        self.logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
+        self.logger.info("Creating recommendation from ID : [%s] to ID : [%s]", self.id, self.rel_id)
         db.session.add(self)
         db.session.commit()
 
@@ -93,6 +92,9 @@ class Recommendation(db.Model):
         """
         try:
             self.id = data["product-id"]
+            self.rel_id  = data["related-product-id"]
+            self.typeid = data["type-id"]
+            self.status = data["status"]
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
         except TypeError as error:
