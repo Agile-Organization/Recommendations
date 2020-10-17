@@ -195,7 +195,7 @@ def get_recommendation_relationship_type():
     return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
-# UPDATE RECOMMENDATION FOR TWO PRODUCTS
+# UPDATE RECOMMENDATION TYPEID FOR TWO PRODUCTS
 ######################################################################
 @app.route('/recommendations', methods=['PUT'])
 def update_recommendation_between_products():
@@ -229,7 +229,8 @@ def update_recommendation_between_products():
         raise DataValidationError(error)
 
     if not old_recommendation:
-        raise NotFound("Recommendation does not exist please do a POST instead of PUT")
+        raise NotFound("Recommendation does not exist"\
+                       " please do a POST instead of PUT")
 
     old_typeid = old_recommendation.typeid
     old_recommendation.typeid = recommendation.typeid
