@@ -10,6 +10,7 @@ coverage.xml
 
 # Cache
 service/__pycache__/
+__pycache__/
 
 # Unit Tests
 tests/__pycache__/

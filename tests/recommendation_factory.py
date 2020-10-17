@@ -14,7 +14,7 @@ class RecommendationFactory(factory.Factory):
 
     id = FuzzyChoice(choices=range(1, 10001))
     rel_id = FuzzyChoice(choices=range(10001, 20001))
-    type_id = FuzzyChoice(choices=[1, 2, 3])
+    typeid = FuzzyChoice(choices=[1, 2, 3])
     status = FuzzyChoice(choices=[True, False])
 
 

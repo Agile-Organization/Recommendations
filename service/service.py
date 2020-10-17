@@ -175,6 +175,8 @@ def get_recommendation_relationship_type():
         " related product: %s do not exist".format(product_id, rel_product_id)
         )
 
+    product_id, rel_product_id = int(product_id), int(rel_product_id)
+
     exists = Recommendation.check_if_product_exists
     if not exists(product_id) or not exists(rel_product_id):
         return (
@@ -194,7 +196,7 @@ def get_recommendation_relationship_type():
     .format(product_id, rel_product_id)
     )
 
-    if recommendation.first():
+    if recommendation and recommendation.first():
         return (
         jsonify(recommendation.first().serialize()),
         status.HTTP_200_OK

@@ -55,6 +55,12 @@ class Recommendation(db.Model):
     def __repr__(self):
         return "<Recommendation %d %d %d>" % (self.id, self.rel_id, self.typeid)
 
+    def __eq__(self, other):
+        return self.id == other.id \
+               and self.rel_id == other.rel_id \
+               and self.typeid == other.typeid \
+               and self.status == other.status
+
     def create(self):
         """
         Creates a recommendation pair to the database
@@ -128,7 +134,7 @@ class Recommendation(db.Model):
     def find(cls, by_id):
         """ Finds a recommendation by it's ID """
         cls.logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.get(by_id)
+        return cls.query.filter(cls.id==by_id)
 
     @classmethod
     def find_or_404(cls, by_id):
@@ -145,6 +151,13 @@ class Recommendation(db.Model):
     @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
         """ Find recommendation relationship for product and rel_product """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not by_rel_id or not isinstance(by_rel_id, int):
+            raise TypeError("by_rel_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
         cls.logger.info("Processing lookup for id %s with"\
                         " rel_id %s and status %s", by_id, by_rel_id, by_status)
         return cls.query.filter(
@@ -153,6 +166,11 @@ class Recommendation(db.Model):
     @classmethod
     def check_if_product_exists(cls, by_id: int, by_status=True):
         """ Checks if a product exists in the Database """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+            
         cls.logger.info("Processing lookup for id %s with status %s",\
                                                             by_id, by_status)
         return cls.query.filter(

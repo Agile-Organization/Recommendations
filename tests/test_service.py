@@ -24,6 +24,8 @@ Test cases can be run with the following:
 import unittest
 import os
 import logging
+from flask import request
+from flask_api import status
 from service.model import Recommendation, db
 from service import app
 from service.service import init_db
@@ -72,107 +74,82 @@ class TestRecommendationService(unittest.TestCase):
         data = resp.get_json()
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(data["name"], "Customer REST API Service")
+        self.assertEqual(data, None)
 
-    def _create_recommendations(self, count):
+    def _create_recommendations(self, count, by_status=True):
         """ Factory method to create Recommendations in bulk count <= 10000 """
+        if not isinstance(count, int): return []
+        if not isinstance(by_status, bool): return []
         recommendations = []
         for _ in range(count):
             test_recommendation = RecommendationFactory()
+            test_recommendation.status = by_status
             resp = self.app.post(
                 "/recommendations",
                 json=test_recommendation.serialize(),
                 content_type="application/json"
             )
-            self.assertEqual(
-                resp.status_code,
-                status.HTTP_201_CREATED,
-                "Could not create test Recommendation"
-            )
-            recommendations.append(test_recommendation)
+            recommendations.append([
+                                    test_recommendation,
+                                    resp.headers.get("Location", None)
+                                   ])
         return recommendations
 
     def test_create_recommendations(self):
-        """ Create a new Recommendation Factory """
-        test_recommendation = RecommendationFactory()
-        resp = self.app.post(
-            "/recommendations",
-            json=test_recommendation.serialize(),
-            content_type="application/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        """ Tests create recommendations """
+        recommendations = self._create_recommendations(count=10, by_status=True)
+        self.assertEqual(len(recommendations), 10)
+        for recommendation, location in recommendations:
+            self.assertTrue(recommendation.status)
+            self.assertIsNotNone(location)
 
-        location = resp.headers.get("Location", None)
-        self.assertTrue(location != None)
+        recommendations = self._create_recommendations(count=10,
+                                                                by_status=False)
+        self.assertEqual(len(recommendations), 10)
+        for recommendation, location in recommendations:
+            self.assertFalse(recommendation.status)
+            self.assertIsNotNone(location)
 
-        new_recommendation = Recommendation()
-        new_recommendation.deserialize(request.get_json())
+        recommendations = self._create_recommendations(count=-10)
+        self.assertEqual(len(recommendations), 0)
 
-        self.assertEqual(
-            new_recommendation.id,
-            test_recommendation.id,
-            "id does not match"
-        )
-        self.assertEqual(
-            new_recommendation.rel_id,
-            test_recommendation.rel_id,
-            "related-product-id does not match"
-        )
-        self.assertEqual(
-            new_recommendation.typeid,
-            test_recommendation.typeid,
-            "type-id does not match"
-        )
-        self.assertEqual(
-            new_recommendation.status,
-            test_recommendation.status,
-            "status does not match"
-        )
+        recommendations = self._create_recommendations(count="ab")
+        self.assertEqual(len(recommendations), 0)
 
-        resp = self.app.get(location, content_type="application/json")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        new_recommendation = Recommendation()
-        new_recommendation.deserialize(request.get_json())
-
-        self.assertEqual(
-            new_recommendation.id,
-            test_recommendation.id,
-            "id does not match"
-        )
-        self.assertEqual(
-            new_recommendation.rel_id,
-            test_recommendation.rel_id,
-            "related-product-id does not match"
-        )
-        self.assertEqual(
-            new_recommendation.typeid,
-            test_recommendation.typeid,
-            "type-id does not match"
-        )
-        self.assertEqual(
-            new_recommendation.status,
-            test_recommendation.status,
-            "status does not match"
-        )
+        recommendations = self._create_recommendations(count=20, by_status="ab")
+        self.assertEqual(len(recommendations), 0)
 
     def test_get_recommendation_relationship_type(self):
         """ Get recommendation relationship type for two products """
-        valid_recommendation = self._create_recommendations(1)[0]
+        valid_recommendation = self._create_recommendations(count=1)[0][0]
+        resp = self.app.get\
+            (
+            "/recommendations/relationship",
+            query_string=dict
+                (
+                    product1=valid_recommendation.id,
+                    product2=valid_recommendation.rel_id
+                )
+            )
+        new_recommendation = Recommendation()
+        new_recommendation.deserialize(resp.get_json())
 
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(new_recommendation,
+                         valid_recommendation,
+                         "recommendations does not match")
+
+        valid_inactive_recommendation = self._create_recommendations(count=1,
+                                                          by_status=False)[0][0]
         resp = self.app.get(
             "/recommendations/relationship",
-            query_string=dict(product1=valid_recommendation["id"],
-            product2=valid_recommendation["related-product-id"]),
+            query_string=dict(product1=valid_inactive_recommendation.id,
+            product2=valid_inactive_recommendation.rel_id),
         )
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        resp_message = resp.get_json()
 
-        new_recommendation = resp.get_json()
-
-        self.assertEqual(
-        new_recommendation["related-product-id"],
-        valid_recommendation["related-product-id"],
-        "related product id does not match"
-        )
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(resp_message, None, "Response should not have content")
 
         invalid_recommendation = \
         {
@@ -181,12 +158,12 @@ class TestRecommendationService(unittest.TestCase):
             "type-id": 1,
             "status": True
         }
-
         resp = self.app.get(
             "/recommendations/relationship",
-            query_string=dict(product1=invalid_recommendation["id"],
+            query_string=dict(product1=invalid_recommendation["product-id"],
             product2=invalid_recommendation["related-product-id"]),
         )
+
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         invalid_recommendation = \
@@ -196,31 +173,33 @@ class TestRecommendationService(unittest.TestCase):
             "type-id": 1,
             "status": True
         }
-
         resp = self.app.get(
             "/recommendations/relationship",
-            query_string=dict(product1=invalid_recommendation["id"],
+            query_string=dict(product1=invalid_recommendation["product-id"],
             product2=invalid_recommendation["related-product-id"]),
         )
+
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+        valid_recommendation = self._create_recommendations(count=1)[0][0]
         does_not_exist_recommendation = \
         {
-            "product-id": "11000",
-            "related-product-id": "12000",
+            "product-id": valid_recommendation.rel_id,
+            "related-product-id": valid_recommendation.id,
             "type-id": 1,
             "status": True
         }
-
         resp = self.app.get(
             "/recommendations/relationship",
-            query_string=dict(product1=does_not_exist_recommendation["id"],
+            query_string=dict
+            (
+            product1=does_not_exist_recommendation["product-id"],
             product2=does_not_exist_recommendation["related-product-id"]),
-        )
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-
+            )
         resp_message = resp.get_json()
-        self.assertEqual(resp_message, '', "Response should not have content")
+
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(resp_message, None, "Response should not have content")
 
 
 ######################################################################
