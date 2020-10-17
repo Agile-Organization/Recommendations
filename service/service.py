@@ -21,15 +21,6 @@ from service.model import Recommendation, DataValidationError
 from . import app
 
 ######################################################################
-# HELPER CLASSES
-######################################################################
-class RelatedProducts:
-    def __init__(self, typeid, active_product_list, inactive_product_list):
-        self.relationship_id = typeid
-        self.ids = active_product_list
-        self.inactive_ids = inactive_product_list
-
-######################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
@@ -83,11 +74,13 @@ def get_related_products(id):
         else:
             type_3_active.append(p.rel_id) if p.status else type_3_inactive.append(p.rel_id)
 
-    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
-    relationships.append(RelatedProducts(2, type_2_active, type_2_inactive))
-    relationships.append(RelatedProducts(3, type_3_active, type_3_inactive))
+    relationships = [
+        {"relation_id": 1, "ids": type_1_active, "inactive_ids": type_1_inactive},
+        {"relation_id": 2, "ids": type_2_active, "inactive_ids": type_2_inactive},
+        {"relation_id": 3, "ids": type_3_active, "inactive_ids": type_3_inactive}
+    ]
 
-    return make_response(jsonify(relationships.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(relationships), status.HTTP_200_OK)
 
 ######################################################################
 # QUERY ACTIVE RECOMMENDATIONS
