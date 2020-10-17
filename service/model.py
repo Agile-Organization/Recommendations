@@ -134,7 +134,7 @@ class Recommendation(db.Model):
     def find(cls, by_id):
         """ Finds a recommendation by it's ID """
         cls.logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.filter(cls.id==by_id)
+        return cls.query.get(by_id)
 
     @classmethod
     def find_or_404(cls, by_id):
