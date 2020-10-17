@@ -12,7 +12,7 @@ Attributes:
 product id (int) - a unique number which indicates a product
 related product id (int) - a unique number which indicates the recommended product of product A
 relationship type id (int) - the numbers which indicates the products' realationship: 0 - accessory, 1 - up-sells, 2 - cross-sells
-active status (boolean) - whether this recommendation pair is actived or not. 
+active status (boolean) - whether this recommendation pair is actived or not.
 
 """
 
@@ -55,9 +55,9 @@ class Recommendation(db.Model):
         return "<Recommendation %d %d %d>" % (self.id, self.rel_id, self.typeid)
 
     def create(self):
-        """ 
+        """
         Creates a recommendation pair to the database
-        """ 
+        """
         self.logger.info("Creating %s", self.name)
         self.id = None  # id must be none to generate next primary key
         db.session.add(self)
@@ -69,7 +69,7 @@ class Recommendation(db.Model):
         """
         self.logger.info("Saving %s", self.id)
         db.session.commit()
-    
+
     def delete(self):
         """ Removes all recommendation from the data store by using product id"""
         self.logger.info("Deleting %s", self.id)
@@ -138,3 +138,20 @@ class Recommendation(db.Model):
         """ Find active recommendations of a product [id] """
         cls.logger.info("Processing lookup for id %s with status %s", by_id, by_status)
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
+
+    @classmethod
+    def check_if_product_exists(cls, by_id: int, by_status=True):
+        """ Checks if a product exists in the Database """
+        cls.logger.info("Processing lookup for id %s with status %s",\
+                                                            by_id, by_status)
+        return cls.query.filter(
+        (cls.id==by_id) | (cls.rel_id==by_id), cls.status==by_status
+        ).first() is not None
+
+    @classmethod
+    def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
+        """ Find recommendation relationship for product and rel_product """
+        cls.logger.info("Processing lookup for id %s with"\
+                        " rel_id %s and status %s", by_id, by_rel_id, by_status)
+        return cls.query.filter(
+                    cls.id==by_id, cls.rel_id==by_rel_id, cls.status==by_status)

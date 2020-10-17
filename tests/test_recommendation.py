@@ -25,7 +25,9 @@ import os
 from service.model import Recommendation, db
 from service import app
 
-DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
+DATABASE_URI = os.getenv("DATABASE_URI",
+                         "postgres://postgres:postgres@localhost:5432/postgres")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 ######################################################################
 #  T E S T   C A S E S
@@ -60,4 +62,3 @@ class TestRecommendation(unittest.TestCase):
 ######################################################################
 if __name__ == "__main__":
     unittest.main()
-

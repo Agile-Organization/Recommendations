@@ -1,7 +1,7 @@
 """
 Recommendations Service
 
-Initial service file for setting up recommendations controllers. 
+Initial service file for setting up recommendations controllers.
 File created based on template.
 Will add more routes in the future for additional API endpoints.
 """
@@ -11,7 +11,7 @@ import sys
 import logging
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status  # HTTP Status Codes
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import NotFound, BadRequest
 
 # SQLAlchemy supports a variety of backends including SQLite, MySQL, and PostgreSQL
 from flask_sqlalchemy import SQLAlchemy
@@ -65,10 +65,10 @@ def get_related_products(id):
     """
     app.logger.info("Request for related products with id: %s", id)
     products = Recommendation.find(id) # need to replace find method with actual function name from model file
-    
+
     if not products:
         raise NotFound("Product with id '{}' was not found.".format(id))
-    
+
     # assume model returns records in format of: [{id: 1, rel_id: 2, typeid: 1, status: true}]
     relationships = []
     type_1_active, type_1_inactive = [], []
@@ -119,9 +119,65 @@ def get_active_related_products(id):
     ]
 
     return make_response(jsonify(result), status.HTTP_200_OK)
-    
 
+######################################################################
+# QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
+######################################################################
+@app.route('/recommendations/relationship', methods=['GET'])
+def get_recommendation_relationship_type():
+    """
+    Retrieve recommendation typeid for product1 and product2
+    returns an integer representing the relationship type if exists
+    1 - up-sell
+    2 - cross-sell
+    3 - accessory
+    null - Recommendation does not exist
+    """
+    product_id = request.args.get('product1')
+    rel_product_id = request.args.get('product2')
 
+    product_id_valid = product_id \
+                       and product_id.isnumeric() \
+                       and "-" not in product_id
+    rel_product_id_valid = rel_product_id \
+                           and rel_product_id.isnumeric() \
+                           and "-" not in rel_product_id
+
+    if not product_id_valid or not rel_product_id_valid:
+        raise BadRequest(
+        "Bad Request 2 invalid product ids provided, received product: %s and"\
+        " related product: %s do not exist".format(product_id, rel_product_id)
+        )
+
+    exists = Recommendation.check_if_product_exists
+    if not exists(product_id) or not exists(rel_product_id):
+        return (
+        '',
+        status.HTTP_204_NO_CONTENT
+        )
+
+    app.logger.info(
+    "Querying active recommendation for product: %s and related product: %s"\
+    .format(product_id, rel_product_id)
+    )
+    recommendation = Recommendation.find_recommendation(by_id=product_id,
+                                       by_rel_id=rel_product_id, by_status=True)
+
+    app.logger.info(
+    "Returning active recommendation for product: %s and related product: %s"\
+    .format(product_id, rel_product_id)
+    )
+
+    if recommendation.first():
+        return (
+        jsonify(recommendation.first().serialize()),
+        status.HTTP_200_OK
+        )
+    else:
+        return (
+        '',
+        status.HTTP_204_NO_CONTENT
+        )
 
 
 ######################################################################
@@ -135,7 +191,7 @@ def request_validation_error(error):
 
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):
-    """ Handles bad reuests with 400_BAD_REQUEST """
+    """ Handles bad requests with 400_BAD_REQUEST """
     app.logger.warning(str(error))
     return (
         jsonify(
@@ -215,4 +271,3 @@ def check_content_type(content_type):
         return
     app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
     abort(415, "Content-Type must be {}".format(content_type))
-    

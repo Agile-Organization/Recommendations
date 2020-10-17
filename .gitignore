@@ -3,3 +3,15 @@
 
 # Vagrant
 .vagrant/
+
+# Coverage
+.coverage
+coverage.xml
+
+# Cache
+service/__pycache__/
+
+# Unit Tests
+tests/__pycache__/
+ubuntu-bionic-18.04-cloudimg-console.log
+unittests.xml
