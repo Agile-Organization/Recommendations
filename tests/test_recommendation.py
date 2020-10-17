@@ -46,7 +46,6 @@ class TestRecommendation(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """ These run once after Test suite """
-        pass
 
     def setUp(self):
         Recommendation.init_db(app)
@@ -60,8 +59,10 @@ class TestRecommendation(unittest.TestCase):
     def _create_recommendations(self, count, by_status=True):
         """ Factory method to create Recommendations in bulk count <= 10000 """
         recommendations = []
-        if not isinstance(count, int): return []
-        if not isinstance(by_status, bool): return []
+        if not isinstance(count, int):
+            return []
+        if not isinstance(by_status, bool):
+            return []
         for _ in range(count):
             test_recommendation = RecommendationFactory()
             test_recommendation.status = by_status
@@ -76,10 +77,9 @@ class TestRecommendation(unittest.TestCase):
         for recommendation in recommendations:
             self.assertTrue(recommendation.status)
 
-        recommendations = self._create_recommendations(count=10,
-                                                                by_status=False)
-        self.assertEqual(len(recommendations), 10)
-        for recommendation in recommendations:
+        recs = self._create_recommendations(count=10, by_status=False)
+        self.assertEqual(len(recs), 10)
+        for recommendation in recs:
             self.assertFalse(recommendation.status)
 
         recommendations = self._create_recommendations(count=-10)
@@ -94,7 +94,7 @@ class TestRecommendation(unittest.TestCase):
     def test_find_recommendation(self):
         """ Test find recommendation function """
         valid_recommendation = self._create_recommendations(count=1)[0]
-        recommendation = Recommendation.find_recommendation(
+        recommendation = Recommendation.find_recommendation( \
                                                    valid_recommendation.id,
                                                    valid_recommendation.rel_id,
                                                    valid_recommendation.status)
@@ -103,7 +103,7 @@ class TestRecommendation(unittest.TestCase):
 
         valid_recommendation = self._create_recommendations(count=1,
                                                             by_status=False)[0]
-        recommendation = Recommendation.find_recommendation(
+        recommendation = Recommendation.find_recommendation( \
                                                    valid_recommendation.id,
                                                    valid_recommendation.rel_id,
                                                    valid_recommendation.status)
@@ -113,13 +113,13 @@ class TestRecommendation(unittest.TestCase):
         valid_recommendation = self._create_recommendations(count=1,
                                                             by_status=False)[0]
 
-        self.assertRaises(TypeError, Recommendation.find_recommendation,
+        self.assertRaises(TypeError, Recommendation.find_recommendation, \
                "abcd", valid_recommendation.rel_id, valid_recommendation.status)
 
-        self.assertRaises(TypeError, Recommendation.find_recommendation,
+        self.assertRaises(TypeError, Recommendation.find_recommendation, \
                valid_recommendation.id, "efgh", valid_recommendation.status)
 
-        self.assertRaises(TypeError, Recommendation.find_recommendation,
+        self.assertRaises(TypeError, Recommendation.find_recommendation, \
                valid_recommendation.id, valid_recommendation.rel_id, "notbool")
 
     def test_check_if_product_exists(self):
