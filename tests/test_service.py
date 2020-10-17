@@ -27,11 +27,12 @@ import logging
 from service.model import Recommendation, db
 from service import app
 from service.service import init_db
+from flask_api import status
 
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
 
-DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
+DATABASE_URI = os.getenv("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres")
 
 ######################################################################
 #  T E S T   C A S E S
@@ -62,6 +63,14 @@ class TestRecommendationService(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+
+    def test_get_active_related_products(self):
+        r = Recommendation(id=1, rel_id=2, typeid=1, status=True)
+        db.session.add(r)
+        resp = self.app.get("/recommendations/active/1")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data[0]["ids"][0], 2)
 
 
 ######################################################################

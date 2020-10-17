@@ -25,7 +25,7 @@ import os
 from service.model import Recommendation, db
 from service import app
 
-DATABASE_URI = os.getenv("DATABASE_URI", "postgres:///../db/test.db")
+DATABASE_URI = os.getenv("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres")
 
 ######################################################################
 #  T E S T   C A S E S
