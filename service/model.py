@@ -150,7 +150,14 @@ class Recommendation(db.Model):
 
     @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
-        """ Find recommendation relationship for product and rel_product """
+        """ Find recommendation relationship for product and rel_product
+        Args:
+            by_id (int): A integer representing the product id
+            by_rel_id (int): A integer representing the related product id
+            status (bool): A boolean representing the status of recommendation
+        Returns:
+            The recommendation if exists
+        """
         if not by_id or not isinstance(by_id, int):
             raise TypeError("by_id is not of type int")
         if not by_rel_id or not isinstance(by_rel_id, int):
@@ -165,12 +172,19 @@ class Recommendation(db.Model):
 
     @classmethod
     def check_if_product_exists(cls, by_id: int, by_status=True):
-        """ Checks if a product exists in the Database """
+        """ Check if the product exists in the database
+        Args:
+            by_id (int): A integer representing the product id
+            by_status (bool): A boolean representing the recommendation status
+        Returns:
+            True if the product exists in either id column
+            or rel_id column else False
+        """
         if not by_id or not isinstance(by_id, int):
             raise TypeError("by_id is not of type int")
         if not isinstance(by_status, bool):
             raise TypeError("by_status is not of type bool")
-            
+
         cls.logger.info("Processing lookup for id %s with status %s",\
                                                             by_id, by_status)
         return cls.query.filter(
