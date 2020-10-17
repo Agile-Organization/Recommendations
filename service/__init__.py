@@ -11,9 +11,9 @@ from flask import Flask
 
 # Create Flask application
 app = Flask(__name__)
-# app.config.from_object('config')
+app.config.from_object('config')
 
-# Import the rutes After the Flask app is created
+# Import the routes After the Flask app is created
 from service import service, model
 
 # Set up logging for production
