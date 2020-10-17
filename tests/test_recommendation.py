@@ -54,6 +54,14 @@ class TestRecommendation(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
+    def test_find_by_id_status(self):
+        r = Recommendation(id=1, rel_id=2, typeid=1, status=True)
+        db.session.add(r)
+        rec = Recommendation.find_by_id_status(by_id=1, by_status=True)
+        self.assertEqual(rec[0].rel_id, 2)
+        self.assertEqual(rec[0].typeid, 1)
+
+
 
 ######################################################################
 #   M A I N
