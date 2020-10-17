@@ -74,7 +74,7 @@ class TestRecommendationService(unittest.TestCase):
         data = resp.get_json()
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(data, None)
+        self.assertIsNotNone(data)
 
     def _create_recommendations(self, count, by_status=True):
         """ Factory method to create Recommendations in bulk count <= 10000 """

@@ -9,6 +9,7 @@ Will add more routes in the future for additional API endpoints.
 import os
 import sys
 import logging
+import datetime
 from flask import Flask, jsonify, request, url_for, make_response, abort
 from flask_api import status  # HTTP Status Codes
 from werkzeug.exceptions import NotFound, BadRequest
@@ -35,7 +36,7 @@ class RelatedProducts:
 @app.route("/")
 def index():
     """ Root URL response """
-    return "Some useful information in json format about the recommendations service", status.HTTP_200_OK
+    return jsonify(datetime.datetime.now()), status.HTTP_200_OK
 
 ######################################################################
 # QUERY RELATED PRODUCTS BY ID
@@ -170,42 +171,28 @@ def get_recommendation_relationship_type():
                            and "-" not in rel_product_id
 
     if not product_id_valid or not rel_product_id_valid:
-        raise BadRequest(
-        "Bad Request 2 invalid product ids provided, received product: %s and"\
-        " related product: %s do not exist".format(product_id, rel_product_id)
-        )
+        raise BadRequest("Bad Request 2 invalid product ids provided,"\
+                         " received product: %s and related product: %s do not"\
+                         " exist".format(product_id, rel_product_id))
 
     product_id, rel_product_id = int(product_id), int(rel_product_id)
 
     exists = Recommendation.check_if_product_exists
     if not exists(product_id) or not exists(rel_product_id):
-        return (
-        '',
-        status.HTTP_204_NO_CONTENT
-        )
+        return ('', status.HTTP_204_NO_CONTENT)
 
-    app.logger.info(
-    "Querying active recommendation for product: %s and related product: %s"\
-    .format(product_id, rel_product_id)
-    )
-    recommendation = Recommendation.find_recommendation(by_id=product_id,
+    app.logger.info("Querying active recommendation for product: %s and"\
+                    " related product: %s".format(product_id, rel_product_id))
+    recommendation = Recommendation.find_recommendation(by_id=product_id,\
                                        by_rel_id=rel_product_id, by_status=True)
 
-    app.logger.info(
-    "Returning active recommendation for product: %s and related product: %s"\
-    .format(product_id, rel_product_id)
-    )
+    app.logger.info("Returning active recommendation for product: %s and"\
+                    " related product: %s".format(product_id, rel_product_id))
 
     if recommendation and recommendation.first():
-        return (
-        jsonify(recommendation.first().serialize()),
-        status.HTTP_200_OK
-        )
-    else:
-        return (
-        '',
-        status.HTTP_204_NO_CONTENT
-        )
+        return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
+
+    return ('', status.HTTP_204_NO_CONTENT)
 
 
 ######################################################################

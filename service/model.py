@@ -167,8 +167,8 @@ class Recommendation(db.Model):
 
         cls.logger.info("Processing lookup for id %s with"\
                         " rel_id %s and status %s", by_id, by_rel_id, by_status)
-        return cls.query.filter(
-                    cls.id==by_id, cls.rel_id==by_rel_id, cls.status==by_status)
+        return cls.query.filter(cls.id == by_id,
+                                cls.rel_id == by_rel_id, cls.status == by_status)
 
     @classmethod
     def check_if_product_exists(cls, by_id: int, by_status=True):
@@ -187,6 +187,5 @@ class Recommendation(db.Model):
 
         cls.logger.info("Processing lookup for id %s with status %s",\
                                                             by_id, by_status)
-        return cls.query.filter(
-        (cls.id==by_id) | (cls.rel_id==by_id), cls.status==by_status
-        ).first() is not None
+        return cls.query.filter((cls.id == by_id) | (cls.rel_id == by_id),
+                                cls.status == by_status).first() is not None
