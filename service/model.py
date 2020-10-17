@@ -27,6 +27,7 @@ class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
     pass
 
+
 class Recommendation(db.Model):
     """
     Class that represents a Recommendation
@@ -58,8 +59,7 @@ class Recommendation(db.Model):
         """
         Creates a recommendation pair to the database
         """
-        self.logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
+        self.logger.info("Creating recommendation from ID : [%s] to ID : [%s]", self.id, self.rel_id)
         db.session.add(self)
         db.session.commit()
 
@@ -93,6 +93,9 @@ class Recommendation(db.Model):
         """
         try:
             self.id = data["product-id"]
+            self.rel_id  = data["related-product-id"]
+            self.typeid = data["type-id"]
+            self.status = data["status"]
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
         except TypeError as error:
@@ -140,6 +143,14 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
 
     @classmethod
+    def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
+        """ Find recommendation relationship for product and rel_product """
+        cls.logger.info("Processing lookup for id %s with"\
+                        " rel_id %s and status %s", by_id, by_rel_id, by_status)
+        return cls.query.filter(
+                    cls.id==by_id, cls.rel_id==by_rel_id, cls.status==by_status)
+
+    @classmethod
     def check_if_product_exists(cls, by_id: int, by_status=True):
         """ Checks if a product exists in the Database """
         cls.logger.info("Processing lookup for id %s with status %s",\
@@ -147,11 +158,3 @@ class Recommendation(db.Model):
         return cls.query.filter(
         (cls.id==by_id) | (cls.rel_id==by_id), cls.status==by_status
         ).first() is not None
-
-    @classmethod
-    def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
-        """ Find recommendation relationship for product and rel_product """
-        cls.logger.info("Processing lookup for id %s with"\
-                        " rel_id %s and status %s", by_id, by_rel_id, by_status)
-        return cls.query.filter(
-                    cls.id==by_id, cls.rel_id==by_rel_id, cls.status==by_status)
