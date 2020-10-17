@@ -56,41 +56,6 @@ class TestRecommendation(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
-    def _create_recommendations(self, count, by_status=True):
-        """ Factory method to create Recommendations in bulk count <= 10000 """
-        recommendations = []
-        if not isinstance(count, int):
-            return []
-        if not isinstance(by_status, bool):
-            return []
-        for _ in range(count):
-            test_recommendation = RecommendationFactory()
-            test_recommendation.status = by_status
-            test_recommendation.create()
-            recommendations.append(test_recommendation)
-        return recommendations
-
-    def test_create_recommendations(self):
-        """ Tests create recommendations """
-        recommendations = self._create_recommendations(count=10, by_status=True)
-        self.assertEqual(len(recommendations), 10)
-        for recommendation in recommendations:
-            self.assertTrue(recommendation.status)
-
-        recs = self._create_recommendations(count=10, by_status=False)
-        self.assertEqual(len(recs), 10)
-        for recommendation in recs:
-            self.assertFalse(recommendation.status)
-
-        recommendations = self._create_recommendations(count=-10)
-        self.assertEqual(len(recommendations), 0)
-
-        recommendations = self._create_recommendations(count="ab")
-        self.assertEqual(len(recommendations), 0)
-
-        recommendations = self._create_recommendations(count=20, by_status="ab")
-        self.assertEqual(len(recommendations), 0)
-
     def test_find_recommendation(self):
         """ Test find recommendation function """
         valid_recommendation = self._create_recommendations(count=1)[0]
@@ -141,6 +106,43 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(TypeError, exists, "abcd")
         self.assertRaises(TypeError, exists, valid_recommendation.id, "notbool")
 
+######################################################################
+#   HELPER FUNCTIONS
+######################################################################
+    def _create_recommendations(self, count, by_status=True):
+        """ Factory method to create Recommendations in bulk count <= 10000 """
+        recommendations = []
+        if not isinstance(count, int):
+            return []
+        if not isinstance(by_status, bool):
+            return []
+        for _ in range(count):
+            test_recommendation = RecommendationFactory()
+            test_recommendation.status = by_status
+            test_recommendation.create()
+            recommendations.append(test_recommendation)
+        return recommendations
+
+    def test_create_recommendations(self):
+        """ Tests create recommendations """
+        recommendations = self._create_recommendations(count=10, by_status=True)
+        self.assertEqual(len(recommendations), 10)
+        for recommendation in recommendations:
+            self.assertTrue(recommendation.status)
+
+        recs = self._create_recommendations(count=10, by_status=False)
+        self.assertEqual(len(recs), 10)
+        for recommendation in recs:
+            self.assertFalse(recommendation.status)
+
+        recommendations = self._create_recommendations(count=-10)
+        self.assertEqual(len(recommendations), 0)
+
+        recommendations = self._create_recommendations(count="ab")
+        self.assertEqual(len(recommendations), 0)
+
+        recommendations = self._create_recommendations(count=20, by_status="ab")
+        self.assertEqual(len(recommendations), 0)
 
 ######################################################################
 #   M A I N

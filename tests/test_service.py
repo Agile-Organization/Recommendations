@@ -325,7 +325,7 @@ class TestRecommendationService(unittest.TestCase):
 ######################################################################
     def _create_recommendations(self, count, by_status=True):
         """ Factory method to create Recommendations in bulk count <= 10000 """
-        if not isinstance(count, int):
+        if not isinstance(count, int): 
             return []
         if not isinstance(by_status, bool):
             return []
