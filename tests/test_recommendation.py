@@ -26,12 +26,8 @@ from service.model import Recommendation, db
 from service import app
 from .recommendation_factory import RecommendationFactory
 
-<<<<<<< HEAD
-DATABASE_URI = os.getenv("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres")
-=======
 DATABASE_URI = os.getenv("DATABASE_URI",
                          "postgres://postgres:postgres@localhost:5432/postgres")
->>>>>>> master
 
 ######################################################################
 #  T E S T   C A S E S
@@ -50,7 +46,6 @@ class TestRecommendation(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """ These run once after Test suite """
-        pass
 
     def setUp(self):
         Recommendation.init_db(app)
@@ -145,7 +140,6 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(TypeError, exists, "abcd")
         self.assertRaises(TypeError, exists, valid_recommendation.id, "notbool")
 
-    
     def test_find_by_id_status(self):
         r = Recommendation(id=1, rel_id=2, typeid=1, status=True)
         db.session.add(r)
