@@ -12,7 +12,7 @@ Attributes:
 product id (int) - a unique number which indicates a product
 related product id (int) - a unique number which indicates the recommended product of product A
 relationship type id (int) - the numbers which indicates the products' realationship: 0 - accessory, 1 - up-sells, 2 - cross-sells
-active status (boolean) - whether this recommendation pair is actived or not. 
+active status (boolean) - whether this recommendation pair is actived or not.
 
 """
 
@@ -26,6 +26,7 @@ db = SQLAlchemy()
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
     pass
+
 
 class Recommendation(db.Model):
     """
@@ -54,12 +55,17 @@ class Recommendation(db.Model):
     def __repr__(self):
         return "<Recommendation %d %d %d>" % (self.id, self.rel_id, self.typeid)
 
+    def __eq__(self, other):
+        return self.id == other.id \
+               and self.rel_id == other.rel_id \
+               and self.typeid == other.typeid \
+               and self.status == other.status
+
     def create(self):
-        """ 
+        """
         Creates a recommendation pair to the database
-        """ 
-        self.logger.info("Creating %s", self.name)
-        self.id = None  # id must be none to generate next primary key
+        """
+        self.logger.info("Creating recommendation from ID : [%s] to ID : [%s]", self.id, self.rel_id)
         db.session.add(self)
         db.session.commit()
 
@@ -69,7 +75,7 @@ class Recommendation(db.Model):
         """
         self.logger.info("Saving %s", self.id)
         db.session.commit()
-    
+
     def delete(self):
         """ Removes all recommendation from the data store by using product id"""
         self.logger.info("Deleting %s", self.id)
@@ -93,6 +99,9 @@ class Recommendation(db.Model):
         """
         try:
             self.id = data["product-id"]
+            self.rel_id  = data["related-product-id"]
+            self.typeid = data["type-id"]
+            self.status = data["status"]
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
         except TypeError as error:
@@ -144,3 +153,45 @@ class Recommendation(db.Model):
         """ Find recommendations of a [product: id] with [type: typeid] """
         cls.logger.info("Processing lookup for id %s with typeid %s", by_id, by_type)
         return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
+        
+
+    def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
+        """ Find recommendation relationship for product and rel_product
+        Args:
+            by_id (int): A integer representing the product id
+            by_rel_id (int): A integer representing the related product id
+            status (bool): A boolean representing the status of recommendation
+        Returns:
+            The recommendation if exists
+        """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not by_rel_id or not isinstance(by_rel_id, int):
+            raise TypeError("by_rel_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
+        cls.logger.info("Processing lookup for id %s with"\
+                        " rel_id %s and status %s", by_id, by_rel_id, by_status)
+        return cls.query.filter(cls.id == by_id,
+                                cls.rel_id == by_rel_id, cls.status == by_status)
+
+    @classmethod
+    def check_if_product_exists(cls, by_id: int, by_status=True):
+        """ Check if the product exists in the database
+        Args:
+            by_id (int): A integer representing the product id
+            by_status (bool): A boolean representing the recommendation status
+        Returns:
+            True if the product exists in either id column
+            or rel_id column else False
+        """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
+        cls.logger.info("Processing lookup for id %s with status %s",\
+                                                            by_id, by_status)
+        return cls.query.filter((cls.id == by_id) | (cls.rel_id == by_id),
+                                cls.status == by_status).first() is not None

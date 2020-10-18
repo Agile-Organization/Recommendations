@@ -24,8 +24,14 @@ import unittest
 import os
 from service.model import Recommendation, db
 from service import app
+from .recommendation_factory import RecommendationFactory
 
+<<<<<<< HEAD
 DATABASE_URI = os.getenv("DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres")
+=======
+DATABASE_URI = os.getenv("DATABASE_URI",
+                         "postgres://postgres:postgres@localhost:5432/postgres")
+>>>>>>> master
 
 ######################################################################
 #  T E S T   C A S E S
@@ -39,6 +45,7 @@ class TestRecommendation(unittest.TestCase):
         app.debug = False
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     @classmethod
     def tearDownClass(cls):
@@ -54,6 +61,91 @@ class TestRecommendation(unittest.TestCase):
         db.session.remove()
         db.drop_all()
 
+    def _create_recommendations(self, count, by_status=True):
+        """ Factory method to create Recommendations in bulk count <= 10000 """
+        recommendations = []
+        if not isinstance(count, int): return []
+        if not isinstance(by_status, bool): return []
+        for _ in range(count):
+            test_recommendation = RecommendationFactory()
+            test_recommendation.status = by_status
+            test_recommendation.create()
+            recommendations.append(test_recommendation)
+        return recommendations
+
+    def test_create_recommendations(self):
+        """ Tests create recommendations """
+        recommendations = self._create_recommendations(count=10, by_status=True)
+        self.assertEqual(len(recommendations), 10)
+        for recommendation in recommendations:
+            self.assertTrue(recommendation.status)
+
+        recommendations = self._create_recommendations(count=10,
+                                                                by_status=False)
+        self.assertEqual(len(recommendations), 10)
+        for recommendation in recommendations:
+            self.assertFalse(recommendation.status)
+
+        recommendations = self._create_recommendations(count=-10)
+        self.assertEqual(len(recommendations), 0)
+
+        recommendations = self._create_recommendations(count="ab")
+        self.assertEqual(len(recommendations), 0)
+
+        recommendations = self._create_recommendations(count=20, by_status="ab")
+        self.assertEqual(len(recommendations), 0)
+
+    def test_find_recommendation(self):
+        """ Test find recommendation function """
+        valid_recommendation = self._create_recommendations(count=1)[0]
+        recommendation = Recommendation.find_recommendation(
+                                                   valid_recommendation.id,
+                                                   valid_recommendation.rel_id,
+                                                   valid_recommendation.status)
+
+        self.assertEqual(recommendation.first(), valid_recommendation)
+
+        valid_recommendation = self._create_recommendations(count=1,
+                                                            by_status=False)[0]
+        recommendation = Recommendation.find_recommendation(
+                                                   valid_recommendation.id,
+                                                   valid_recommendation.rel_id,
+                                                   valid_recommendation.status)
+
+        self.assertEqual(recommendation.first(), valid_recommendation)
+
+        valid_recommendation = self._create_recommendations(count=1,
+                                                            by_status=False)[0]
+
+        self.assertRaises(TypeError, Recommendation.find_recommendation,
+               "abcd", valid_recommendation.rel_id, valid_recommendation.status)
+
+        self.assertRaises(TypeError, Recommendation.find_recommendation,
+               valid_recommendation.id, "efgh", valid_recommendation.status)
+
+        self.assertRaises(TypeError, Recommendation.find_recommendation,
+               valid_recommendation.id, valid_recommendation.rel_id, "notbool")
+
+    def test_check_if_product_exists(self):
+        """ Test check if product exists """
+        valid_recommendation = self._create_recommendations(count=1,
+                                                            by_status=True)[0]
+
+        exists = Recommendation.check_if_product_exists
+
+        recommendation_exists = exists(valid_recommendation.id)
+        self.assertTrue(recommendation_exists)
+
+        recommendation_exists = exists(valid_recommendation.rel_id)
+        self.assertTrue(recommendation_exists)
+
+        recommendation_exists = exists(99999)
+        self.assertFalse(recommendation_exists)
+
+        self.assertRaises(TypeError, exists, "abcd")
+        self.assertRaises(TypeError, exists, valid_recommendation.id, "notbool")
+
+    
     def test_find_by_id_status(self):
         r = Recommendation(id=1, rel_id=2, typeid=1, status=True)
         db.session.add(r)
@@ -68,4 +160,3 @@ class TestRecommendation(unittest.TestCase):
 ######################################################################
 if __name__ == "__main__":
     unittest.main()
-
