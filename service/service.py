@@ -120,6 +120,25 @@ def get_active_related_products(id):
 
     return make_response(jsonify(result), status.HTTP_200_OK)
     
+######################################################################
+# QUERY RECOMMENDATIONS BY ID AND TYPE
+######################################################################
+@app.route('/recommendations/<int:id>/type/<int:typeid>', methods=['GET'])
+def get_related_products_with_type(id, typeid):
+    app.logger.info("Query type: %s recommendations for id: %s", typeid, id)
+    recommendations = Recommendation.find_by_id_type(id, typeid)
+
+    if not recommendations:
+        raise NotFound("Type {} recommendations for product {} not found".format(typeid, id))
+
+    app.logger.info("Returning type %s recommendations for product %s", typeid, id)
+    products = []
+    for r in recommendations:
+        products.append(r.rel_id)
+
+    result = {"ids": products}
+
+    return make_response(jsonify(result), status.HTTP_200_OK)
 
 
 

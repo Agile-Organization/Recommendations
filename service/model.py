@@ -135,6 +135,12 @@ class Recommendation(db.Model):
 
     @classmethod
     def find_by_id_status(cls, by_id: int, by_status=True):
-        """ Find active recommendations of a product [id] """
+        """ Find [status: active/inactive] recommendations of a [product: id] """
         cls.logger.info("Processing lookup for id %s with status %s", by_id, by_status)
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
+
+    @classmethod
+    def find_by_id_type(cls, by_id: int, by_type: int):
+        """ Find recommendations of a [product: id] with [type: typeid] """
+        cls.logger.info("Processing lookup for id %s with typeid %s", by_id, by_type)
+        return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
