@@ -199,7 +199,7 @@ def get_recommendation_relationship_type():
 
     exists = Recommendation.check_if_product_exists
     if not exists(product_id) or not exists(rel_product_id):
-        return ('', status.HTTP_204_NO_CONTENT)
+        return '', status.HTTP_204_NO_CONTENT
 
     app.logger.info("Querying active recommendation for product: %s and"\
                     " related product: %s".format(product_id, rel_product_id))
@@ -212,8 +212,61 @@ def get_recommendation_relationship_type():
     if recommendation and recommendation.first():
         return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
 
-    return ('', status.HTTP_204_NO_CONTENT)
+    return '', status.HTTP_204_NO_CONTENT
 
+######################################################################
+# UPDATE RECOMMENDATION TYPEID FOR TWO PRODUCTS
+######################################################################
+@app.route('/recommendations', methods=['PUT'])
+def update_recommendation_between_products():
+    """
+    Creates a Recommendation
+    This endpoint will update a recommendation based
+     the data in the request body
+    {
+        "product-id" : 1,
+        "related-product-id" : 2,
+        "type-id" : 1,
+        "status" : True
+    }
+    """
+    app.logger.info("Request to update a recommendation")
+    check_content_type("application/json")
+
+    try:
+        recommendation = Recommendation()
+        recommendation.deserialize(request.get_json())
+
+        find = Recommendation.find_recommendation
+        old_recommendation = find(by_id=recommendation.id,
+                                  by_rel_id=recommendation.rel_id).first() \
+                                  or find(by_id=recommendation.id,
+                                     by_rel_id=recommendation.rel_id,
+                                     by_status=False).first()
+    except TypeError as error:
+        raise DataValidationError(error)
+    except DataValidationError as error:
+        raise DataValidationError(error)
+
+    if not old_recommendation:
+        raise NotFound("Recommendation does not exist"\
+                       " please do a POST instead of PUT")
+
+    old_typeid = old_recommendation.typeid
+    old_recommendation.typeid = recommendation.typeid
+    old_recommendation.status = recommendation.status
+
+    app.logger.info("Updating Recommendation typeid for product %s with "\
+                    "related product %s from %s to %s.", recommendation.id,
+                    recommendation.rel_id, old_typeid, recommendation.typeid)
+
+    old_recommendation.save()
+
+    app.logger.info("Recommendation typeid updated for product %s with "\
+                    "related product %s from %s to %s.", recommendation.id,
+                    recommendation.rel_id, old_typeid, recommendation.typeid)
+
+    return '', status.HTTP_200_OK
 
 ######################################################################
 # Error Handlers
@@ -298,7 +351,6 @@ def init_db():
     """ Initialies the SQLAlchemy app """
     global app
     Recommendation.init_db(app)
-
 
 def check_content_type(content_type):
     """ Checks that the media type is correct """

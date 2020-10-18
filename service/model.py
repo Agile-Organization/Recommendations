@@ -66,6 +66,8 @@ class Recommendation(db.Model):
         Creates a recommendation pair to the database
         """
         self.logger.info("Creating recommendation from ID : [%s] to ID : [%s]", self.id, self.rel_id)
+        if not 1 <= self.typeid <= 3:
+            raise DataValidationError("Invalid typeid; cannot be created")
         db.session.add(self)
         db.session.commit()
 
@@ -74,6 +76,8 @@ class Recommendation(db.Model):
         Updates a recommendation to the database
         """
         self.logger.info("Saving %s", self.id)
+        if not 1 <= self.typeid <= 3:
+            raise DataValidationError("Invalid typeid; cannot be saved")
         db.session.commit()
 
     def delete(self):
@@ -98,16 +102,22 @@ class Recommendation(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
+            if not 1 <= data["type-id"] <= 3:
+                raise DataValidationError("Invalid recommendation:"\
+                                          " type_id outside [1,3]")
             self.id = data["product-id"]
             self.rel_id  = data["related-product-id"]
             self.typeid = data["type-id"]
-            self.status = data["status"]
+            self.status = data["status"] if "status" in data else True
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
         except TypeError as error:
             raise DataValidationError(
                 "Invalid recommendation: body of request contained" "bad or no data"
             )
+        except Exception as error:
+            raise DataValidationError("Invalid recommendation: body of request"\
+                                      " contained" "bad or no data")
         return self
 
     ##################################################
