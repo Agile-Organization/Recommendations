@@ -10,6 +10,7 @@ class RecommendationFactory(factory.Factory):
     """ Creates fake Recommendations Objects """
 
     class Meta:
+        """ Recommendation Factory uses Recommendation class as Meta model"""
         model = Recommendation
 
     id = FuzzyChoice(choices=range(1, 10001))
