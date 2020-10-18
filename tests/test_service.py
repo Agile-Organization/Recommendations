@@ -320,12 +320,93 @@ class TestRecommendationService(unittest.TestCase):
                          old_recommendation,
                          "recommendation should not be updated")
 
+    def test_delete_recommendation_between_products(self):
+        """ Delete Recommendation Tests """
+        recommendations = self._create_recommendations(count=2, by_status=True)
+
+        recommendation = recommendations[0][0]
+
+        resp = self.app.delete("/recommendations/"
+                               + str(recommendation.id)
+                               + "/related-product/"
+                               + str(recommendation.rel_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        resp = self.app.get\
+            ("/recommendations/relationship",
+             query_string=dict(product1=recommendation.id,
+                               product2=recommendation.rel_id)
+             )
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        recommendation = recommendations[1][0]
+
+        resp = self.app.delete("/recommendations/"
+                               + str(recommendation.id)
+                               + "/related-product/"
+                               + str(90000))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        resp = self.app.get\
+            ("/recommendations/relationship",
+             query_string=dict(product1=recommendation.id,
+                               product2=recommendation.rel_id)
+             )
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(returned_recommendation,
+                         recommendation,
+                         "Recommendations should not be changed")
+
+        resp = self.app.delete("/recommendations/"
+                               + str(recommendation.id)
+                               + "/related-product/"
+                               + "abcd")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        resp = self.app.get\
+            ("/recommendations/relationship",
+             query_string=dict(product1=recommendation.id,
+                               product2=recommendation.rel_id)
+             )
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(returned_recommendation,
+                         recommendation,
+                         "Recommendations should not be changed")
+
+        resp = self.app.delete("/recommendations/"
+                               + "abcd"
+                               + "/related-product/"
+                               + str(recommendation.rel_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        resp = self.app.get\
+            ("/recommendations/relationship",
+             query_string=dict(product1=recommendation.id,
+                               product2=recommendation.rel_id)
+             )
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(returned_recommendation,
+                         recommendation,
+                         "Recommendations should not be changed")
+
 ######################################################################
 #   HELPER FUNCTIONS
 ######################################################################
     def _create_recommendations(self, count, by_status=True):
         """ Factory method to create Recommendations in bulk count <= 10000 """
-        if not isinstance(count, int): 
+        if not isinstance(count, int):
             return []
         if not isinstance(by_status, bool):
             return []

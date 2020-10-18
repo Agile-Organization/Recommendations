@@ -249,6 +249,38 @@ def update_recommendation_between_products():
     return '', status.HTTP_200_OK
 
 ######################################################################
+# DELETE RECOMMENDATION TYPEID FOR TWO PRODUCTS
+######################################################################
+@app.route('/recommendations/<int:id>/related-product/<int:rel_id>', methods=['DELETE'])
+def delete_recommendation_between_products(id, rel_id):
+    """ Deletes a Recommendation
+    This endpoint will delete a recommendation based
+    the product id and related product id provided in the route
+    """
+    app.logger.info("Request to delete a recommendation")
+
+    id = int(id)
+    rel_id = int(rel_id)
+
+    find = Recommendation.find_recommendation
+    recommendation = find(by_id=id, by_rel_id=rel_id).first()
+
+    if not recommendation:
+        return '', status.HTTP_204_NO_CONTENT
+
+    app.logger.info("Deleting Recommendation typeid for product %s with "\
+                    "related product %s.", recommendation.id,
+                    recommendation.rel_id)
+
+    recommendation.delete()
+
+    app.logger.info("Deleted Recommendation typeid for product %s with "\
+                    "related product %s.", recommendation.id,
+                    recommendation.rel_id)
+
+    return '', status.HTTP_204_NO_CONTENT
+
+######################################################################
 # Error Handlers
 ######################################################################
 @app.errorhandler(DataValidationError)
