@@ -86,6 +86,21 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(isinstance(resp, object), True, "Received incorrect recommendation")
 
+        if recommendation[0][0].typeid == 1: 
+            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation[0][0].rel_id, "Received incorrect records")
+        elif recommendation[0][0].typeid == 2: 
+            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation[0][0].rel_id, "Received incorrect records")
+        else: 
+            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation[0][0].rel_id, "Received incorrect records")
+
+        num_records = len(resp.get_json()[0]["ids"]) + len(resp.get_json()[1]["ids"]) + len(resp.get_json()[2]["ids"])
+
+        self.assertEqual(num_records, 1, "Received incorrect records")
+
+        self.assertTrue(resp.get_json()[0]["relation_id"] == recommendation[0][0].typeid or\
+           resp.get_json()[1]["relation_id"] == recommendation[0][0].typeid or\
+           resp.get_json()[2]["relation_id"] == recommendation[0][0].typeid)
+
         # Test for negative product id
         negative_product_id = -99
         resp = self.app.get("/recommendations/" + str(negative_product_id))
@@ -100,7 +115,6 @@ class TestRecommendationService(unittest.TestCase):
         none_exists_product_id = 999999
         resp = self.app.get("/recommendations/" + str(none_exists_product_id))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
 
     def test_get_recommendation_relationship_type(self):
         """ Get recommendation relationship type for two products Tests"""
