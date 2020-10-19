@@ -5,13 +5,15 @@ All of the models are stored in this module
 
 Models
 -------
-Recommendations - The recommendations resource is a representation a product recommendation based on another product.
+Recommendations - The recommendations resource is a representation a
+product recommendation based on another product.
 
 Attributes:
 -------
 product id (int) - a unique number which indicates a product
-related product id (int) - a unique number which indicates the recommended product of product A
-relationship type id (int) - the numbers which indicates the products' realationship: 0 - accessory, 1 - up-sells, 2 - cross-sells
+related product id (int) - a unique number which indicates the recommended
+product of product A relationship type id (int) - the numbers which indicates
+the products' realationship: 1 - accessory, 2 - up-sells, 3 - cross-sells
 active status (boolean) - whether this recommendation pair is actived or not.
 
 """
@@ -25,7 +27,6 @@ db = SQLAlchemy()
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
-    pass
 
 
 class Recommendation(db.Model):
@@ -163,8 +164,8 @@ class Recommendation(db.Model):
         """ Find recommendations of a [product: id] with [type: typeid] """
         cls.logger.info("Processing lookup for id %s with typeid %s", by_id, by_type)
         return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
-        
 
+    @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
         """ Find recommendation relationship for product and rel_product
         Args:

@@ -134,10 +134,12 @@ def get_related_products_with_type(id, typeid):
 
     app.logger.info("Returning type %s recommendations for product %s", typeid, id)
     products = []
-    for r in recommendations:
-        products.append(r.rel_id)
+    product_status = []
+    for recommendation in recommendations:
+        products.append(recommendation.rel_id)
+        product_status.append(recommendation.status)
 
-    result = {"ids": products}
+    result = {"ids": products, "status": product_status}
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 

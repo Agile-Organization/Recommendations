@@ -107,11 +107,34 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(TypeError, exists, valid_recommendation.id, "notbool")
 
     def test_find_by_id_status(self):
-        r = Recommendation(id=1, rel_id=2, typeid=1, status=True)
-        db.session.add(r)
-        rec = Recommendation.find_by_id_status(by_id=1, by_status=True)
-        self.assertEqual(rec[0].rel_id, 2)
-        self.assertEqual(rec[0].typeid, 1)
+        """ Test find_by_id_status function """
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.id,
+                                                       by_status=test_recommendation.status)
+
+        self.assertEqual(len(find_result.all()), 1)
+        self.assertEqual(find_result.first(), test_recommendation)
+
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
+        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.id,
+                                                       by_status=test_recommendation.status)
+
+        self.assertEqual(len(find_result.all()), 2)
+
+    def test_find_by_id_type(self):
+        """ Test find_by_id_type function """
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.id,
+                                                     by_type=test_recommendation.typeid)
+
+        self.assertEqual(len(find_result.all()), 1)
+        self.assertEqual(find_result.first(), test_recommendation)
+
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=1)
+        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.id,
+                                                     by_type=test_recommendation.typeid)
+
+        self.assertEqual(len(find_result.all()), 2)
 
 
 ######################################################################
@@ -130,6 +153,16 @@ class TestRecommendation(unittest.TestCase):
             test_recommendation.create()
             recommendations.append(test_recommendation)
         return recommendations
+
+    def _create_one_recommendation(self, by_id, by_rel_id, by_type, by_status=True):
+        """ Create one specific recommendation for testing """
+        test_recommendation = Recommendation(id=by_id,
+                                             rel_id=by_rel_id,
+                                             typeid=by_type,
+                                             status= by_status)
+        test_recommendation.create()
+        return test_recommendation
+
 
     def test_create_recommendations(self):
         """ Tests create recommendations """
