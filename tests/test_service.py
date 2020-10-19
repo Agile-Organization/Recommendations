@@ -78,7 +78,8 @@ class TestRecommendationService(unittest.TestCase):
     def test_get_related_products(self):
         """ Get related products by id tests"""
         # Test for valid id
-        recommendation = self._create_recommendations(count=1, by_status=True)
+        recommendation = self._create_recommendations(count=20, by_status=True)
+    
         resp = self.app.get\
             ("/recommendations/" + str(recommendation[0][0].id))
 
