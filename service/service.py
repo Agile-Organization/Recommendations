@@ -175,12 +175,15 @@ def create_recommendation_between_products():
 @app.route('/recommendations/relationship', methods=['GET'])
 def get_recommendation_relationship_type():
     """
-    Retrieve recommendation typeid for product1 and product2
-    returns an integer representing the relationship type if exists
-    1 - up-sell
-    2 - cross-sell
-    3 - accessory
-    null - Recommendation does not exist
+    /recommendations/relationship?product1=<int:id>&product2=<int:id>
+    Returns recommendation for product1 and product2 if exists
+        {
+          "product-id" : <int:product-id>,
+          "related-product-id" : <int:related-product-id>,
+          "type-id" : <int:typeid>,
+          "status" : True
+        }
+        With HTTP_200_OK status
     """
     product_id = request.args.get('product1')
     rel_product_id = request.args.get('product2')
@@ -222,15 +225,18 @@ def get_recommendation_relationship_type():
 @app.route('/recommendations', methods=['PUT'])
 def update_recommendation_between_products():
     """
-    Creates a Recommendation
-    This endpoint will update a recommendation based
-     the data in the request body
-    {
-        "product-id" : 1,
-        "related-product-id" : 2,
-        "type-id" : 1,
-        "status" : True
-    }
+    Updates a Recommendation
+        This endpoint will update a recommendation based the data in the request body.
+        Expected data in body:
+        {
+          "product-id" : <int:product-id>,
+          "related-product-id" : <int:related-product-id>,
+          "type-id" : <int:typeid>,
+          "status" : <bool: status>
+        }
+        The old recommendation will be replaced with data
+        sent in the request body if any old recommendation exists.
+        If no old recommendation exists returns a HTTP_404_NOT_FOUND
     """
     app.logger.info("Request to update a recommendation")
     check_content_type("application/json")
