@@ -56,9 +56,10 @@ def get_related_products(id):
     ]
     """
     app.logger.info("Request for related products with id: %s", id)
-    products = Recommendation.find(id) # need to replace find method with actual function name from model file
 
-    if not products:
+    products = Recommendation.find_by_id_status(id) # need to replace find method with actual function name from model file
+ 
+    if not products.first():
         raise NotFound("Product with id '{}' was not found.".format(id))
 
     # assume model returns records in format of: [{id: 1, rel_id: 2, typeid: 1, status: true}]

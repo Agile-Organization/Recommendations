@@ -75,6 +75,32 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(data)
 
+    def test_get_related_products(self):
+        """ Get related products by id tests"""
+        # Test for valid id
+        recommendation = self._create_recommendations(count=1, by_status=True)
+        resp = self.app.get\
+            ("/recommendations/" + str(recommendation[0][0].id))
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(isinstance(resp, object), True, "Received incorrect recommendation")
+
+        # Test for negative product id
+        negative_product_id = -99
+        resp = self.app.get("/recommendations/" + str(negative_product_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # # Test for string product id
+        string_product_id = "test"
+        resp = self.app.get("/recommendations/" + str(string_product_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test for non-exists product id
+        none_exists_product_id = 999999
+        resp = self.app.get("/recommendations/" + str(none_exists_product_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+
     def test_get_recommendation_relationship_type(self):
         """ Get recommendation relationship type for two products Tests"""
         valid_recommendation = self._create_recommendations(count=1)[0][0]
