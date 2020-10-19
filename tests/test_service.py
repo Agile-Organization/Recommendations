@@ -28,9 +28,10 @@ from flask import request
 from flask_api import status
 from service.model import Recommendation, db
 from service import app
-from service.service import init_db
+from service.service import init_db, get_active_related_products
 from flask_api import status
 from .recommendation_factory import RecommendationFactory
+from werkzeug.exceptions import NotFound
 
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
@@ -152,16 +153,20 @@ class TestRecommendationService(unittest.TestCase):
 
     def test_get_active_related_products(self):
         """ Get active recommendations Test """
-        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-        resp = self.app.get("/recommendations/active/{}".format(recommendation[0].id))
+        self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+
+        resp = self.app.get("/recommendations/active/{}".format(1))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data[0]["ids"][0], 2)
 
-        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
+        self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
+        self._create_one_recommendation(by_id=1, by_rel_id=4, by_type=3)
 
-        resp = self.app.get("/recommendations/active/{}".format(recommendation[0].id))
+        resp = self.app.get("/recommendations/active/{}".format(1))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data[1]["ids"][0], 3)
@@ -169,6 +174,9 @@ class TestRecommendationService(unittest.TestCase):
 
     def test_get_related_products_with_type(self):
         """ Get recommendations by id and type Test """
+        resp = self.app.get("/recommendations/{}/type/{}".format(1, 1))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
         recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
 
         resp = self.app.get("/recommendations/{}/type/{}".format(recommendation[0].id, recommendation[0].typeid))

@@ -22,7 +22,7 @@ Test cases can be run with:
 
 import unittest
 import os
-from service.model import Recommendation, db
+from service.model import Recommendation, db, DataValidationError
 from service import app
 from .recommendation_factory import RecommendationFactory
 
@@ -121,6 +121,9 @@ class TestRecommendation(unittest.TestCase):
 
         self.assertEqual(len(find_result.all()), 2)
 
+        self.assertRaises(TypeError, Recommendation.find_by_id_status, "not_int")
+        self.assertRaises(TypeError, Recommendation.find_by_id_status, 1, "not_bool")
+
     def test_find_by_id_type(self):
         """ Test find_by_id_type function """
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
@@ -135,6 +138,9 @@ class TestRecommendation(unittest.TestCase):
                                                      by_type=test_recommendation.typeid)
 
         self.assertEqual(len(find_result.all()), 2)
+
+        self.assertRaises(TypeError, Recommendation.find_by_id_type, "not_int", 2)
+        self.assertRaises(DataValidationError, Recommendation.find_by_id_type, 1, 5)
 
 
 ######################################################################
