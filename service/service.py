@@ -355,9 +355,6 @@ def delete_all_by_type_id(id, typeid):
 
     recommendations = Recommendation.find_by_id_type(id, typeid)
 
-    if not recommendations.first():
-        return '', status.HTTP_204_NO_CONTENT
-
     for recommendation in recommendations: 
         app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
         recommendation.delete()
