@@ -19,15 +19,6 @@ from service.model import Recommendation, DataValidationError
 from . import app
 
 ######################################################################
-# HELPER CLASSES
-######################################################################
-class RelatedProducts:
-    def __init__(self, typeid, active_product_list, inactive_product_list):
-        self.relationship_id = typeid
-        self.ids = active_product_list
-        self.inactive_ids = inactive_product_list
-
-######################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
@@ -63,9 +54,10 @@ def get_related_products(id):
     ]
     """
     app.logger.info("Request for related products with id: %s", id)
-    products = Recommendation.find(id) # need to replace find method with actual function name from model file
 
-    if not products:
+    products = Recommendation.find_by_id_status(id) # need to replace find method with actual function name from model file
+ 
+    if not products.first():
         raise NotFound("Product with id '{}' was not found.".format(id))
 
     # assume model returns records in format of: [{id: 1, rel_id: 2, typeid: 1, status: true}]
@@ -82,11 +74,13 @@ def get_related_products(id):
         else:
             type_3_active.append(p.rel_id) if p.status else type_3_inactive.append(p.rel_id)
 
-    relationships.append(RelatedProducts(1, type_1_active, type_1_inactive))
-    relationships.append(RelatedProducts(2, type_2_active, type_2_inactive))
-    relationships.append(RelatedProducts(3, type_3_active, type_3_inactive))
+    relationships = [
+        {"relation_id": 1, "ids": type_1_active, "inactive_ids": type_1_inactive},
+        {"relation_id": 2, "ids": type_2_active, "inactive_ids": type_2_inactive},
+        {"relation_id": 3, "ids": type_3_active, "inactive_ids": type_3_inactive}
+    ]
 
-    return make_response(jsonify(relationships.serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(relationships), status.HTTP_200_OK)
 
 ######################################################################
 # QUERY ACTIVE RECOMMENDATIONS
@@ -297,6 +291,58 @@ def update_recommendation_between_products():
                     recommendation.rel_id, old_typeid, recommendation.typeid)
 
     return '', status.HTTP_200_OK
+
+######################################################################
+# DELETE RECOMMENDATION TYPEID FOR TWO PRODUCTS
+######################################################################
+@app.route('/recommendations/<int:id>/related-product/<int:rel_id>', methods=['DELETE'])
+def delete_recommendation_between_products(id, rel_id):
+    """ Deletes a Recommendation
+    This endpoint will delete a recommendation based
+    the product id and related product id provided in the route
+    """
+    app.logger.info("Request to delete a recommendation")
+
+    find = Recommendation.find_recommendation
+    recommendation = find(by_id=id, by_rel_id=rel_id).first()
+
+    if not recommendation:
+        return '', status.HTTP_204_NO_CONTENT
+
+    app.logger.info("Deleting Recommendation typeid for product %s with "\
+                    "related product %s.", recommendation.id,
+                    recommendation.rel_id)
+
+    recommendation.delete()
+
+    app.logger.info("Deleted Recommendation typeid for product %s with "\
+                    "related product %s.", recommendation.id,
+                    recommendation.rel_id)
+
+    return '', status.HTTP_204_NO_CONTENT
+
+######################################################################
+# DELETE ALL RELEATIONSHIP BY PRODUCT ID
+######################################################################
+@app.route('/recommendations/<int:id>', methods=['DELETE'])
+def delete_all_by_product_id(id):
+    """ Deletes a Recommendation
+    This endpoint will delete a recommendation based
+    the product id and related product id provided in the route
+    """
+    app.logger.info("Request to delete a recommendation")
+
+    recommendations = Recommendation.find_by_id_status(id)
+
+    if not recommendations.first():
+        return '', status.HTTP_204_NO_CONTENT
+
+    for recommendation in recommendations: 
+        app.logger.info("Deleting all related products for product %s with ", recommendation.id)
+        recommendation.delete()
+        app.logger.info("Deleted all related products for product %s with ", recommendation.id)
+
+    return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
 # Error Handlers
