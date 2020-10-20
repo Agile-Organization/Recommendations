@@ -98,6 +98,10 @@ The API endpoints available as of now are:
         This endpoint will delete a recommendation based
         the product id and related product id provided in the route
         Returns: HTTP_204_NO_CONTENT
+    DELETE /recommendations/<int:id>
+      - Deletes all the recommendations related to a specific product id 
+        This endpoint will delete all the recommendations related to the product id provided in the route
+        Returns: HTTP_204_NO_CONTENT
           
 ```
 ## Database Schema

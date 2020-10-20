@@ -442,6 +442,69 @@ class TestRecommendationService(unittest.TestCase):
                          recommendation,
                          "Recommendations should not be changed")
 
+    def test_delete_all_by_product_id(self):
+        """ Delete Recommendation Tests """
+        recommendations = self._create_recommendations(count=2, by_status=True)
+
+        recommendation = recommendations[0][0]
+
+        resp = self.app.delete("/recommendations/" + str(recommendation.id))
+
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        resp = self.app.get\
+            ("/recommendations/" + str(recommendation.id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        recommendation = recommendations[1][0]
+        
+        # Test invalid id
+        invalid_id = -99
+        resp = self.app.delete("/recommendations/" + str(invalid_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        resp = self.app.get\
+            ("/recommendations/" + str(recommendation.id))
+
+        if recommendation.typeid == 1: 
+            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
+        elif recommendation.typeid == 2: 
+            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
+        else: 
+            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
+
+        # Test string id
+        text_id = "text"
+        resp = self.app.delete("/recommendations/" + str(text_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        resp = self.app.get\
+            ("/recommendations/" + str(recommendation.id))
+
+        if recommendation.typeid == 1: 
+            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
+        elif recommendation.typeid == 2: 
+            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
+        else: 
+            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
+
+        # Test non-exists id
+        non_exists_id = 999999
+        resp = self.app.delete("/recommendations/" + str(non_exists_id))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        resp = self.app.get\
+            ("/recommendations/" + str(recommendation.id))
+
+        if recommendation.typeid == 1: 
+            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
+        elif recommendation.typeid == 2: 
+            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
+        else: 
+            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
+
+
 ######################################################################
 #   HELPER FUNCTIONS
 ######################################################################
