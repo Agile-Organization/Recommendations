@@ -169,6 +169,8 @@ class Recommendation(db.Model):
         """ Find recommendations of a [product: id] with [type: typeid] """
         if not by_id or not isinstance(by_id, int):
             raise TypeError("by_id is not of type int")
+        if not by_type or not isinstance(by_type, int):
+            raise TypeError("by_type is not of type int")
         if not 1 <= by_type <= 3:
             raise DataValidationError("Invalid recommendation: type_id outside [1,3]")
 

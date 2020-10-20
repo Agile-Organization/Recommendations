@@ -140,6 +140,7 @@ class TestRecommendation(unittest.TestCase):
         self.assertEqual(len(find_result.all()), 2)
 
         self.assertRaises(TypeError, Recommendation.find_by_id_type, "not_int", 2)
+        self.assertRaises(TypeError, Recommendation.find_by_id_type, 1, "not_int")
         self.assertRaises(DataValidationError, Recommendation.find_by_id_type, 1, 5)
 
 
