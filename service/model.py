@@ -5,13 +5,15 @@ All of the models are stored in this module
 
 Models
 -------
-Recommendations - The recommendations resource is a representation a product recommendation based on another product.
+Recommendations - The recommendations resource is a representation a
+product recommendation based on another product.
 
 Attributes:
 -------
 product id (int) - a unique number which indicates a product
-related product id (int) - a unique number which indicates the recommended product of product A
-relationship type id (int) - the numbers which indicates the products' realationship: 0 - accessory, 1 - up-sells, 2 - cross-sells
+related product id (int) - a unique number which indicates the recommended
+product of product A relationship type id (int) - the numbers which indicates
+the products' realationship: 1 - accessory, 2 - up-sells, 3 - cross-sells
 active status (boolean) - whether this recommendation pair is actived or not.
 
 """
@@ -152,9 +154,27 @@ class Recommendation(db.Model):
 
     @classmethod
     def find_by_id_status(cls, by_id: int, by_status=True):
-        """ Find active recommendations of a product [id] """
+        """ Find [status: active/inactive] recommendations of a [product: id] """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
         cls.logger.info("Processing lookup for id %s with status %s", by_id, by_status)
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
+
+    @classmethod
+    def find_by_id_type(cls, by_id: int, by_type: int):
+        """ Find recommendations of a [product: id] with [type: typeid] """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not by_type or not isinstance(by_type, int):
+            raise TypeError("by_type is not of type int")
+        if not 1 <= by_type <= 3:
+            raise DataValidationError("Invalid recommendation: type_id outside [1,3]")
+
+        cls.logger.info("Processing lookup for id %s with typeid %s", by_id, by_type)
+        return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
 
     @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):

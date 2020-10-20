@@ -30,6 +30,7 @@ from service.model import Recommendation, db
 from service import app
 from service.service import init_db, internal_server_error
 from .recommendation_factory import RecommendationFactory
+from werkzeug.exceptions import NotFound
 
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
@@ -188,6 +189,42 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(resp_message, None, "Response should not have content")
+
+
+    def test_get_active_related_products(self):
+        """ Get active recommendations Test """
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data[0]["ids"][0], 2)
+
+        self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
+        self._create_one_recommendation(by_id=1, by_rel_id=4, by_type=3)
+
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data[1]["ids"][0], 3)
+
+
+    def test_get_related_products_with_type(self):
+        """ Get recommendations by id and type Test """
+        resp = self.app.get("/recommendations/{}/type/{}".format(1, 1))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+
+        resp = self.app.get("/recommendations/{}/type/{}".format(recommendation[0].id, recommendation[0].typeid))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["ids"][0], 2)
+        self.assertTrue(data["status"][0])
+
 
     def test_update_recommendation_between_products(self):
         """ Update Recommendations Tests """
@@ -535,6 +572,17 @@ class TestRecommendationService(unittest.TestCase):
             recommendations.append([test_recommendation,
                                     resp.headers.get("Location", None)])
         return recommendations
+
+    def _create_one_recommendation(self, by_id, by_rel_id, by_type, by_status=True):
+        """ Create one specific recommendation for testing """
+        test_recommendation = Recommendation(id=by_id,
+                                             rel_id=by_rel_id,
+                                             typeid=by_type,
+                                             status= by_status)
+        resp = self.app.post("/recommendations",
+                             json=test_recommendation.serialize(),
+                             content_type="application/json")
+        return [test_recommendation, resp.headers.get("Location", None)]
 
     def test_create_recommendations(self):
         """ Create recommendations Tests"""

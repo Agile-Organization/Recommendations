@@ -1,4 +1,5 @@
 import os
+
 import logging
 
 # Get configuration from environment
@@ -8,6 +9,7 @@ DATABASE_URI = os.getenv(
 
 # Configure SQLAlchemy
 SQLALCHEMY_DATABASE_URI = DATABASE_URI
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Secret for session management
