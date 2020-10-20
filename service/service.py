@@ -56,7 +56,7 @@ def get_related_products(id):
     app.logger.info("Request for related products with id: %s", id)
 
     products = Recommendation.find_by_id_status(id) # need to replace find method with actual function name from model file
- 
+
     if not products.first():
         raise NotFound("Product with id '{}' was not found.".format(id))
 
@@ -265,10 +265,8 @@ def update_recommendation_between_products():
         old_recommendation = find(by_id=recommendation.id,
                                   by_rel_id=recommendation.rel_id).first() \
                                   or find(by_id=recommendation.id,
-                                  by_rel_id=recommendation.rel_id,
-                                  by_status=False).first()
-    except TypeError as error:
-        raise DataValidationError(error)
+                                     by_rel_id=recommendation.rel_id,
+                                     by_status=False).first()
     except DataValidationError as error:
         raise DataValidationError(error)
 
@@ -337,7 +335,7 @@ def delete_all_by_product_id(id):
     if not recommendations.first():
         return '', status.HTTP_204_NO_CONTENT
 
-    for recommendation in recommendations: 
+    for recommendation in recommendations:
         app.logger.info("Deleting all related products for product %s with ", recommendation.id)
         recommendation.delete()
         app.logger.info("Deleted all related products for product %s with ", recommendation.id)
@@ -352,7 +350,6 @@ def request_validation_error(error):
     """ Handles Value Errors from bad data """
     return bad_request(error)
 
-
 @app.errorhandler(status.HTTP_400_BAD_REQUEST)
 def bad_request(error):
     """ Handles bad requests with 400_BAD_REQUEST """
@@ -364,7 +361,6 @@ def bad_request(error):
         status.HTTP_400_BAD_REQUEST,
     )
 
-
 @app.errorhandler(status.HTTP_404_NOT_FOUND)
 def not_found(error):
     """ Handles resources not found with 404_NOT_FOUND """
@@ -375,21 +371,6 @@ def not_found(error):
         ),
         status.HTTP_404_NOT_FOUND,
     )
-
-
-@app.errorhandler(status.HTTP_405_METHOD_NOT_ALLOWED)
-def method_not_supported(error):
-    """ Handles unsuppoted HTTP methods with 405_METHOD_NOT_SUPPORTED """
-    app.logger.warning(str(error))
-    return (
-        jsonify(
-            status=status.HTTP_405_METHOD_NOT_ALLOWED,
-            error="Method not Allowed",
-            message=str(error),
-        ),
-        status.HTTP_405_METHOD_NOT_ALLOWED,
-    )
-
 
 @app.errorhandler(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 def mediatype_not_supported(error):
@@ -404,7 +385,6 @@ def mediatype_not_supported(error):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     )
 
-
 @app.errorhandler(status.HTTP_500_INTERNAL_SERVER_ERROR)
 def internal_server_error(error):
     """ Handles unexpected server error with 500_SERVER_ERROR """
@@ -417,7 +397,6 @@ def internal_server_error(error):
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
-
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S

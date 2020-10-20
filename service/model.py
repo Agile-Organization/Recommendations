@@ -27,6 +27,8 @@ db = SQLAlchemy()
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class Recommendation(db.Model):
@@ -106,19 +108,22 @@ class Recommendation(db.Model):
             if not 1 <= data["type-id"] <= 3:
                 raise DataValidationError("Invalid recommendation:"\
                                           " type_id outside [1,3]")
+            if not isinstance(data["product-id"], int):
+                raise DataValidationError("by_id is not of type int")
+            if not isinstance(data["related-product-id"], int):
+                raise DataValidationError("by_rel_id is not of type int")
+            if not isinstance(data["status"], bool):
+                raise DataValidationError("by_status is not of type bool")
+
             self.id = data["product-id"]
             self.rel_id  = data["related-product-id"]
             self.typeid = data["type-id"]
-            self.status = data["status"] if "status" in data else True
+            self.status = data["status"]
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
-        except TypeError as error:
-            raise DataValidationError(
-                "Invalid recommendation: body of request contained" "bad or no data"
-            )
-        except Exception as error:
+        except DataValidationError as error:
             raise DataValidationError("Invalid recommendation: body of request"\
-                                      " contained" "bad or no data")
+                                      " contained" "bad or no data" + str(error))
         return self
 
     ##################################################
@@ -146,12 +151,6 @@ class Recommendation(db.Model):
         """ Finds a recommendation by it's ID """
         cls.logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.filter(cls.id==by_id)
-
-    @classmethod
-    def find_or_404(cls, by_id):
-        """ Find a recommendation by it's id """
-        cls.logger.info("Processing lookup or 404 for id %s ...", by_id)
-        return cls.query.get_or_404(by_id)
 
     @classmethod
     def find_by_id_status(cls, by_id: int, by_status=True):
