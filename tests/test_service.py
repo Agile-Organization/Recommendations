@@ -504,6 +504,24 @@ class TestRecommendationService(unittest.TestCase):
         else: 
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
 
+    def test_delete_all_products_by_type_id(self):
+        """ Delete recommendation by type id tests"""
+        recommendations = self._create_recommendations(count=1, by_status=True)
+
+        recommendation = recommendations[0][0]
+
+        resp = self.app.delete("/recommendations/" + str(recommendation.id) + "/type/" + str(recommendation.typeid))
+
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        resp = self.app.get\
+            ("/recommendations/" + str(recommendation.id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        resp = self.app.delete("/recommendations/" + str(recommendation.id) + "/type/" + str(recommendation.typeid))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
 
 ######################################################################
 #   HELPER FUNCTIONS

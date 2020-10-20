@@ -159,6 +159,12 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
 
     @classmethod
+    def find_by_id_and_typeid(cls, by_id: int, by_typeid: int):
+        """ Find all the recommendations of a product by using a typeid"""
+        cls.logger.info("Processing lookup for id %s with type id %s", by_id, by_typeid)
+        return cls.query.filter(cls.id == by_id, cls.typeid == by_typeid)
+
+    @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
         """ Find recommendation relationship for product and rel_product
         Args:
