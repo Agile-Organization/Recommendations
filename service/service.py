@@ -6,11 +6,8 @@ File created based on template.
 Will add more routes in the future for additional API endpoints.
 """
 
-import os
-import sys
-import logging
 import datetime
-from flask import Flask, jsonify, request, url_for, make_response, abort
+from flask import jsonify, request, url_for, make_response, abort
 from flask_api import status  # HTTP Status Codes
 from werkzeug.exceptions import NotFound, BadRequest
 
@@ -36,7 +33,8 @@ def index():
 def get_related_products(id):
     """
     Retrieve all related products by providing a product id
-    returns a list of 3 objects, showing a list of active ids and inactive ids for each realationship type
+    returns a list of 3 objects, showing a list of active ids
+    and inactive ids for each realationship type
     [
         {
             relationship-id: 1,
@@ -89,29 +87,74 @@ def get_related_products(id):
 ######################################################################
 @app.route('/recommendations/active/<int:id>', methods=['GET'])
 def get_active_related_products(id):
+    """
+    Query active recommendations of a product by providing id.
+    Results are returned in the form of
+    [
+        {
+            relation_id: 1,
+            ids: [id1, id2, ...]
+        },
+        {
+            relation_id: 2,
+            ids: [id1, id2, ...]
+        },
+        {
+            relation_id: 3,
+            ids: [id1, id2, ...]
+        }
+    ]
+    """
     app.logger.info("Query active recommendations for id: %s", id)
     recommendations = Recommendation.find_by_id_status(id)
 
-    if not recommendations:
+    if not recommendations.all():
         raise NotFound("Active recommendations for product {} not found.".format(id))
 
     app.logger.info("Returning recommendations for product %s", id)
     type0_products = []
     type1_products = []
     type2_products = []
-    for r in recommendations:
-        if r.typeid == 1:
-            type0_products.append(r.rel_id)
-        elif r.typeid == 2:
-            type1_products.append(r.rel_id)
+    for recommendation in recommendations:
+        if recommendation.typeid == 1:
+            type0_products.append(recommendation.rel_id)
+        elif recommendation.typeid == 2:
+            type1_products.append(recommendation.rel_id)
         else:
-            type2_products.append(r.rel_id)
+            type2_products.append(recommendation.rel_id)
 
     result = [
         {"relation_id": 1, "ids": type0_products},
         {"relation_id": 2, "ids": type1_products},
         {"relation_id": 3, "ids": type2_products}
     ]
+
+    return make_response(jsonify(result), status.HTTP_200_OK)
+
+######################################################################
+# QUERY RECOMMENDATIONS BY ID AND TYPE
+######################################################################
+@app.route('/recommendations/<int:id>/type/<int:typeid>', methods=['GET'])
+def get_related_products_with_type(id, typeid):
+    """
+    Query recommendations by id and type.
+    Results are returned in the form of
+    {ids: [id1, id2, ...], status: [status1, status2, ...]}
+    """
+    app.logger.info("Query type: %s recommendations for id: %s", typeid, id)
+    recommendations = Recommendation.find_by_id_type(id, typeid)
+
+    if not recommendations.all():
+        raise NotFound("Type {} recommendations for product {} not found".format(typeid, id))
+
+    app.logger.info("Returning type %s recommendations for product %s", typeid, id)
+    products = []
+    product_status = []
+    for recommendation in recommendations:
+        products.append(recommendation.rel_id)
+        product_status.append(recommendation.status)
+
+    result = {"ids": products, "status": product_status}
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
@@ -138,8 +181,9 @@ def create_recommendation_between_products():
     message = recommendation.serialize()
     location_url = url_for("get_related_products", id=recommendation.id, _external=True)
 
-    app.logger.info("recommendation from ID [%s] to ID [%s] created.", recommendation.id, recommendation.rel_id)
-    return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url} )
+    app.logger.info("recommendation from ID [%s] to ID [%s] created.",
+                    recommendation.id, recommendation.rel_id)
+    return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url})
 
 ######################################################################
 # QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
@@ -169,7 +213,7 @@ def get_recommendation_relationship_type():
 
     if not product_id_valid or not rel_product_id_valid:
         raise BadRequest("Bad Request 2 invalid product ids provided,"\
-                         " received product: %s and related product: %s do not"\
+                         " received product: {} and related product: {} do not"\
                          " exist".format(product_id, rel_product_id))
 
     product_id, rel_product_id = int(product_id), int(rel_product_id)
@@ -178,13 +222,13 @@ def get_recommendation_relationship_type():
     if not exists(product_id) or not exists(rel_product_id):
         return '', status.HTTP_204_NO_CONTENT
 
-    app.logger.info("Querying active recommendation for product: %s and"\
-                    " related product: %s".format(product_id, rel_product_id))
+    app.logger.info("Querying active recommendation for product: {} and"\
+                    " related product: {}".format(product_id, rel_product_id))
     recommendation = Recommendation.find_recommendation(by_id=product_id,\
                                        by_rel_id=rel_product_id, by_status=True)
 
-    app.logger.info("Returning active recommendation for product: %s and"\
-                    " related product: %s".format(product_id, rel_product_id))
+    app.logger.info("Returning active recommendation for product: {} and"\
+                    " related product: {}".format(product_id, rel_product_id))
 
     if recommendation and recommendation.first():
         return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
@@ -221,8 +265,8 @@ def update_recommendation_between_products():
         old_recommendation = find(by_id=recommendation.id,
                                   by_rel_id=recommendation.rel_id).first() \
                                   or find(by_id=recommendation.id,
-                                     by_rel_id=recommendation.rel_id,
-                                     by_status=False).first()
+                                  by_rel_id=recommendation.rel_id,
+                                  by_status=False).first()
     except TypeError as error:
         raise DataValidationError(error)
     except DataValidationError as error:
