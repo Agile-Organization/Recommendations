@@ -28,8 +28,7 @@ from flask import request
 from flask_api import status
 from service.model import Recommendation, db
 from service import app
-from service.service import init_db, get_active_related_products
-from flask_api import status
+from service.service import init_db
 from .recommendation_factory import RecommendationFactory
 from werkzeug.exceptions import NotFound
 
