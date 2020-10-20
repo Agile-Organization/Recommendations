@@ -343,6 +343,26 @@ def delete_all_by_product_id(id):
     return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
+# DELETE ALL RELEATIONSHIP OF A PRODUCT BY TYPEID
+######################################################################
+@app.route('/recommendations/<int:id>/type/<int:typeid>', methods=['DELETE'])
+def delete_all_by_type_id(id, typeid):
+    """ Deletes a Recommendation
+    This endpoint will delete all the recommendations based on
+    the product id and type id provided in the route
+    """
+    app.logger.info("Request to delete a recommendation")
+
+    recommendations = Recommendation.find_by_id_type(id, typeid)
+
+    for recommendation in recommendations: 
+        app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
+        recommendation.delete()
+        app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
+
+    return '', status.HTTP_204_NO_CONTENT
+
+######################################################################
 # Error Handlers
 ######################################################################
 @app.errorhandler(DataValidationError)
