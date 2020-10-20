@@ -39,6 +39,27 @@ The API endpoints available as of now are:
               "status" : True
         }
         Returns a success message and HTTP_201_CREATED status if successful
+    POST /recommendations/<int:id>
+      - Retrieve all related products by providing a product id
+        returns a list of 3 objects, showing a list of active ids and inactive ids for each realationship type
+        [
+            {
+                relationship-id: 1,
+                ids: [id1, id2, id3, ...],
+                inactive-ids: [id10, id20, id30, ...]
+            },
+            {
+                relationship-id: 2,
+                ids: [id4, id5, id6, ...],
+                inactive-ids: [id40, id50, id60, ...]
+            },
+            {
+                relationship-id: 3,
+                ids: [id7, id8, id9, ...],
+                inactive-ids: [id70, id80, id90, ...]
+            }
+        ]
+        Returns HTTP_200_OK status
     GET /recommendations/relationship?product1=<int:product-id>&product2=<int:related-product-id>
       - Returns recommendation for product1 and product2 if exists
         {
@@ -47,9 +68,18 @@ The API endpoints available as of now are:
               "type-id" : <int:typeid>,
               "status" : True
         }
-        With HTTP_200_OK status
+        Returns HTTP_200_OK status
         
         Returns Null with HTTP_204_NO_CONTENT if no recommendation exists for product1 and product2
+    GET /recommendations/active/<int:id>
+      - Returns all active recommendations for the product id provided in route url;
+        Return Format:
+        [
+            {"relation_id": 1, "ids": <type0_products_list>},
+            {"relation_id": 2, "ids": <type1_products_list>},
+            {"relation_id": 3, "ids": <type2_products_list>}
+        ]
+        Returns HTTP_200_OK status
     PUT /recommendations
       - Updates a Recommendation
         This endpoint will update a recommendation based the data in the request body.
@@ -61,7 +91,13 @@ The API endpoints available as of now are:
               "status" : <bool: status>
         }
         The old recommendation will be replaced with data sent in the request body if any old recommendation exists.
+        If everything works out well returns HTTP_200_OK status
         If no old recommendation exists returns a HTTP_404_NOT_FOUND
+    DELETE /recommendations/<int:id>/related-product/<int:rel_id>
+      - Deletes a Recommendation
+        This endpoint will delete a recommendation based
+        the product id and related product id provided in the route
+        Returns: HTTP_204_NO_CONTENT
           
 ```
 ## Database Schema
