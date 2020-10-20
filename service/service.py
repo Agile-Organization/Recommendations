@@ -259,9 +259,6 @@ def delete_recommendation_between_products(id, rel_id):
     """
     app.logger.info("Request to delete a recommendation")
 
-    id = int(id)
-    rel_id = int(rel_id)
-
     find = Recommendation.find_recommendation
     recommendation = find(by_id=id, by_rel_id=rel_id).first()
 
