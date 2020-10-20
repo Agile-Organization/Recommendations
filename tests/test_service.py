@@ -28,8 +28,9 @@ from flask import request
 from flask_api import status
 from service.model import Recommendation, db
 from service import app
-from service.service import init_db
+from service.service import init_db, internal_server_error
 from .recommendation_factory import RecommendationFactory
+from werkzeug.exceptions import NotFound
 
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
@@ -78,19 +79,19 @@ class TestRecommendationService(unittest.TestCase):
     def test_get_related_products(self):
         """ Get related products by id tests"""
         # Test for valid id
-        recommendation = self._create_recommendations(count=20, by_status=True)
-    
+        recommendation = self._create_recommendations(count=200, by_status=True)
+
         resp = self.app.get\
             ("/recommendations/" + str(recommendation[0][0].id))
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(isinstance(resp, object), True, "Received incorrect recommendation")
 
-        if recommendation[0][0].typeid == 1: 
+        if recommendation[0][0].typeid == 1:
             self.assertEqual(resp.get_json()[0]["ids"][0], recommendation[0][0].rel_id, "Received incorrect records")
-        elif recommendation[0][0].typeid == 2: 
+        elif recommendation[0][0].typeid == 2:
             self.assertEqual(resp.get_json()[1]["ids"][0], recommendation[0][0].rel_id, "Received incorrect records")
-        else: 
+        else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation[0][0].rel_id, "Received incorrect records")
 
         num_records = len(resp.get_json()[0]["ids"]) + len(resp.get_json()[1]["ids"]) + len(resp.get_json()[2]["ids"])
@@ -189,6 +190,42 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(resp_message, None, "Response should not have content")
 
+
+    def test_get_active_related_products(self):
+        """ Get active recommendations Test """
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data[0]["ids"][0], 2)
+
+        self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
+        self._create_one_recommendation(by_id=1, by_rel_id=4, by_type=3)
+
+        resp = self.app.get("/recommendations/active/{}".format(1))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data[1]["ids"][0], 3)
+
+
+    def test_get_related_products_with_type(self):
+        """ Get recommendations by id and type Test """
+        resp = self.app.get("/recommendations/{}/type/{}".format(1, 1))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+
+        resp = self.app.get("/recommendations/{}/type/{}".format(recommendation[0].id, recommendation[0].typeid))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(data["ids"][0], 2)
+        self.assertTrue(data["status"][0])
+
+
     def test_update_recommendation_between_products(self):
         """ Update Recommendations Tests """
         recommendations = self._create_recommendations(count=2, by_status=True)
@@ -207,6 +244,11 @@ class TestRecommendationService(unittest.TestCase):
                             content_type="application/json")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNone(resp.get_json())
+
+        resp = self.app.put("/recommendations",
+                            json=new_recommendation.serialize(),
+                            content_type="not/json")
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
         resp = self.app.get\
             ("/recommendations/relationship",
@@ -458,7 +500,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         recommendation = recommendations[1][0]
-        
+
         # Test invalid id
         invalid_id = -99
         resp = self.app.delete("/recommendations/" + str(invalid_id))
@@ -467,11 +509,11 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.get\
             ("/recommendations/" + str(recommendation.id))
 
-        if recommendation.typeid == 1: 
+        if recommendation.typeid == 1:
             self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        elif recommendation.typeid == 2: 
+        elif recommendation.typeid == 2:
             self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        else: 
+        else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
 
         # Test string id
@@ -482,11 +524,11 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.get\
             ("/recommendations/" + str(recommendation.id))
 
-        if recommendation.typeid == 1: 
+        if recommendation.typeid == 1:
             self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        elif recommendation.typeid == 2: 
+        elif recommendation.typeid == 2:
             self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        else: 
+        else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
 
         # Test non-exists id
@@ -497,11 +539,11 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.get\
             ("/recommendations/" + str(recommendation.id))
 
-        if recommendation.typeid == 1: 
+        if recommendation.typeid == 1:
             self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        elif recommendation.typeid == 2: 
+        elif recommendation.typeid == 2:
             self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        else: 
+        else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
 
     def test_delete_all_products_by_type_id(self):
@@ -522,6 +564,12 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.delete("/recommendations/" + str(recommendation.id) + "/type/" + str(recommendation.typeid))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_internal_server_error(self):
+        """ Test internal service error handler """
+        message = "Test error message"
+        resp = internal_server_error(message)
+        self.assertEqual(resp[1], status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(resp[0].get_json()["message"], message)
 
 ######################################################################
 #   HELPER FUNCTIONS
@@ -542,6 +590,17 @@ class TestRecommendationService(unittest.TestCase):
             recommendations.append([test_recommendation,
                                     resp.headers.get("Location", None)])
         return recommendations
+
+    def _create_one_recommendation(self, by_id, by_rel_id, by_type, by_status=True):
+        """ Create one specific recommendation for testing """
+        test_recommendation = Recommendation(id=by_id,
+                                             rel_id=by_rel_id,
+                                             typeid=by_type,
+                                             status= by_status)
+        resp = self.app.post("/recommendations",
+                             json=test_recommendation.serialize(),
+                             content_type="application/json")
+        return [test_recommendation, resp.headers.get("Location", None)]
 
     def test_create_recommendations(self):
         """ Create recommendations Tests"""
@@ -565,6 +624,7 @@ class TestRecommendationService(unittest.TestCase):
 
         recommendations = self._create_recommendations(count=20, by_status="ab")
         self.assertEqual(len(recommendations), 0)
+
 ######################################################################
 #   M A I N
 ######################################################################

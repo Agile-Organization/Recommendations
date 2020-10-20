@@ -5,13 +5,15 @@ All of the models are stored in this module
 
 Models
 -------
-Recommendations - The recommendations resource is a representation a product recommendation based on another product.
+Recommendations - The recommendations resource is a representation a
+product recommendation based on another product.
 
 Attributes:
 -------
 product id (int) - a unique number which indicates a product
-related product id (int) - a unique number which indicates the recommended product of product A
-relationship type id (int) - the numbers which indicates the products' realationship: 0 - accessory, 1 - up-sells, 2 - cross-sells
+related product id (int) - a unique number which indicates the recommended
+product of product A relationship type id (int) - the numbers which indicates
+the products' realationship: 1 - accessory, 2 - up-sells, 3 - cross-sells
 active status (boolean) - whether this recommendation pair is actived or not.
 
 """
@@ -25,7 +27,8 @@ db = SQLAlchemy()
 
 class DataValidationError(Exception):
     """ Used for an data validation errors when deserializing """
-    pass
+    def __init__(self, message):
+        super().__init__(message)
 
 
 class Recommendation(db.Model):
@@ -105,19 +108,22 @@ class Recommendation(db.Model):
             if not 1 <= data["type-id"] <= 3:
                 raise DataValidationError("Invalid recommendation:"\
                                           " type_id outside [1,3]")
+            if not isinstance(data["product-id"], int):
+                raise DataValidationError("by_id is not of type int")
+            if not isinstance(data["related-product-id"], int):
+                raise DataValidationError("by_rel_id is not of type int")
+            if not isinstance(data["status"], bool):
+                raise DataValidationError("by_status is not of type bool")
+
             self.id = data["product-id"]
             self.rel_id  = data["related-product-id"]
             self.typeid = data["type-id"]
-            self.status = data["status"] if "status" in data else True
+            self.status = data["status"]
         except KeyError as error:
             raise DataValidationError("Invalid recommendation: missing " + error.args[0])
-        except TypeError as error:
-            raise DataValidationError(
-                "Invalid recommendation: body of request contained" "bad or no data"
-            )
-        except Exception as error:
+        except DataValidationError as error:
             raise DataValidationError("Invalid recommendation: body of request"\
-                                      " contained" "bad or no data")
+                                      " contained" "bad or no data" + str(error))
         return self
 
     ##################################################
@@ -144,25 +150,31 @@ class Recommendation(db.Model):
     def find(cls, by_id):
         """ Finds a recommendation by it's ID """
         cls.logger.info("Processing lookup for id %s ...", by_id)
-        return cls.query.get(by_id)
-
-    @classmethod
-    def find_or_404(cls, by_id):
-        """ Find a recommendation by it's id """
-        cls.logger.info("Processing lookup or 404 for id %s ...", by_id)
-        return cls.query.get_or_404(by_id)
+        return cls.query.filter(cls.id==by_id)
 
     @classmethod
     def find_by_id_status(cls, by_id: int, by_status=True):
-        """ Find active recommendations of a product [id] """
+        """ Find [status: active/inactive] recommendations of a [product: id] """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
         cls.logger.info("Processing lookup for id %s with status %s", by_id, by_status)
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
 
     @classmethod
-    def find_by_id_and_typeid(cls, by_id: int, by_typeid: int):
-        """ Find all the recommendations of a product by using a typeid"""
-        cls.logger.info("Processing lookup for id %s with type id %s", by_id, by_typeid)
-        return cls.query.filter(cls.id == by_id, cls.typeid == by_typeid)
+    def find_by_id_type(cls, by_id: int, by_type: int):
+        """ Find recommendations of a [product: id] with [type: typeid] """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not by_type or not isinstance(by_type, int):
+            raise TypeError("by_type is not of type int")
+        if not 1 <= by_type <= 3:
+            raise DataValidationError("Invalid recommendation: type_id outside [1,3]")
+
+        cls.logger.info("Processing lookup for id %s with typeid %s", by_id, by_type)
+        return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
 
     @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):

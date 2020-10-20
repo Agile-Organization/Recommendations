@@ -22,7 +22,7 @@ Test cases can be run with:
 
 import unittest
 import os
-from service.model import Recommendation, db
+from service.model import Recommendation, db, DataValidationError
 from service import app
 from .recommendation_factory import RecommendationFactory
 
@@ -55,6 +55,92 @@ class TestRecommendation(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+
+    def test_repr(self):
+        """ Test Recommendation string representation """
+        recommendation = self._create_recommendations(count=1)[0]
+        expected = "<Recommendation %d %d %d>" % (recommendation.id,
+                                                  recommendation.rel_id,
+                                                  recommendation.typeid)
+        actual = str(recommendation)
+        self.assertEqual(expected, actual, "String representation is invalid")
+
+    def test_create(self):
+        """ Test Recommendation Create function """
+        recommendation = Recommendation()
+        recommendation.id = 10
+        recommendation.rel_id = 20
+        recommendation.typeid = 20
+        recommendation.status = True
+
+        self.assertRaises(DataValidationError, recommendation.create)
+
+    def test_save(self):
+        """ Test Recommendation Save function """
+        recommendation = self._create_recommendations(count=1)[0]
+        recommendation.typeid = 20
+
+        self.assertRaises(DataValidationError, recommendation.save)
+
+    def test_deserialize(self):
+        """ Test Recommendation deserialize function """
+        invalid_recommendation = \
+        {
+            "product-id": "abc",
+            "related-product-id": "-10",
+            "type-id": 20,
+            "status": True
+        }
+
+        recommendation = Recommendation()
+        self.assertRaises(DataValidationError,
+                          recommendation.deserialize, invalid_recommendation)
+
+        invalid_recommendation = \
+        {
+            "product-id": "abc",
+            "related-product-id": "-10",
+            "type-id": 2,
+            "status": True
+        }
+
+        self.assertRaises(DataValidationError,
+                          recommendation.deserialize, invalid_recommendation)
+
+        invalid_recommendation = \
+        {
+            "product-id": 10,
+            "related-product-id": 20,
+            "type-id": 2,
+        }
+
+        self.assertRaises(DataValidationError,
+                          recommendation.deserialize, invalid_recommendation)
+
+        invalid_recommendation = \
+        {
+            "product-id": 10,
+            "related-product-id": 20,
+            "type-id": 2,
+            "status": 10
+        }
+
+        self.assertRaises(DataValidationError,
+                          recommendation.deserialize, invalid_recommendation)
+
+    def test_find(self):
+        """ Test find class method """
+        num_recs = 10
+        recommendation = self._create_recommendations(count=num_recs)[0]
+        returned_records = recommendation.find(recommendation.id).count()
+        self.assertEqual(returned_records, 1, "Only one record should exist")
+
+    def test_all(self):
+        """ Test all class method """
+        num_recs = 10
+        recommendation = self._create_recommendations(count=num_recs)[0]
+        returned_records = len(recommendation.all())
+        self.assertEqual(returned_records, num_recs, "Incorrect num")
 
     def test_find_recommendation(self):
         """ Test find recommendation function """
@@ -106,6 +192,44 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(TypeError, exists, "abcd")
         self.assertRaises(TypeError, exists, valid_recommendation.id, "notbool")
 
+    def test_find_by_id_status(self):
+        """ Test find_by_id_status function """
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.id,
+                                                       by_status=test_recommendation.status)
+
+        self.assertEqual(len(find_result.all()), 1)
+        self.assertEqual(find_result.first(), test_recommendation)
+
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
+        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.id,
+                                                       by_status=test_recommendation.status)
+
+        self.assertEqual(len(find_result.all()), 2)
+
+        self.assertRaises(TypeError, Recommendation.find_by_id_status, "not_int")
+        self.assertRaises(TypeError, Recommendation.find_by_id_status, 1, "not_bool")
+
+    def test_find_by_id_type(self):
+        """ Test find_by_id_type function """
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.id,
+                                                     by_type=test_recommendation.typeid)
+
+        self.assertEqual(len(find_result.all()), 1)
+        self.assertEqual(find_result.first(), test_recommendation)
+
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=1)
+        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.id,
+                                                     by_type=test_recommendation.typeid)
+
+        self.assertEqual(len(find_result.all()), 2)
+
+        self.assertRaises(TypeError, Recommendation.find_by_id_type, "not_int", 2)
+        self.assertRaises(TypeError, Recommendation.find_by_id_type, 1, "not_int")
+        self.assertRaises(DataValidationError, Recommendation.find_by_id_type, 1, 5)
+
+
 ######################################################################
 #   HELPER FUNCTIONS
 ######################################################################
@@ -122,6 +246,16 @@ class TestRecommendation(unittest.TestCase):
             test_recommendation.create()
             recommendations.append(test_recommendation)
         return recommendations
+
+    def _create_one_recommendation(self, by_id, by_rel_id, by_type, by_status=True):
+        """ Create one specific recommendation for testing """
+        test_recommendation = Recommendation(id=by_id,
+                                             rel_id=by_rel_id,
+                                             typeid=by_type,
+                                             status= by_status)
+        test_recommendation.create()
+        return test_recommendation
+
 
     def test_create_recommendations(self):
         """ Tests create recommendations """
