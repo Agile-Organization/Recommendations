@@ -39,27 +39,6 @@ The API endpoints available as of now are:
               "status" : True
         }
         Returns a success message and HTTP_201_CREATED status if successful
-    POST /recommendations/<int:id>
-      - Retrieve all related products by providing a product id
-        returns a list of 3 objects, showing a list of active ids and inactive ids for each realationship type
-        [
-            {
-                relationship-id: 1,
-                ids: [id1, id2, id3, ...],
-                inactive-ids: [id10, id20, id30, ...]
-            },
-            {
-                relationship-id: 2,
-                ids: [id4, id5, id6, ...],
-                inactive-ids: [id40, id50, id60, ...]
-            },
-            {
-                relationship-id: 3,
-                ids: [id7, id8, id9, ...],
-                inactive-ids: [id70, id80, id90, ...]
-            }
-        ]
-        Returns HTTP_200_OK status
     GET /recommendations/relationship?product1=<int:product-id>&product2=<int:related-product-id>
       - Returns recommendation for product1 and product2 if exists
         {
