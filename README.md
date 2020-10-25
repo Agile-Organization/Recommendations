@@ -1,7 +1,7 @@
 # Recommendations
 
 [![Build Status](https://travis-ci.org/Agile-Organization/recommendations.svg?branch=master)](https://travis-ci.org/Agile-Organization/recommendations)
-[![codecov](https://codecov.io/gh/Agile-Organization/recommendations/branch/master/graph/badge.svg?token=3LLMCBRGCQ)](https://codecov.io/gh/Agile-Organization/recommendations)
+[![codecov](https://codecov.io/gh/Agile-Organization/recommendations/branch/master/graph/badge.svg?token=3LLMCBRGCQ)](undefined)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 The recommendations resource is a representation a product recommendation based on another product. In essence it is just a relationship between two products that "go together" (e.g., radio and batteries, printers and ink, shirts and pants, etc.). It could also recommend based on what other customers have purchased like "customers who bought item A usually buy item B". Recommendations have a recommendation type like (1: up-sell, 2: cross-sell, 3: accessory). This way a product page could request all of the up-sells for a product. (Hint: an up-sell is a more full featured and expensive product that you recommend instead of the one they initially want to buy, cross-sells are other items just like this one with similar features and price.)
