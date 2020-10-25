@@ -60,9 +60,6 @@ Vagrant.configure(2) do |config|
     apt-get install -y git tree wget python3-dev python3-pip python3-venv apt-transport-https
     apt-get upgrade python3
 
-    # Install IBM Cloud CLI
-    curl -sL https://ibm.biz/idt-installer | bash
-
     # Create a Python3 Virtual Environment and Activate it in .profile
     sudo -H -u vagrant sh -c 'python3 -m venv ~/venv'
     sudo -H -u vagrant sh -c 'echo ". ~/venv/bin/activate" >> ~/.profile'
