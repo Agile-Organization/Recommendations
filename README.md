@@ -77,15 +77,15 @@ The API endpoints available as of now are:
         The old recommendation will be replaced with data sent in the request body if any old recommendation exists.
         If everything works out well returns HTTP_200_OK status
         If no old recommendation exists returns a HTTP_404_NOT_FOUND
-    DELETE /recommendations/<int:id>/related-product/<int:rel_id>
-      - Deletes a Recommendation
-        This endpoint will delete a recommendation based
-        the product id and related product id provided in the route
+    DELETE /recommendations/<int:id>?rel_id=<int:rel_id>&type_id=<int:type_id>
+      - Deletes recommendation(s)
+        This endpoint will delete recommendation(s) based on the product id, related product id, and type id. 
+        The related product id and type id are optional. 
+        Without both related product id and type id, it will delete all the records related to a given product id. 
+        If related product id being provided, it will delete the record between the two product. 
+        If type id being provided, it will delete records that have the certain type of relationship with the given prodcut. 
         Returns: HTTP_204_NO_CONTENT
-    DELETE /recommendations/<int:id>
-      - Deletes all the recommendations related to a specific product id
-        This endpoint will delete all the recommendations related to the product id provided in the route
-        Returns: HTTP_204_NO_CONTENT
+
 
 ```
 ## Database Schema
