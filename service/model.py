@@ -18,11 +18,18 @@ active status (boolean) - whether this recommendation pair is actived or not.
 
 """
 
+import os
 import logging
 from flask_sqlalchemy import SQLAlchemy
+from requests import HTTPError, ConnectionError
 
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
+
+# global variables for retry (must be int)
+RETRY_COUNT = int(os.environ.get('RETRY_COUNT', 10))
+RETRY_DELAY = int(os.environ.get('RETRY_DELAY', 1))
+RETRY_BACKOFF = int(os.environ.get('RETRY_BACKOFF', 2))
 
 
 class DataValidationError(Exception):
@@ -64,6 +71,8 @@ class Recommendation(db.Model):
                and self.typeid == other.typeid \
                and self.status == other.status
 
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def create(self):
         """
         Creates a recommendation pair to the database
@@ -74,6 +83,8 @@ class Recommendation(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def save(self):
         """
         Updates a recommendation to the database
@@ -83,6 +94,8 @@ class Recommendation(db.Model):
             raise DataValidationError("Invalid typeid; cannot be saved")
         db.session.commit()
 
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def delete(self):
         """ Removes all recommendation from the data store by using product id"""
         self.logger.info("Deleting %s", self.id)
@@ -142,18 +155,24 @@ class Recommendation(db.Model):
         db.create_all()  # make our sqlalchemy tables
 
     @classmethod
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def all(cls):
         """ Returns all of the recommendations in the database """
         cls.logger.info("Processing all recommendations")
         return cls.query.all()
 
     @classmethod
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def find(cls, by_id):
         """ Finds a recommendation by it's ID """
         cls.logger.info("Processing lookup for id %s ...", by_id)
         return cls.query.filter(cls.id==by_id)
 
     @classmethod
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def find_by_id_status(cls, by_id: int, by_status=True):
         """ Find [status: active/inactive] recommendations of a [product: id] """
         if not by_id or not isinstance(by_id, int):
@@ -165,6 +184,8 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.id==by_id, cls.status==by_status)
 
     @classmethod
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def find_by_id_type(cls, by_id: int, by_type: int):
         """ Find recommendations of a [product: id] with [type: typeid] """
         if not by_id or not isinstance(by_id, int):
@@ -178,6 +199,8 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
 
     @classmethod
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
         """ Find recommendation relationship for product and rel_product
         Args:
@@ -200,6 +223,8 @@ class Recommendation(db.Model):
                                 cls.rel_id == by_rel_id, cls.status == by_status)
 
     @classmethod
+    @retry(HTTPError, delay=RETRY_DELAY, backoff=RETRY_BACKOFF, tries=RETRY_COUNT,
+           logger=logger)
     def check_if_product_exists(cls, by_id: int, by_status=True):
         """ Check if the product exists in the database
         Args:
