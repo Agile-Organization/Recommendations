@@ -12,8 +12,6 @@ from flask import Flask
 # Create Flask application
 app = Flask(__name__)
 app.config.from_object('config')
-app.logger.info("Config: ")
-app.logger.info(app.config)
 
 # Import the routes After the Flask app is created
 from service import service, model
