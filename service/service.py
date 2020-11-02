@@ -85,7 +85,7 @@ def get_related_products(id):
 ######################################################################
 # QUERY ACTIVE RECOMMENDATIONS
 ######################################################################
-@app.route('/recommendations/active/<int:id>', methods=['GET'])
+@app.route('/recommendations/<int:id>/active', methods=['GET'])
 def get_active_related_products(id):
     """
     Query active recommendations of a product by providing id.
@@ -355,7 +355,7 @@ def delete_all_by_type_id(id, typeid):
 
     recommendations = Recommendation.find_by_id_type(id, typeid)
 
-    for recommendation in recommendations: 
+    for recommendation in recommendations:
         app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
         recommendation.delete()
         app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
