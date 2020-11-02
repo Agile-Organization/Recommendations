@@ -22,12 +22,20 @@ Test cases can be run with:
 
 import unittest
 import os
+import json
 from service.model import Recommendation, db, DataValidationError
 from service import app
 from .recommendation_factory import RecommendationFactory
 
-# DATABASE_URI = os.getenv("DATABASE_URI",
-#                          "postgres://postgres:postgres@localhost:5432/postgres")
+# Get configuration from environment
+DATABASE_URI = os.getenv(
+    "DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres"
+)
+
+# Override if we are running in Cloud Foundry
+if 'VCAP_SERVICES' in os.environ:
+    vcap = json.loads(os.environ['VCAP_SERVICES'])
+    DATABASE_URI = vcap['user-provided'][0]['credentials']['url']
 
 ######################################################################
 #  T E S T   C A S E S
@@ -40,9 +48,8 @@ class TestRecommendation(unittest.TestCase):
         """ These run once before Test suite """
         app.debug = False
         # Set up the test database
-        # app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
-        # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        app.config.from_object("config")
+        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     @classmethod
     def tearDownClass(cls):
