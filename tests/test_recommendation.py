@@ -50,6 +50,7 @@ class TestRecommendation(unittest.TestCase):
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config['SQLALCHEMY_POOL_SIZE'] = 3
 
     @classmethod
     def tearDownClass(cls):
