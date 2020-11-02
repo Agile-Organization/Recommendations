@@ -85,7 +85,7 @@ def get_related_products(id):
 ######################################################################
 # QUERY ACTIVE RECOMMENDATIONS
 ######################################################################
-@app.route('/recommendations/active/<int:id>', methods=['GET'])
+@app.route('/recommendations/<int:id>/active', methods=['GET'])
 def get_active_related_products(id):
     """
     Query active recommendations of a product by providing id.
