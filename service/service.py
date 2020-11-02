@@ -65,7 +65,7 @@ def get_related_products(id):
     type_1_active, type_1_inactive = [], []
     type_2_active, type_2_inactive = [], []
     type_3_active, type_3_inactive = [], []
-
+    
     for p in products:
         if p.typeid == 1:
             type_1_active.append(p.rel_id) if p.status else type_1_inactive.append(p.rel_id)
@@ -290,77 +290,74 @@ def update_recommendation_between_products():
 
     return '', status.HTTP_200_OK
 
-######################################################################
-# DELETE RECOMMENDATION TYPEID FOR TWO PRODUCTS
-######################################################################
-@app.route('/recommendations/<int:id>/related-product/<int:rel_id>', methods=['DELETE'])
-def delete_recommendation_between_products(id, rel_id):
-    """ Deletes a Recommendation
-    This endpoint will delete a recommendation based
-    the product id and related product id provided in the route
-    """
-    app.logger.info("Request to delete a recommendation")
-
-    find = Recommendation.find_recommendation
-    recommendation = find(by_id=id, by_rel_id=rel_id).first()
-
-    if not recommendation:
-        return '', status.HTTP_204_NO_CONTENT
-
-    app.logger.info("Deleting Recommendation typeid for product %s with "\
-                    "related product %s.", recommendation.id,
-                    recommendation.rel_id)
-
-    recommendation.delete()
-
-    app.logger.info("Deleted Recommendation typeid for product %s with "\
-                    "related product %s.", recommendation.id,
-                    recommendation.rel_id)
-
-    return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
-# DELETE ALL RELEATIONSHIP BY PRODUCT ID
+# DELETE ALL RELEATIONSHIP OF A PRODUCT BY ID AND OPTIONAL RELID OR TYPEID
 ######################################################################
 @app.route('/recommendations/<int:id>', methods=['DELETE'])
-def delete_all_by_product_id(id):
-    """ Deletes a Recommendation
-    This endpoint will delete a recommendation based
-    the product id and related product id provided in the route
+def delete_by_id(id):
+    """ Deletes recommendations
+    This endpoint will delete all the recommendations based on
+    the product id and the optional rel_id and type id provided in the URI
     """
-    app.logger.info("Request to delete a recommendation")
+    rel_id = request.args.get('rel_id')
+    type_id = request.args.get('type_id')
 
-    recommendations = Recommendation.find_by_id_status(id)
+    if(rel_id and not rel_id.isnumeric()):
+        raise BadRequest("Bad Request invalid rel_id provided")
+        
+    if(type_id and type_id not in ["1", "2", "3"]):
+        raise BadRequest("Bad Request invalid type id provided")
 
-    if not recommendations.first():
+    if(rel_id):
+        app.logger.info("Request to delete recommendation by rel_id")
+        
+        rel_id = int(rel_id)
+
+        find = Recommendation.find_recommendation
+  
+        recommendation = find(by_id=id, by_rel_id=rel_id).first()
+  
+        if not recommendation:
+            return '', status.HTTP_204_NO_CONTENT
+
+        app.logger.info("Deleting Recommendation typeid for product %s with "\
+                        "related product %s.", recommendation.id,
+                        recommendation.rel_id)
+        recommendation.delete()
+
+        app.logger.info("Deleted Recommendation typeid for product %s with "\
+                        "related product %s.", recommendation.id,
+                        recommendation.rel_id)
+
         return '', status.HTTP_204_NO_CONTENT
 
-    for recommendation in recommendations:
-        app.logger.info("Deleting all related products for product %s with ", recommendation.id)
-        recommendation.delete()
-        app.logger.info("Deleted all related products for product %s with ", recommendation.id)
+    elif(type_id):
+        app.logger.info("Request to delete recommendations by type_id")
+        type_id = int(type_id)
+        recommendations = Recommendation.find_by_id_type(id, type_id)
 
-    return '', status.HTTP_204_NO_CONTENT
+        for recommendation in recommendations: 
+            app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
+            recommendation.delete()
+            app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
 
-######################################################################
-# DELETE ALL RELEATIONSHIP OF A PRODUCT BY TYPEID
-######################################################################
-@app.route('/recommendations/<int:id>/type/<int:typeid>', methods=['DELETE'])
-def delete_all_by_type_id(id, typeid):
-    """ Deletes a Recommendation
-    This endpoint will delete all the recommendations based on
-    the product id and type id provided in the route
-    """
-    app.logger.info("Request to delete a recommendation")
+        return '', status.HTTP_204_NO_CONTENT
 
-    recommendations = Recommendation.find_by_id_type(id, typeid)
+    else:
+        app.logger.info("Request to delete recommendations by product id")
+        
+        recommendations = Recommendation.find_by_id_status(id)
 
-    for recommendation in recommendations:
-        app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
-        recommendation.delete()
-        app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
+        if not recommendations.first():
+            return '', status.HTTP_204_NO_CONTENT
 
-    return '', status.HTTP_204_NO_CONTENT
+        for recommendation in recommendations:
+            app.logger.info("Deleting all related products for product %s with ", recommendation.id)
+            recommendation.delete()
+            app.logger.info("Deleted all related products for product %s with ", recommendation.id)
+
+        return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
 # Error Handlers
