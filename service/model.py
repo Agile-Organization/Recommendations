@@ -22,6 +22,7 @@ import os
 import logging
 from flask_sqlalchemy import SQLAlchemy
 from requests import HTTPError, ConnectionError
+from retry import retry
 
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
