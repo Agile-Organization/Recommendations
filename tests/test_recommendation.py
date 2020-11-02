@@ -26,8 +26,8 @@ from service.model import Recommendation, db, DataValidationError
 from service import app
 from .recommendation_factory import RecommendationFactory
 
-DATABASE_URI = os.getenv("DATABASE_URI",
-                         "postgres://postgres:postgres@localhost:5432/postgres")
+# DATABASE_URI = os.getenv("DATABASE_URI",
+#                          "postgres://postgres:postgres@localhost:5432/postgres")
 
 ######################################################################
 #  T E S T   C A S E S
@@ -40,8 +40,9 @@ class TestRecommendation(unittest.TestCase):
         """ These run once before Test suite """
         app.debug = False
         # Set up the test database
-        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        # app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        app.config.from_object("config")
 
     @classmethod
     def tearDownClass(cls):
