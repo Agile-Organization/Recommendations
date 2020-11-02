@@ -134,6 +134,7 @@ class Recommendation(db.Model):
     def init_db(cls, app):
         """ Initializes the database session """
         app.logger.info("Initializing database")
+        app.logger.info(app.config["SQLALCHEMY_DATABASE_URI"])
         cls.app = app
         # This is where we initialize SQLAlchemy from the Flask app
         db.init_app(app)
