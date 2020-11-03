@@ -52,6 +52,7 @@ class TestRecommendationService(unittest.TestCase):
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        init_db()
 
     @classmethod
     def tearDownClass(cls):
@@ -59,7 +60,6 @@ class TestRecommendationService(unittest.TestCase):
 
     def setUp(self):
         """ Runs before each test """
-        init_db()
         db.drop_all()  # clean up the last tests
         db.create_all()  # create new tables
         self.app = app.test_client()

@@ -42,13 +42,13 @@ class TestRecommendation(unittest.TestCase):
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        Recommendation.init_db(app)
 
     @classmethod
     def tearDownClass(cls):
         """ These run once after Test suite """
 
     def setUp(self):
-        Recommendation.init_db(app)
         db.drop_all()  # clean up the last tests
         db.create_all()  # make our sqlalchemy tables
 
