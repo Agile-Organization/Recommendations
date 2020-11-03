@@ -313,6 +313,37 @@ def update_recommendation_between_products():
 
 
 ######################################################################
+# TOGGLE RECOMMENDATION STATUS FOR TWO PRODUCTS
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>/toggle', methods=['PUT'])
+def toggle_recommendation_between_products(product_id, rel_product_id):
+    """
+    Updates a Recommendation
+        This endpoint will toggle a recommendation status
+        if the recommendation exists.
+    """
+    app.logger.info("Request to toggle a recommendation status")
+
+    find = Recommendation.find_recommendation
+    recommendation = find(by_id=product_id, by_rel_id=rel_product_id, by_status=False).first() or find(by_id=product_id, by_rel_id=rel_product_id, by_status=True).first()
+
+    if not recommendation:
+        raise NotFound("Recommendation does not exist")
+
+    recommendation.status = not recommendation.status
+
+    app.logger.info("Toggling Recommendation status for product %s with "\
+                    "related product %s.", product_id, rel_product_id)
+
+    recommendation.save()
+
+    app.logger.info("Toggled Recommendation status for product %s with "\
+                    "related product %s.", product_id, rel_product_id)
+
+    return jsonify({'status': recommendation.status}), status.HTTP_200_OK
+
+
+######################################################################
 # DELETE ALL RELEATIONSHIP OF A PRODUCT BY ID AND OPTIONAL RELID OR TYPEID
 ######################################################################
 @app.route('/recommendations/<int:id>', methods=['DELETE'])

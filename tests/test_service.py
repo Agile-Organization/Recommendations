@@ -438,6 +438,53 @@ class TestRecommendationService(unittest.TestCase):
                          old_recommendation,
                          "recommendation should not be updated")
 
+    def test_toggle_recommendation_between_products(self):
+        """ Toggle Recommendations Tests """
+        recommendation = self._create_recommendations(count=1, by_status=True)[0][0]
+        # Test Case 1
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, recommendation.rel_id))
+        resp_message = resp.get_json()
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIsNotNone(resp_message)
+        self.assertEqual(not recommendation.status, resp_message['status'])
+
+        resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(not recommendation.status, returned_recommendation.status)
+
+        # Test Case 2
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, recommendation.rel_id))
+        resp_message = resp.get_json()
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIsNotNone(resp_message)
+        self.assertEqual(recommendation.status, resp_message['status'])
+
+        resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(recommendation.status, returned_recommendation.status)
+
+        # Test Case 3
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, 99999))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 4
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, -99999))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 5
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, "abcd"))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_all_by_product_id(self):
         """ Delete recommendation by valid product id """
