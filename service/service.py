@@ -454,7 +454,7 @@ def delete_all_by_id(product_id):
 
     app.logger.info("Request to delete recommendations by product id")
 
-    recommendations = Recommendation.find_by_id_status(product_id)
+    recommendations = Recommendation.find(product_id)
 
     if not recommendations.first():
         return '', status.HTTP_204_NO_CONTENT
