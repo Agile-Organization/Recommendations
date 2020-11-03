@@ -405,11 +405,8 @@ class TestRecommendationService(unittest.TestCase):
 
     def test_toggle_recommendation_between_products(self):
         """ Toggle Recommendations Tests """
-        recommendations = self._create_recommendations(count=2, by_status=True)
-
+        recommendation = self._create_recommendations(count=1, by_status=True)[0][0]
         # Test Case 1
-        recommendation = recommendations[0][0]
-
         resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, recommendation.rel_id))
         resp_message = resp.get_json()
 
@@ -417,11 +414,13 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(not recommendation.status, resp_message['status'])
 
-        find = Recommendation.find_recommendation
-        recommendation = find(by_id=recommendation.id, by_rel_id=recommendation.rel_id).first()
-        print(recommendation)
-        self.assertIsNotNone(recommendation)
-        self.assertEqual(resp_message['status'], recommendation.status)
+        resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+        returned_recommendation = Recommendation()
+        print(resp.get_json(), recommendation)
+        returned_recommendation.deserialize(resp.get_json())
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(not recommendation.status, returned_recommendation.status)
 
         # Test Case 2
         resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, recommendation.rel_id))
@@ -429,20 +428,29 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(resp_message)
-        self.assertEqual(recommendation.status, resp_message['status'])
+        self.assertEqual(not recommendation.status, resp_message['status'])
 
-        find = Recommendation.find_recommendation
-        recommendation = find(by_id=recommendation.id, by_rel_id=recommendation.rel_id).first()
+        resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
 
-        self.assertIsNotNone(recommendation)
-        self.assertEqual(resp_message['status'], recommendation.status)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(recommendation.status, returned_recommendation.status)
 
         # Test Case 3
-        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, 12))
-        resp_message = resp.get_json()
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, 99999))
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIsNone(resp_message)
+
+        # Test Case 4
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, -99999))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 5
+        resp = self.app.put("/recommendations/{}/{}/toggle".format(recommendation.id, "abcd"))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_all_by_product_id(self):
         """ Delete recommendation by valid product id """

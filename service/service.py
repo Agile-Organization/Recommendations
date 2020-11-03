@@ -158,6 +158,27 @@ def get_related_products_with_type(id, typeid):
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
+
+######################################################################
+# QUERY RECOMMENDATIONS BY PRODUCT ID AND RELATED PRODUCT ID
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>', methods=['GET'])
+def get_recommendation(product_id, rel_product_id):
+    """
+    Query recommendations by product id and related product id.
+    Result is returned in a json format
+    """
+    app.logger.info("Querying Recommendation for product id: %s and related product id: %s", product_id, id)
+    recommendation = Recommendation.find_recommendation(product_id, rel_product_id)
+
+    if not recommendation.first():
+        raise NotFound("Recommendatin for product id {} with related product id {} not found".format(product_id, rel_product_id))
+
+    app.logger.info("Returning Recommendation for product id: %s and related product id: %s", product_id, id)
+
+    return make_response(jsonify(recommendation.first().serialize()), status.HTTP_200_OK)
+
+
 ######################################################################
 # CREATE RELATIONSHIP BETWEEN PRODUCTS
 ######################################################################
