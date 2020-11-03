@@ -23,6 +23,7 @@ Test cases can be run with the following:
 
 import unittest
 import os
+import json
 import logging
 from flask import request
 from flask_api import status
@@ -35,8 +36,15 @@ from werkzeug.exceptions import NotFound
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
 
-DATABASE_URI = os.getenv("DATABASE_URI",
-                         "postgres://postgres:postgres@localhost:5432/postgres")
+# Get configuration from environment
+DATABASE_URI = os.getenv(
+    "DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres"
+)
+
+# Override if we are running in Cloud Foundry
+if 'VCAP_SERVICES' in os.environ:
+    vcap = json.loads(os.environ['VCAP_SERVICES'])
+    DATABASE_URI = vcap['user-provided'][0]['credentials']['url']
 
 ######################################################################
 #  T E S T   C A S E S
@@ -115,6 +123,33 @@ class TestRecommendationService(unittest.TestCase):
         # Test for non-exists product id
         none_exists_product_id = 999999
         resp = self.app.get("/recommendations/" + str(none_exists_product_id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_recommendation(self):
+        """ Get Recommendation Tests"""
+        recommendation = self._create_recommendations(count=1, by_status=True)[0][0]
+
+        # Test Case 1
+        resp = self.app.get("/recommendations/" + str(recommendation.id) + "/" + str(recommendation.rel_id))
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(recommendation, returned_recommendation)
+
+        # Test Case 2
+        resp = self.app.get("/recommendations/" + str(recommendation.id) + "/" + str(99999))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 3
+        resp = self.app.get("/recommendations/" + str(recommendation.id) + "/" + str(-99999))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 4
+        resp = self.app.get("/recommendations/" + str(recommendation.id) + "/abcd")
+
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_recommendation_relationship_type(self):

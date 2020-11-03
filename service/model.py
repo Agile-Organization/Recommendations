@@ -18,9 +18,9 @@ active status (boolean) - whether this recommendation pair is actived or not.
 
 """
 
+import os
 import logging
 from flask_sqlalchemy import SQLAlchemy
-
 # Create the SQLAlchemy object to be initialized later in init_db()
 db = SQLAlchemy()
 
