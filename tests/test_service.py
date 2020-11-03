@@ -416,7 +416,6 @@ class TestRecommendationService(unittest.TestCase):
 
         resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
         returned_recommendation = Recommendation()
-        print(resp.get_json(), recommendation)
         returned_recommendation.deserialize(resp.get_json())
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -428,7 +427,7 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(resp_message)
-        self.assertEqual(not recommendation.status, resp_message['status'])
+        self.assertEqual(recommendation.status, resp_message['status'])
 
         resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
         returned_recommendation = Recommendation()
