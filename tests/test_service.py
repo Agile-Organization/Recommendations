@@ -201,12 +201,12 @@ class TestRecommendationService(unittest.TestCase):
 
     def test_get_active_related_products(self):
         """ Get active recommendations Test """
-        resp = self.app.get("/recommendations/active/{}".format(1))
+        resp = self.app.get("/recommendations/{}/active".format(1))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
 
-        resp = self.app.get("/recommendations/active/{}".format(1))
+        resp = self.app.get("/recommendations/{}/active".format(1))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data[0]["ids"][0], 2)
@@ -214,7 +214,7 @@ class TestRecommendationService(unittest.TestCase):
         self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
         self._create_one_recommendation(by_id=1, by_rel_id=4, by_type=3)
 
-        resp = self.app.get("/recommendations/active/{}".format(1))
+        resp = self.app.get("/recommendations/{}/active".format(1))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data[1]["ids"][0], 3)
