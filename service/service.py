@@ -257,10 +257,10 @@ def get_recommendation_relationship_type():
     return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
-# UPDATE RECOMMENDATION TYPEID FOR TWO PRODUCTS
+# UPDATE RECOMMENDATION
 ######################################################################
-@app.route('/recommendations', methods=['PUT'])
-def update_recommendation_between_products():
+@app.route('/recommendations/<int:product_id>/<int:related_product_id>', methods=['PUT'])
+def update_recommendation(product_id, related_product_id):
     """
     Updates a Recommendation
         This endpoint will update a recommendation based the data in the request body.
@@ -283,17 +283,12 @@ def update_recommendation_between_products():
         recommendation.deserialize(request.get_json())
 
         find = Recommendation.find_recommendation
-        old_recommendation = find(by_id=recommendation.id,
-                                  by_rel_id=recommendation.rel_id).first() \
-                                  or find(by_id=recommendation.id,
-                                     by_rel_id=recommendation.rel_id,
-                                     by_status=False).first()
+        old_recommendation = find(by_id=recommendation.id, by_rel_id=recommendation.rel_id).first()
     except DataValidationError as error:
         raise DataValidationError(error)
 
     if not old_recommendation:
-        raise NotFound("Recommendation does not exist"\
-                       " please do a POST instead of PUT")
+        raise NotFound("Recommendation does not exist. Please call POST to create this record")
 
     old_typeid = old_recommendation.typeid
     old_recommendation.typeid = recommendation.typeid

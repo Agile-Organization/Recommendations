@@ -64,9 +64,10 @@ The API endpoints available as of now are:
             {"relation_id": 3, "ids": <type2_products_list>}
         ]
         Returns HTTP_200_OK status
-    PUT /recommendations
+    PUT /recommendations/<int:product_id>/<int:related_product_id>
       - Updates a Recommendation
-        This endpoint will update a recommendation based the data in the request body.
+        This endpoint will search for an unique recommendation based the product_id and related_product_id from URI, 
+        and use the data provided in the request body to update the record.
         Expected data in body:
         {
               "product-id" : <int:product-id>,
