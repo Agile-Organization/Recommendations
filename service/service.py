@@ -169,14 +169,14 @@ def get_recommendation(product_id, rel_product_id):
     Result is returned in a json format
     """
     app.logger.info("Querying Recommendation for product id: %s and related product id: %s", product_id, id)
-    recommendation = Recommendation.find_recommendation(product_id, rel_product_id)
+    recommendation = Recommendation.find_recommendation(product_id, rel_product_id).first() or Recommendation.find_recommendation(product_id, rel_product_id, False).first()
 
-    if not recommendation.first():
+    if not recommendation:
         raise NotFound("Recommendatin for product id {} with related product id {} not found".format(product_id, rel_product_id))
 
     app.logger.info("Returning Recommendation for product id: %s and related product id: %s", product_id, id)
 
-    return make_response(jsonify(recommendation.first().serialize()), status.HTTP_200_OK)
+    return make_response(jsonify(recommendation.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
