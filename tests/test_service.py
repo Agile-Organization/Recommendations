@@ -23,6 +23,7 @@ Test cases can be run with the following:
 
 import unittest
 import os
+import json
 import logging
 from flask import request
 from flask_api import status
@@ -35,8 +36,15 @@ from werkzeug.exceptions import NotFound
 # Disable all but ciritcal erros suirng unittest
 logging.disable(logging.CRITICAL)
 
-DATABASE_URI = os.getenv("DATABASE_URI",
-                         "postgres://postgres:postgres@localhost:5432/postgres")
+# Get configuration from environment
+DATABASE_URI = os.getenv(
+    "DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres"
+)
+
+# Override if we are running in Cloud Foundry
+if 'VCAP_SERVICES' in os.environ:
+    vcap = json.loads(os.environ['VCAP_SERVICES'])
+    DATABASE_URI = vcap['user-provided'][0]['credentials']['url']
 
 ######################################################################
 #  T E S T   C A S E S
