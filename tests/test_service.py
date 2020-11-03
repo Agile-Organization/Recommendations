@@ -448,168 +448,26 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
 
-    def test_delete_all_by_product_id(self):
-        """ Delete recommendation by valid product id """
+    def test_delete_by_type_status(self):
+        """ Delete recommendation by type and status"""
         recommendations = self._create_recommendations(count=5, by_status=True)
 
         recommendation = recommendations[0][0]
 
-        resp = self.app.delete("/recommendations/" + str(recommendation.id))
-
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
-
-        resp = self.app.get\
-            ("/recommendations/" + str(recommendation.id))
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
-        recommendation = recommendations[1][0]
-
-        """ Delete recommendation by negative product id """
-        invalid_id = -99
-        resp = self.app.delete("/recommendations/" + str(invalid_id))
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
-        resp = self.app.get\
-            ("/recommendations/" + str(recommendation.id))
-
-        if recommendation.typeid == 1:
-            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        elif recommendation.typeid == 2:
-            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        else:
-            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
-
-        """ Delete recommendation by string product id """
-        text_id = "text"
-        resp = self.app.delete("/recommendations/" + str(text_id))
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
-        resp = self.app.get\
-            ("/recommendations/" + str(recommendation.id))
-
-        if recommendation.typeid == 1:
-            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        elif recommendation.typeid == 2:
-            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        else:
-            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
-
-        """ Delete recommendation by non-exists product id """
-        non_exists_id = 999999
-        resp = self.app.delete("/recommendations/" + str(non_exists_id))
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-
-        resp = self.app.get\
-            ("/recommendations/" + str(recommendation.id))
-
-        if recommendation.typeid == 1:
-            self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        elif recommendation.typeid == 2:
-            self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.rel_id, "Received incorrect records")
-        else:
-            self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
-
-
-    def test_delete_recommendation_by_rel_id(self):
-
-        recommendations = self._create_recommendations(count=10, by_status=True)
-
-        recommendation = recommendations[0][0]
-
-        """ Delete recommendation by valid product id and valid rel_id"""
-        resp = self.app.delete("/recommendations/"
-                               + str(recommendation.id)
-                               + "?rel_id="
-                               + str(recommendation.rel_id))
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
-
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
-
-        recommendation = recommendations[1][0]
-
-        """ Delete recommendation by valid product id and non-exists rel_id"""
-        resp = self.app.delete("/recommendations/"
-                               + str(recommendation.id)
-                               + "?rel_id="
-                               + str(90000))
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
-
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp.get_json())
-
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(returned_recommendation,
-                         recommendation,
-                         "Recommendations should not be changed")
-
-        """ Delete recommendation by valid product id and string rel_id"""
-        resp = self.app.delete("/recommendations/"
-                               + str(recommendation.id)
-                               + "?rel_id="
-                               + "abcd")
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp.get_json())
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(returned_recommendation,
-                         recommendation,
-                         "Recommendations should not be changed")
-
-        """ Delete recommendation by valid product id and negative rel_id"""
+        # Delete recommendation by valid product id and valid type_id
         resp = self.app.delete("/recommendations/"
                                 + str(recommendation.id)
-                                + "?rel_id="
-                                + "-999")
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+                                + "?type_id="
+                                + str(recommendation.typeid)
+                                + "&status="
+                                + str(recommendation.status))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
 
-        """ Delete recommendation by string product id and valid rel_id"""
-        resp = self.app.delete("/recommendations/"
-                               + "abcd"
-                               + "?rel_id="
-                               + str(recommendation.rel_id))
+        resp = self.app.get("/recommendations/" + str(recommendation.id))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp.get_json())
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(returned_recommendation,
-                         recommendation,
-                         "Recommendations should not be changed")
-
-
-    def test_delete_all_products_by_type_id(self):
-        """ Delete recommendation by product id and type_id"""
-        recommendations = self._create_recommendations(count=5, by_status=True)
-
-        recommendation = recommendations[0][0]
+        recommendation = recommendations[1][0]
 
         # Delete recommendation by valid product id and valid type_id
         resp = self.app.delete("/recommendations/"
@@ -619,87 +477,47 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertIsNone(resp.get_json())
 
-        resp = self.app.get("/recommendations/"
-                        + str(recommendation.id))
+        resp = self.app.get("/recommendations/" + str(recommendation.id))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-        recommendation = recommendations[1][0]
-        # Delete recommendation by valid product id and string type_id
+        recommendation = recommendations[2][0]
+
+        # Delete recommendation by valid product id and valid status
+        resp = self.app.delete("/recommendations/"
+                                + str(recommendation.id)
+                                + "?status="
+                                + str(recommendation.status))
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        resp = self.app.get("/recommendations/" + str(recommendation.id))
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        recommendation = recommendations[3][0]
+
+        # Delete recommendation by valid product id and string type
         resp = self.app.delete("/recommendations/"
                             + str(recommendation.id)
                             + "?type_id="
                             + str("TEST"))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Delete recommendation by valid product id and invalid type_id
+        # Delete recommendation by valid product id and invalid type
         resp = self.app.delete("/recommendations/"
                             + str(recommendation.id)
                             + "?type_id=" + str(5))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Delete recommendation by valid product id, valid rel_id and valid type_id
+        # Delete recommendation by valid product id, invalid status
         resp = self.app.delete("/recommendations/"
-                               + str(recommendation.id)
-                               + "?rel_id="
-                               + str(recommendation.rel_id)
-                               + "&type_id="
-                               + str(recommendation.typeid))
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
-
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
-
-        recommendation = recommendations[2][0]
-
-        # Delete recommendation by valid product id, valid rel_id and invalid type_id
-        resp = self.app.delete("/recommendations/"
-                               + str(recommendation.id)
-                               + "?rel_id="
-                               + str(recommendation.rel_id)
-                               + "&type_id="
-                               + str(10))
+                        + str(recommendation.id)
+                        + "?status=Test")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp.get_json())
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(returned_recommendation,
-                         recommendation,
-                         "Recommendations should not be changed")
-
-        # Delete recommendation by valid product id, invalid rel_id and valid type_id
-        resp = self.app.delete("/recommendations/"
-                               + str(recommendation.id)
-                               + "?rel_id="
-                               + str(-999)
-                               + "&type_id="
-                               + str(recommendation.typeid))
+        # Delete recommendation without any parameters
+        resp = self.app.delete("/recommendations/" + str(recommendation.id))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
-        resp = self.app.get\
-            ("/recommendations/relationship",
-             query_string=dict(product1=recommendation.id,
-                               product2=recommendation.rel_id)
-             )
-
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp.get_json())
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(returned_recommendation,
-                         recommendation,
-                         "Recommendations should not be changed")
 
     def test_delete_all_by_id(self):
         """ Delete recommendation by Product Id Tests RESTful """

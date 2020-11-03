@@ -177,6 +177,21 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.id==by_id, cls.typeid==by_type)
 
     @classmethod
+    def find_by_id_type_status(cls, by_id: int, by_type: int, by_status=True):
+        """ Find recommendations of a [product: id] with [type: typeid] """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not by_type or not isinstance(by_type, int):
+            raise TypeError("by_type is not of type int")
+        if not 1 <= by_type <= 3:
+            raise DataValidationError("Invalid recommendation: type_id outside [1,3]")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
+        cls.logger.info("Processing lookup for id %s with typeid %s and status %r", by_id, by_type, by_status)
+        return cls.query.filter(cls.id==by_id, cls.typeid==by_type, cls.status==by_status)
+
+    @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):
         """ Find recommendation relationship for product and rel_product
         Args:
