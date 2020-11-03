@@ -76,6 +76,63 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(data)
 
+    def test_create_recommendation(self):
+        """ Create Recommendation Tests """
+
+        # Test Case 1
+        recommendation = Recommendation(id=10,
+                                        rel_id=20,
+                                        typeid=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_201_CREATED, resp.status_code)
+        self.assertTrue(resp.headers.get("Location", None).endswith("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id)))
+        self.assertEqual(recommendation.serialize(), resp_message)
+
+        # Test Case 2
+        recommendation = Recommendation(id=10,
+                                        rel_id=20,
+                                        typeid=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+        # Test Case 3
+        recommendation = Recommendation(id=10,
+                                        rel_id=20,
+                                        typeid=10,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+        # Test Case 4
+        recommendation = Recommendation(id=10,
+                                        rel_id=-20,
+                                        typeid=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, resp.status_code)
+
     def test_get_related_products(self):
         """ Get related products by id tests"""
         # Test for valid id
@@ -403,7 +460,7 @@ class TestRecommendationService(unittest.TestCase):
                          old_recommendation,
                          "recommendation should not be updated")
 
-    
+
     def test_delete_all_by_product_id(self):
         """ Delete recommendation by valid product id """
         recommendations = self._create_recommendations(count=5, by_status=True)
@@ -468,7 +525,7 @@ class TestRecommendationService(unittest.TestCase):
 
 
     def test_delete_recommendation_by_rel_id(self):
-        
+
         recommendations = self._create_recommendations(count=10, by_status=True)
 
         recommendation = recommendations[0][0]
@@ -507,7 +564,7 @@ class TestRecommendationService(unittest.TestCase):
 
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
-   
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(returned_recommendation,
                          recommendation,
@@ -566,30 +623,30 @@ class TestRecommendationService(unittest.TestCase):
         recommendations = self._create_recommendations(count=5, by_status=True)
 
         recommendation = recommendations[0][0]
-  
+
         # Delete recommendation by valid product id and valid type_id
-        resp = self.app.delete("/recommendations/" 
-                                + str(recommendation.id) 
-                                + "?type_id=" 
+        resp = self.app.delete("/recommendations/"
+                                + str(recommendation.id)
+                                + "?type_id="
                                 + str(recommendation.typeid))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertIsNone(resp.get_json())
 
-        resp = self.app.get("/recommendations/" 
+        resp = self.app.get("/recommendations/"
                         + str(recommendation.id))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         recommendation = recommendations[1][0]
         # Delete recommendation by valid product id and string type_id
-        resp = self.app.delete("/recommendations/" 
-                            + str(recommendation.id) 
-                            + "?type_id=" 
+        resp = self.app.delete("/recommendations/"
+                            + str(recommendation.id)
+                            + "?type_id="
                             + str("TEST"))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Delete recommendation by valid product id and invalid type_id
-        resp = self.app.delete("/recommendations/" 
-                            + str(recommendation.id) 
+        resp = self.app.delete("/recommendations/"
+                            + str(recommendation.id)
                             + "?type_id=" + str(5))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -612,7 +669,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNone(resp.get_json())
 
         recommendation = recommendations[2][0]
-        
+
         # Delete recommendation by valid product id, valid rel_id and invalid type_id
         resp = self.app.delete("/recommendations/"
                                + str(recommendation.id)
@@ -627,7 +684,7 @@ class TestRecommendationService(unittest.TestCase):
              query_string=dict(product1=recommendation.id,
                                product2=recommendation.rel_id)
              )
-   
+
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
