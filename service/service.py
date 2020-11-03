@@ -206,6 +206,41 @@ def create_recommendation_between_products():
                     recommendation.id, recommendation.rel_id)
     return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url})
 
+
+######################################################################
+# CREATE RELATIONSHIP BETWEEN PRODUCTS (RESTful)
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>', methods=['POST'])
+def create_recommendation(product_id, rel_product_id):
+    """
+    Creates a Recommendation
+    This endpoint will create a recommendation based the data in the body that is posted
+    {
+        "product-id" : 1,
+        "related-product-id" : 2,
+        "type-id" : 1,
+        "status" : 1
+    }
+    """
+    app.logger.info("Request to create a recommendation")
+    check_content_type("application/json")
+    recommendation = Recommendation()
+    recommendation.deserialize(request.get_json())
+
+    existing_recommendation = Recommendation.find_recommendation(recommendation.id, recommendation.rel_id).first() or Recommendation.find_recommendation(recommendation.id, recommendation.rel_id, by_status=False).first()
+
+    if existing_recommendation:
+        raise BadRequest('Recommendation with given product id and related product id already exists')
+
+    recommendation.create()
+    message = recommendation.serialize()
+    location_url = "/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id)
+
+    app.logger.info("recommendation from ID [%s] to ID [%s] created.",
+                    recommendation.id, recommendation.rel_id)
+    return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url})
+
+
 ######################################################################
 # QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
 ######################################################################

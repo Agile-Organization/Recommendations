@@ -84,6 +84,63 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(data)
 
+    def test_create_recommendation(self):
+        """ Create Recommendation Tests """
+
+        # Test Case 1
+        recommendation = Recommendation(id=10,
+                                        rel_id=20,
+                                        typeid=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_201_CREATED, resp.status_code)
+        self.assertTrue(resp.headers.get("Location", None).endswith("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id)))
+        self.assertEqual(recommendation.serialize(), resp_message)
+
+        # Test Case 2
+        recommendation = Recommendation(id=10,
+                                        rel_id=20,
+                                        typeid=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+        # Test Case 3
+        recommendation = Recommendation(id=10,
+                                        rel_id=20,
+                                        typeid=10,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+        # Test Case 4
+        recommendation = Recommendation(id=10,
+                                        rel_id=-20,
+                                        typeid=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        resp_message = resp.get_json()
+
+        self.assertEqual(status.HTTP_404_NOT_FOUND, resp.status_code)
+
     def test_get_related_products(self):
         """ Get related products by id tests"""
         # Test for valid id
