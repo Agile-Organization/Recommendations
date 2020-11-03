@@ -238,8 +238,8 @@ def get_recommendation_relationship_type():
 ######################################################################
 # UPDATE RECOMMENDATION TYPEID FOR TWO PRODUCTS
 ######################################################################
-@app.route('/recommendations', methods=['PUT'])
-def update_recommendation_between_products():
+@app.route('/recommendations/<int:product_id>/<int:related_product_id>', methods=['PUT'])
+def update_recommendation(product_id, related_product_id):
     """
     Updates a Recommendation
         This endpoint will update a recommendation based the data in the request body.
@@ -263,10 +263,7 @@ def update_recommendation_between_products():
 
         find = Recommendation.find_recommendation
         old_recommendation = find(by_id=recommendation.id,
-                                  by_rel_id=recommendation.rel_id).first() \
-                                  or find(by_id=recommendation.id,
-                                     by_rel_id=recommendation.rel_id,
-                                     by_status=False).first()
+                                  by_rel_id=recommendation.rel_id).first()
     except DataValidationError as error:
         raise DataValidationError(error)
 
