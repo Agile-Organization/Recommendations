@@ -158,6 +158,27 @@ def get_related_products_with_type(id, typeid):
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
+
+######################################################################
+# QUERY RECOMMENDATIONS BY PRODUCT ID AND RELATED PRODUCT ID
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>', methods=['GET'])
+def get_recommendation(product_id, rel_product_id):
+    """
+    Query recommendations by product id and related product id.
+    Result is returned in a json format
+    """
+    app.logger.info("Querying Recommendation for product id: %s and related product id: %s", product_id, id)
+    recommendation = Recommendation.find_recommendation(product_id, rel_product_id).first() or Recommendation.find_recommendation(product_id, rel_product_id, False).first()
+
+    if not recommendation:
+        raise NotFound("Recommendatin for product id {} with related product id {} not found".format(product_id, rel_product_id))
+
+    app.logger.info("Returning Recommendation for product id: %s and related product id: %s", product_id, id)
+
+    return make_response(jsonify(recommendation.serialize()), status.HTTP_200_OK)
+
+
 ######################################################################
 # CREATE RELATIONSHIP BETWEEN PRODUCTS
 ######################################################################
@@ -324,6 +345,37 @@ def update_recommendation_between_products():
                     recommendation.rel_id, old_typeid, recommendation.typeid)
 
     return '', status.HTTP_200_OK
+
+
+######################################################################
+# TOGGLE RECOMMENDATION STATUS FOR TWO PRODUCTS
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>/toggle', methods=['PUT'])
+def toggle_recommendation_between_products(product_id, rel_product_id):
+    """
+    Updates a Recommendation
+        This endpoint will toggle a recommendation status
+        if the recommendation exists.
+    """
+    app.logger.info("Request to toggle a recommendation status")
+
+    find = Recommendation.find_recommendation
+    recommendation = find(by_id=product_id, by_rel_id=rel_product_id, by_status=False).first() or find(by_id=product_id, by_rel_id=rel_product_id, by_status=True).first()
+
+    if not recommendation:
+        raise NotFound("Recommendation does not exist")
+
+    recommendation.status = not recommendation.status
+
+    app.logger.info("Toggling Recommendation status for product %s with "\
+                    "related product %s.", product_id, rel_product_id)
+
+    recommendation.save()
+
+    app.logger.info("Toggled Recommendation status for product %s with "\
+                    "related product %s.", product_id, rel_product_id)
+
+    return jsonify({'status': recommendation.status}), status.HTTP_200_OK
 
 
 ######################################################################
