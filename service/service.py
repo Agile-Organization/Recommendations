@@ -65,7 +65,7 @@ def get_related_products(id):
     type_1_active, type_1_inactive = [], []
     type_2_active, type_2_inactive = [], []
     type_3_active, type_3_inactive = [], []
-    
+
     for p in products:
         if p.typeid == 1:
             type_1_active.append(p.rel_id) if p.status else type_1_inactive.append(p.rel_id)
@@ -157,6 +157,27 @@ def get_related_products_with_type(id, typeid):
     result = {"ids": products, "status": product_status}
 
     return make_response(jsonify(result), status.HTTP_200_OK)
+
+
+######################################################################
+# QUERY RECOMMENDATIONS BY PRODUCT ID AND RELATED PRODUCT ID
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>', methods=['GET'])
+def get_recommendation(product_id, rel_product_id):
+    """
+    Query recommendations by product id and related product id.
+    Result is returned in a json format
+    """
+    app.logger.info("Querying Recommendation for product id: %s and related product id: %s", product_id, id)
+    recommendation = Recommendation.find_recommendation(product_id, rel_product_id)
+
+    if not recommendation.first():
+        raise NotFound("Recommendatin for product id {} with related product id {} not found".format(product_id, rel_product_id))
+
+    app.logger.info("Returning Recommendation for product id: %s and related product id: %s", product_id, id)
+
+    return make_response(jsonify(recommendation.first().serialize()), status.HTTP_200_OK)
+
 
 ######################################################################
 # CREATE RELATIONSHIP BETWEEN PRODUCTS
@@ -305,19 +326,19 @@ def delete_by_id(id):
 
     if(rel_id and not rel_id.isnumeric()):
         raise BadRequest("Bad Request invalid rel_id provided")
-        
+
     if(type_id and type_id not in ["1", "2", "3"]):
         raise BadRequest("Bad Request invalid type id provided")
 
     if(rel_id):
         app.logger.info("Request to delete recommendation by rel_id")
-        
+
         rel_id = int(rel_id)
 
         find = Recommendation.find_recommendation
-  
+
         recommendation = find(by_id=id, by_rel_id=rel_id).first()
-  
+
         if not recommendation:
             return '', status.HTTP_204_NO_CONTENT
 
@@ -337,7 +358,7 @@ def delete_by_id(id):
         type_id = int(type_id)
         recommendations = Recommendation.find_by_id_type(id, type_id)
 
-        for recommendation in recommendations: 
+        for recommendation in recommendations:
             app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
             recommendation.delete()
             app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.id, recommendation.typeid)
@@ -346,7 +367,7 @@ def delete_by_id(id):
 
     else:
         app.logger.info("Request to delete recommendations by product id")
-        
+
         recommendations = Recommendation.find_by_id_status(id)
 
         if not recommendations.first():
