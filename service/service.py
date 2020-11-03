@@ -374,43 +374,39 @@ def toggle_recommendation_between_products(product_id, rel_product_id):
 
 
 ######################################################################
-# DELETE ALL RELEATIONSHIP OF A PRODUCT BY ID AND OPTIONAL RELID OR TYPEID
+# DELETE ALL RELEATIONSHIP OF A PRODUCT BY OR TYPE AND/OR STATUS
 ######################################################################
 @app.route('/recommendations/<int:id>', methods=['DELETE'])
-def delete_by_id(id):
+def delete_by_type_status(id):
     """ Deletes recommendations
     This endpoint will delete all the recommendations based on
-    the product id and the optional rel_id and type id provided in the URI
+    the product id and the parameter type and stauts
     """
-    rel_id = request.args.get('rel_id')
     type_id = request.args.get('type_id')
+    recommendation_status = request.args.get('status')
 
-    if(rel_id and not rel_id.isnumeric()):
-        raise BadRequest("Bad Request invalid rel_id provided")
+    if not type_id and not recommendation_status:
+        raise BadRequest("Bad Request must provide at least 1 parameter")
 
     if(type_id and type_id not in ["1", "2", "3"]):
         raise BadRequest("Bad Request invalid type id provided")
 
-    if(rel_id):
-        app.logger.info("Request to delete recommendation by rel_id")
+    if(recommendation_status and recommendation_status not in ["True", "False"]):
+        raise BadRequest("Bad Request invalid status provided")
 
-        rel_id = int(rel_id)
+    if(type_id and recommendation_status):
+        app.logger.info("Request to delete recommendations by type_id and status")
+        type_id = int(type_id)
+        recommendation_status = bool(recommendation_status)
 
-        find = Recommendation.find_recommendation
+        recommendations = Recommendation.find_by_id_type_status(id, type_id, recommendation_status)
 
-        recommendation = find(by_id=id, by_rel_id=rel_id).first()
-
-        if not recommendation:
-            return '', status.HTTP_204_NO_CONTENT
-
-        app.logger.info("Deleting Recommendation typeid for product %s with "\
-                        "related product %s.", recommendation.id,
-                        recommendation.rel_id)
-        recommendation.delete()
-
-        app.logger.info("Deleted Recommendation typeid for product %s with "\
-                        "related product %s.", recommendation.id,
-                        recommendation.rel_id)
+        for recommendation in recommendations:
+            app.logger.info("Deleting all related products for product %s in type %s with status %r", 
+                                recommendation.id, recommendation.typeid, recommendation.status)
+            recommendation.delete()
+            app.logger.info("Deleted all related products for product %s in type %s with status %r", 
+                                recommendation.id, recommendation.typeid, recommendation.status)
 
         return '', status.HTTP_204_NO_CONTENT
 
@@ -426,18 +422,15 @@ def delete_by_id(id):
 
         return '', status.HTTP_204_NO_CONTENT
 
-    else:
-        app.logger.info("Request to delete recommendations by product id")
-
-        recommendations = Recommendation.find_by_id_status(id)
-
-        if not recommendations.first():
-            return '', status.HTTP_204_NO_CONTENT
+    elif(recommendation_status):
+        app.logger.info("Request to delete recommendations by status")
+        recommendation_status = bool(recommendation_status)
+        recommendations = Recommendation.find_by_id_status(id, recommendation_status)
 
         for recommendation in recommendations:
-            app.logger.info("Deleting all related products for product %s with ", recommendation.id)
+            app.logger.info("Deleting all related products for product %s in status %r", recommendation.id, recommendation.status)
             recommendation.delete()
-            app.logger.info("Deleted all related products for product %s with ", recommendation.id)
+            app.logger.info("Deleted all related products for product %s in status %r", recommendation.id, recommendation.status)
 
         return '', status.HTTP_204_NO_CONTENT
 
