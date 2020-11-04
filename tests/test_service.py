@@ -559,6 +559,30 @@ class TestRecommendationService(unittest.TestCase):
         else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.rel_id, "Received incorrect records")
 
+    def test_delete_by_id_relid(self):
+        recommendations = self._create_recommendations(count=5)
+
+        recommendation = recommendations[0][0]
+
+        # delete a unique recommendation
+        resp = self.app.delete("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+        # try querying that recommendation
+        resp = self.app.get("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # repeat the delete
+        resp = self.app.delete("/recommendations/{}/{}".format(recommendation.id, recommendation.rel_id))
+
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(resp.get_json())
+
+
+
     def test_internal_server_error(self):
         """ Test internal service error handler """
         message = "Test error message"

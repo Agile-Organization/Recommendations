@@ -143,6 +143,22 @@ class TestRecommendation(unittest.TestCase):
         returned_records = recommendation.find(recommendation.id).count()
         self.assertEqual(returned_records, 1, "Only one record should exist")
 
+    def test_find_by_id_relid(self):
+        """ Test find by id and rel_id function """
+        test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        find_result = Recommendation.find_by_id_relid(by_id=test_recommendation.id,
+                                                      by_rel_id=test_recommendation.rel_id)
+        
+        self.assertEqual(len(find_result.all()), 1)
+        self.assertEqual(find_result.first(), test_recommendation)
+
+        find_result_empty = Recommendation.find_by_id_relid(by_id=test_recommendation.id,
+                                                            by_rel_id=3)
+        self.assertEqual(len(find_result_empty.all()), 0)
+
+        self.assertRaises(TypeError, Recommendation.find_by_id_relid, 1, "not_int")
+        self.assertRaises(TypeError, Recommendation.find_by_id_relid, "not_int", 1)
+
     def test_all(self):
         """ Test all class method """
         num_recs = 10
