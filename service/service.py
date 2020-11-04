@@ -27,6 +27,36 @@ def index():
     return jsonify(datetime.datetime.now()), status.HTTP_200_OK
 
 ######################################################################
+# QUERY ALL RECOMMENDATIONS
+######################################################################
+@app.route('/recommendations', method=['GET'])
+def get_all_recommendations():
+    """ 
+    Returns all the recommendations
+    [
+        {product_id: 1, related_product_id: 10001, type: 1, status: True},
+        {product_id: 2, related_product_id: 10002, type: 2, status: True},
+        {product_id: 3, related_product_id: 10003, type: 3, status: False},
+        ...
+    ]
+    
+    With HTTP_200_OK status
+    """
+    app.logger.info("Request for all recommendations in the database")
+
+    recommendations = Recommendation.all()
+
+    if not recommendations.first():
+        return '[]', status.HTTP_200_OK
+
+    result = []
+    for rec in recommendations:
+        record = {"product_id": rec.id, "related_product_id": rec.rel_id, "type": rec.typeid, "status": rec.status}
+        result.append(result)
+    
+    return make_response(jsonify(result), status.HTTP_200_OK)
+
+######################################################################
 # QUERY RELATED PRODUCTS BY ID
 ######################################################################
 @app.route("/recommendations/<int:id>", methods=["GET"])
