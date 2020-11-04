@@ -29,7 +29,7 @@ def index():
 ######################################################################
 # QUERY ALL RECOMMENDATIONS
 ######################################################################
-@app.route('/recommendations', method=['GET'])
+@app.route("/recommendations", methods=["GET"])
 def get_all_recommendations():
     """ 
     Returns all the recommendations
@@ -45,15 +45,12 @@ def get_all_recommendations():
     app.logger.info("Request for all recommendations in the database")
 
     recommendations = Recommendation.all()
-
-    if not recommendations.first():
-        return '[]', status.HTTP_200_OK
-
+    
     result = []
     for rec in recommendations:
         record = {"product_id": rec.id, "related_product_id": rec.rel_id, "type": rec.typeid, "status": rec.status}
-        result.append(result)
-    
+        result.append(record)
+
     return make_response(jsonify(result), status.HTTP_200_OK)
 
 ######################################################################
