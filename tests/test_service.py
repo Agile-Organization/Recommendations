@@ -154,21 +154,11 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(len(resp.get_json()), 5)
 
         # Test for the accuracy
+        resp = resp.get_json()
         for i in range(5):
-            product_id = recommendations[i][0].id
-            related_product_id = recommendations[i][0].rel_id
-            type_id = recommendations[i][0].typeid
-            active_status = recommendations[i][0].status
-
-            result_product_id = resp.get_json()[i]['product_id']
-            result_related_id = resp.get_json()[i]['related_product_id']
-            result_type_id = resp.get_json()[i]['type']
-            result_status = resp.get_json()[i]['status']
-
-            self.assertEqual(product_id, result_product_id)
-            self.assertEqual(related_product_id, result_related_id)
-            self.assertEqual(type_id, result_type_id)
-            self.assertEqual(active_status, result_status)
+            returned_recommendation = Recommendation()
+            returned_recommendation.deserialize(resp[i])
+            self.assertEqual(recommendations[i][0], returned_recommendation)
 
     def test_get_related_products(self):
         """ Get related products by id tests"""

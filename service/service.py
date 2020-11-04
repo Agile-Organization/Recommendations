@@ -48,7 +48,7 @@ def get_all_recommendations():
     
     result = []
     for rec in recommendations:
-        record = {"product_id": rec.id, "related_product_id": rec.rel_id, "type": rec.typeid, "status": rec.status}
+        record = rec.serialize()
         result.append(record)
 
     return make_response(jsonify(result), status.HTTP_200_OK)
