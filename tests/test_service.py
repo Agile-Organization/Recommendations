@@ -90,7 +90,7 @@ class TestRecommendationService(unittest.TestCase):
         # Test Case 1
         recommendation = Recommendation(product_id=10,
                                         related_product_id=20,
-                                        typeid=1,
+                                        type_id=1,
                                         status=True)
 
         resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
@@ -105,7 +105,7 @@ class TestRecommendationService(unittest.TestCase):
         # Test Case 2
         recommendation = Recommendation(product_id=10,
                                         related_product_id=20,
-                                        typeid=1,
+                                        type_id=1,
                                         status=True)
 
         resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
@@ -118,7 +118,7 @@ class TestRecommendationService(unittest.TestCase):
         # Test Case 3
         recommendation = Recommendation(product_id=10,
                                         related_product_id=20,
-                                        typeid=10,
+                                        type_id=10,
                                         status=True)
 
         resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
@@ -131,7 +131,7 @@ class TestRecommendationService(unittest.TestCase):
         # Test Case 4
         recommendation = Recommendation(product_id=10,
                                         related_product_id=-20,
-                                        typeid=1,
+                                        type_id=1,
                                         status=True)
 
         resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
@@ -171,9 +171,9 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(isinstance(resp, object), True, "Received incorrect recommendation")
 
-        if recommendation[0][0].typeid == 1:
+        if recommendation[0][0].type_id == 1:
             self.assertEqual(resp.get_json()[0]["ids"][0], recommendation[0][0].related_product_id, "Received incorrect records")
-        elif recommendation[0][0].typeid == 2:
+        elif recommendation[0][0].type_id == 2:
             self.assertEqual(resp.get_json()[1]["ids"][0], recommendation[0][0].related_product_id, "Received incorrect records")
         else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation[0][0].related_product_id, "Received incorrect records")
@@ -182,9 +182,9 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(num_records, 1, "Received incorrect records")
 
-        self.assertTrue(resp.get_json()[0]["relation_id"] == recommendation[0][0].typeid or\
-           resp.get_json()[1]["relation_id"] == recommendation[0][0].typeid or\
-           resp.get_json()[2]["relation_id"] == recommendation[0][0].typeid)
+        self.assertTrue(resp.get_json()[0]["relation_id"] == recommendation[0][0].type_id or\
+           resp.get_json()[1]["relation_id"] == recommendation[0][0].type_id or\
+           resp.get_json()[2]["relation_id"] == recommendation[0][0].type_id)
 
         # Test for negative product id
         negative_product_id = -99
@@ -330,7 +330,7 @@ class TestRecommendationService(unittest.TestCase):
 
         recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
 
-        resp = self.app.get("/recommendations/{}/type/{}".format(recommendation[0].product_id, recommendation[0].typeid))
+        resp = self.app.get("/recommendations/{}/type/{}".format(recommendation[0].product_id, recommendation[0].type_id))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data["ids"][0], 2)
@@ -347,7 +347,7 @@ class TestRecommendationService(unittest.TestCase):
         new_recommendation = Recommendation()
         new_recommendation.product_id = old_recommendation.product_id
         new_recommendation.related_product_id = old_recommendation.related_product_id
-        new_recommendation.typeid = new_typeid[old_recommendation.typeid]
+        new_recommendation.type_id = new_typeid[old_recommendation.type_id]
         new_recommendation.status = True
 
         update_url = "/recommendations/" + str(old_recommendation.product_id) + "/" + str(old_recommendation.related_product_id)
@@ -371,7 +371,7 @@ class TestRecommendationService(unittest.TestCase):
         invalid_recommendation = {
             "product-id": "invalid_id",
             "related-product-id": old_recommendation.related_product_id,
-            "type-id": new_typeid[old_recommendation.typeid],
+            "type-id": new_typeid[old_recommendation.type_id],
             "status": True
         }
 
@@ -388,7 +388,7 @@ class TestRecommendationService(unittest.TestCase):
         invalid_recommendation = {
             "product-id": old_recommendation.product_id,
             "related-product-id": "invalid_related_product_id",
-            "type-id": new_typeid[old_recommendation.typeid],
+            "type-id": new_typeid[old_recommendation.type_id],
             "status": True
         }
 
@@ -477,7 +477,7 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.delete("/recommendations/"
                                 + str(recommendation.product_id)
                                 + "?type_id="
-                                + str(recommendation.typeid)
+                                + str(recommendation.type_id)
                                 + "&status="
                                 + str(recommendation.status))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
@@ -492,7 +492,7 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.delete("/recommendations/"
                                 + str(recommendation.product_id)
                                 + "?type_id="
-                                + str(recommendation.typeid))
+                                + str(recommendation.type_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertIsNone(resp.get_json())
 
@@ -571,9 +571,9 @@ class TestRecommendationService(unittest.TestCase):
 
         resp = self.app.get("/recommendations/" + str(recommendation.product_id))
 
-        if recommendation.typeid == 1:
+        if recommendation.type_id == 1:
             self.assertEqual(resp.get_json()[0]["ids"][0], recommendation.related_product_id, "Received incorrect records")
-        elif recommendation.typeid == 2:
+        elif recommendation.type_id == 2:
             self.assertEqual(resp.get_json()[1]["ids"][0], recommendation.related_product_id, "Received incorrect records")
         else:
             self.assertEqual(resp.get_json()[2]["ids"][0], recommendation.related_product_id, "Received incorrect records")
@@ -633,7 +633,7 @@ class TestRecommendationService(unittest.TestCase):
         """ Create one specific recommendation for testing """
         test_recommendation = Recommendation(product_id=by_id,
                                              related_product_id=by_rel_id,
-                                             typeid=by_type,
+                                             type_id=by_type,
                                              status= by_status)
         resp = self.app.post("/recommendations",
                              json=test_recommendation.serialize(),

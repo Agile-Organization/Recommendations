@@ -87,16 +87,16 @@ def get_related_products(product_id):
     if not products.first():
         raise NotFound("Product with product_id '{}' was not found.".format(product_id))
 
-    # assume model returns records in format of: [{product_id: 1, related_product_id: 2, typeid: 1, status: true}]
+    # assume model returns records in format of: [{product_id: 1, related_product_id: 2, type_id: 1, status: true}]
     relationships = []
     type_1_active, type_1_inactive = [], []
     type_2_active, type_2_inactive = [], []
     type_3_active, type_3_inactive = [], []
 
     for p in products:
-        if p.typeid == 1:
+        if p.type_id == 1:
             type_1_active.append(p.related_product_id) if p.status else type_1_inactive.append(p.related_product_id)
-        elif p.typeid == 2:
+        elif p.type_id == 2:
             type_2_active.append(p.related_product_id) if p.status else type_2_inactive.append(p.related_product_id)
         else:
             type_3_active.append(p.related_product_id) if p.status else type_3_inactive.append(p.related_product_id)
@@ -143,9 +143,9 @@ def get_active_related_products(product_id):
     type1_products = []
     type2_products = []
     for recommendation in recommendations:
-        if recommendation.typeid == 1:
+        if recommendation.type_id == 1:
             type0_products.append(recommendation.related_product_id)
-        elif recommendation.typeid == 2:
+        elif recommendation.type_id == 2:
             type1_products.append(recommendation.related_product_id)
         else:
             type2_products.append(recommendation.related_product_id)
@@ -161,20 +161,20 @@ def get_active_related_products(product_id):
 ######################################################################
 # QUERY RECOMMENDATIONS BY PRODUCT ID AND TYPE
 ######################################################################
-@app.route('/recommendations/<int:product_id>/type/<int:typeid>', methods=['GET'])
-def get_related_products_with_type(product_id, typeid):
+@app.route('/recommendations/<int:product_id>/type/<int:type_id>', methods=['GET'])
+def get_related_products_with_type(product_id, type_id):
     """
     Query recommendations by product_id and type.
     Results are returned in the form of
     {ids: [id1, id2, ...], status: [status1, status2, ...]}
     """
-    app.logger.info("Query type: %s recommendations for product_id: %s", typeid, product_id)
-    recommendations = Recommendation.find_by_id_type(product_id, typeid)
+    app.logger.info("Query type: %s recommendations for product_id: %s", type_id, product_id)
+    recommendations = Recommendation.find_by_id_type(product_id, type_id)
 
     if not recommendations.all():
-        raise NotFound("Type {} recommendations for product {} not found".format(typeid, product_id))
+        raise NotFound("Type {} recommendations for product {} not found".format(type_id, product_id))
 
-    app.logger.info("Returning type %s recommendations for product %s", typeid, product_id)
+    app.logger.info("Returning type %s recommendations for product %s", type_id, product_id)
     products = []
     product_status = []
     for recommendation in recommendations:
@@ -279,7 +279,7 @@ def get_recommendation_relationship_type():
         {
           "product-id" : <int:product-id>,
           "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:typeid>,
+          "type-id" : <int:type_id>,
           "status" : True
         }
         With HTTP_200_OK status
@@ -330,7 +330,7 @@ def update_recommendation(product_id, related_product_id):
         {
           "product-id" : <int:product-id>,
           "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:typeid>,
+          "type-id" : <int:type_id>,
           "status" : <bool: status>
         }
         The old recommendation will be replaced with data
@@ -352,19 +352,19 @@ def update_recommendation(product_id, related_product_id):
     if not old_recommendation:
         raise NotFound("Recommendation does not exist. Please call POST to create this record")
 
-    old_typeid = old_recommendation.typeid
-    old_recommendation.typeid = recommendation.typeid
+    old_typeid = old_recommendation.type_id
+    old_recommendation.type_id = recommendation.type_id
     old_recommendation.status = recommendation.status
 
-    app.logger.info("Updating Recommendation typeid for product %s with "\
+    app.logger.info("Updating Recommendation type_id for product %s with "\
                     "related product %s from %s to %s.", recommendation.product_id,
-                    recommendation.related_product_id, old_typeid, recommendation.typeid)
+                    recommendation.related_product_id, old_typeid, recommendation.type_id)
 
     old_recommendation.save()
 
-    app.logger.info("Recommendation typeid updated for product %s with "\
+    app.logger.info("Recommendation type_id updated for product %s with "\
                     "related product %s from %s to %s.", recommendation.product_id,
-                    recommendation.related_product_id, old_typeid, recommendation.typeid)
+                    recommendation.related_product_id, old_typeid, recommendation.type_id)
 
     return '', status.HTTP_200_OK
 
@@ -430,10 +430,10 @@ def delete_by_type_status(product_id):
 
         for recommendation in recommendations:
             app.logger.info("Deleting all related products for product %s in type %s with status %r", 
-                                recommendation.product_id, recommendation.typeid, recommendation.status)
+                                recommendation.product_id, recommendation.type_id, recommendation.status)
             recommendation.delete()
             app.logger.info("Deleted all related products for product %s in type %s with status %r", 
-                                recommendation.product_id, recommendation.typeid, recommendation.status)
+                                recommendation.product_id, recommendation.type_id, recommendation.status)
 
         return '', status.HTTP_204_NO_CONTENT
 
@@ -443,9 +443,9 @@ def delete_by_type_status(product_id):
         recommendations = Recommendation.find_by_id_type(product_id, type_id)
 
         for recommendation in recommendations:
-            app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.product_id, recommendation.typeid)
+            app.logger.info("Deleting all related products for product %s in type %s with ", recommendation.product_id, recommendation.type_id)
             recommendation.delete()
-            app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.product_id, recommendation.typeid)
+            app.logger.info("Deleted all related products for product %s in type %s with ", recommendation.product_id, recommendation.type_id)
 
         return '', status.HTTP_204_NO_CONTENT
 

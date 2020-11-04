@@ -69,7 +69,7 @@ class TestRecommendation(unittest.TestCase):
         recommendation = self._create_recommendations(count=1)[0]
         expected = "<Recommendation %d %d %d>" % (recommendation.product_id,
                                                   recommendation.related_product_id,
-                                                  recommendation.typeid)
+                                                  recommendation.type_id)
         actual = str(recommendation)
         self.assertEqual(expected, actual, "String representation is invalid")
 
@@ -78,7 +78,7 @@ class TestRecommendation(unittest.TestCase):
         recommendation = Recommendation()
         recommendation.product_id = 10
         recommendation.related_product_id = 20
-        recommendation.typeid = 20
+        recommendation.type_id = 20
         recommendation.status = True
 
         self.assertRaises(DataValidationError, recommendation.create)
@@ -86,7 +86,7 @@ class TestRecommendation(unittest.TestCase):
     def test_save(self):
         """ Test Recommendation Save function """
         recommendation = self._create_recommendations(count=1)[0]
-        recommendation.typeid = 20
+        recommendation.type_id = 20
 
         self.assertRaises(DataValidationError, recommendation.save)
 
@@ -238,14 +238,14 @@ class TestRecommendation(unittest.TestCase):
         """ Test find_by_id_type function """
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
         find_result = Recommendation.find_by_id_type(by_id=test_recommendation.product_id,
-                                                     by_type=test_recommendation.typeid)
+                                                     by_type=test_recommendation.type_id)
 
         self.assertEqual(len(find_result.all()), 1)
         self.assertEqual(find_result.first(), test_recommendation)
 
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=1)
         find_result = Recommendation.find_by_id_type(by_id=test_recommendation.product_id,
-                                                     by_type=test_recommendation.typeid)
+                                                     by_type=test_recommendation.type_id)
 
         self.assertEqual(len(find_result.all()), 2)
 
@@ -275,7 +275,7 @@ class TestRecommendation(unittest.TestCase):
         """ Create one specific recommendation for testing """
         test_recommendation = Recommendation(product_id=by_id,
                                              related_product_id=by_rel_id,
-                                             typeid=by_type,
+                                             type_id=by_type,
                                              status= by_status)
         test_recommendation.create()
         return test_recommendation
