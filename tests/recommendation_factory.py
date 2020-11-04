@@ -13,8 +13,8 @@ class RecommendationFactory(factory.Factory):
         """ Recommendation Factory uses Recommendation class as Meta model"""
         model = Recommendation
 
-    id = FuzzyChoice(choices=range(1, 10001))
-    rel_id = FuzzyChoice(choices=range(10001, 20001))
+    product_id = FuzzyChoice(choices=range(1, 10001))
+    related_product_id = FuzzyChoice(choices=range(10001, 20001))
     typeid = FuzzyChoice(choices=[1, 2, 3])
     status = FuzzyChoice(choices=[True, False])
 
