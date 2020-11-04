@@ -461,6 +461,33 @@ def delete_all_by_id(product_id):
 
 
 ######################################################################
+# DELETE ALL RELEATIONSHIP OF A PRODUCT BY ID
+######################################################################
+@app.route('/recommendations/<int:product_id>/<int:rel_product_id>', methods=['DELETE'])
+def delete_by_id_relid(product_id, rel_product_id):
+    """
+    Deletes recommendation
+    This endpoint will delete one unique recommendation based on
+    the product id and related product id provided in the URI
+    """
+    app.logger.info("Request to delete a recommendation by product id and related product id")
+
+    find_result = Recommendation.find_by_id_relid(product_id, rel_product_id)
+
+    if not find_result.first():
+        return '', status.HTTP_204_NO_CONTENT
+
+    recommendation = find_result.first()
+    app.logger.info("Deleting recommendation with product id %s and related product id %s ...", 
+                    recommendation.id, recommendation.rel_id)
+    recommendation.delete()
+    app.logger.info("Deleted recommendation with product id %s and related product id %s ...", 
+                    recommendation.id, recommendation.rel_id)
+    
+    return '', status.HTTP_204_NO_CONTENT
+
+
+######################################################################
 # Error Handlers
 ######################################################################
 @app.errorhandler(DataValidationError)

@@ -153,6 +153,17 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.id==by_id)
 
     @classmethod
+    def find_by_id_relid(cls, by_id, by_rel_id):
+        """ Find a unique recommendation by product_id and rel_product_id """
+        if not by_id or not isinstance(by_id, int):
+            raise TypeError("by_id is not of type int")
+        if not by_rel_id or not isinstance(by_rel_id, int):
+            raise TypeError("by_rel_id is not of type int")
+        
+        cls.logger.info("Processing lookup for id %s with rel id %s ...", by_id, by_rel_id)
+        return cls.query.filter(cls.id==by_id, cls.rel_id==by_rel_id)
+
+    @classmethod
     def find_by_id_status(cls, by_id: int, by_status=True):
         """ Find [status: active/inactive] recommendations of a [product: id] """
         if not by_id or not isinstance(by_id, int):
