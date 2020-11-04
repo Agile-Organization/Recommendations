@@ -141,6 +141,25 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(status.HTTP_404_NOT_FOUND, resp.status_code)
 
+    def test_get_all_recommendations(self):
+        """ Get all recommendations tests"""
+        # Test for empty database
+        resp = self.app.get("/recommendations")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # Test for non-empty database
+        recommendations = self._create_recommendations(count=5, by_status=True)
+        resp = self.app.get("/recommendations")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 5)
+
+        # Test for the accuracy
+        resp = resp.get_json()
+        for i in range(5):
+            returned_recommendation = Recommendation()
+            returned_recommendation.deserialize(resp[i])
+            self.assertEqual(recommendations[i][0], returned_recommendation)
+
     def test_get_related_products(self):
         """ Get related products by id tests"""
         # Test for valid id
