@@ -38,24 +38,24 @@ The API endpoints available as of now are:
         This endpoint will create a recommendation based the data in the body that is posted
         Expected data in request body:
           {
-              "product-id" : <int:product-id>,
-              "related-product-id" : <int:related-product-id>,
-              "type-id" : <int:typeid>,
+              "product-id" : <int:product_id>,
+              "related-product-id" : <int:related_product_id>,
+              "type-id" : <int:type_id>,
               "status" : True
         }
         Returns a success message and HTTP_201_CREATED status if successful
-    GET /recommendations/relationship?product1=<int:product-id>&product2=<int:related-product-id>
+    GET /recommendations/relationship?product1=<int:product_id>&product2=<int:related_product_id>
       - Returns recommendation for product1 and product2 if exists
         {
-              "product-id" : <int:product-id>,
-              "related-product-id" : <int:related-product-id>,
-              "type-id" : <int:typeid>,
+              "product-id" : <int:product_id>,
+              "related-product-id" : <int:related_product_id>,
+              "type-id" : <int:type_id>,
               "status" : True
         }
         Returns HTTP_200_OK status
 
         Returns Null with HTTP_204_NO_CONTENT if no recommendation exists for product1 and product2
-    GET /recommendations/active/<int:id>
+    GET /recommendations/active/<int:product_id>
       - Returns all active recommendations for the product id provided in route url;
         Return Format:
         [
@@ -70,15 +70,15 @@ The API endpoints available as of now are:
         and use the data provided in the request body to update the record.
         Expected data in body:
         {
-              "product-id" : <int:product-id>,
-              "related-product-id" : <int:related-product-id>,
-              "type-id" : <int:typeid>,
+              "product-id" : <int:product_id>,
+              "related-product-id" : <int:related_product_id>,
+              "type-id" : <int:type_id>,
               "status" : <bool: status>
         }
         The old recommendation will be replaced with data sent in the request body if any old recommendation exists.
         If everything works out well returns HTTP_200_OK status
         If no old recommendation exists returns a HTTP_404_NOT_FOUND
-    DELETE /recommendations/<int:id>?rel_id=<int:rel_id>&type_id=<int:type_id>
+    DELETE /recommendations/<int:product_id>?related_product_id=<int:related_product_id>&type_id=<int:type_id>
       - Deletes recommendation(s)
         This endpoint will delete recommendation(s) based on the product id, related product id, and type id. 
         The related product id and type id are optional. 
@@ -92,9 +92,9 @@ The API endpoints available as of now are:
 ## Database Schema
 Recommendations service has only one database table with the following columns.
 ```shell
-    id = <Integer> Primary Key: Represents the product id
-    rel_id = <Integer> Primary Key: Represents the related product id
-    typeid = <Integer> : Represents relationship type between product and related product; (1: up-sell, 2: cross-sell, 3: accessory)
+    product_id = <Integer> Primary Key: Represents the product id
+    related_product_id = <Integer> Primary Key: Represents the related product id
+    type_id = <Integer> : Represents relationship type between product and related product; (1: up-sell, 2: cross-sell, 3: accessory)
     status = <Boolean> : Represents if the recommendation is active or in-active
 ```
 ## Running Unit Tests

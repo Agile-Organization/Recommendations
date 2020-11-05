@@ -67,18 +67,18 @@ class TestRecommendation(unittest.TestCase):
     def test_repr(self):
         """ Test Recommendation string representation """
         recommendation = self._create_recommendations(count=1)[0]
-        expected = "<Recommendation %d %d %d>" % (recommendation.id,
-                                                  recommendation.rel_id,
-                                                  recommendation.typeid)
+        expected = "<Recommendation %d %d %d>" % (recommendation.product_id,
+                                                  recommendation.related_product_id,
+                                                  recommendation.type_id)
         actual = str(recommendation)
         self.assertEqual(expected, actual, "String representation is invalid")
 
     def test_create(self):
         """ Test Recommendation Create function """
         recommendation = Recommendation()
-        recommendation.id = 10
-        recommendation.rel_id = 20
-        recommendation.typeid = 20
+        recommendation.product_id = 10
+        recommendation.related_product_id = 20
+        recommendation.type_id = 20
         recommendation.status = True
 
         self.assertRaises(DataValidationError, recommendation.create)
@@ -86,7 +86,7 @@ class TestRecommendation(unittest.TestCase):
     def test_save(self):
         """ Test Recommendation Save function """
         recommendation = self._create_recommendations(count=1)[0]
-        recommendation.typeid = 20
+        recommendation.type_id = 20
 
         self.assertRaises(DataValidationError, recommendation.save)
 
@@ -140,19 +140,19 @@ class TestRecommendation(unittest.TestCase):
         """ Test find class method """
         num_recs = 10
         recommendation = self._create_recommendations(count=num_recs)[0]
-        returned_records = recommendation.find(recommendation.id).count()
+        returned_records = recommendation.find(recommendation.product_id).count()
         self.assertEqual(returned_records, 1, "Only one record should exist")
 
     def test_find_by_id_relid(self):
-        """ Test find by id and rel_id function """
+        """ Test find by product_id and related_product_id function """
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
-        find_result = Recommendation.find_by_id_relid(by_id=test_recommendation.id,
-                                                      by_rel_id=test_recommendation.rel_id)
+        find_result = Recommendation.find_by_id_relid(by_id=test_recommendation.product_id,
+                                                      by_rel_id=test_recommendation.related_product_id)
         
         self.assertEqual(len(find_result.all()), 1)
         self.assertEqual(find_result.first(), test_recommendation)
 
-        find_result_empty = Recommendation.find_by_id_relid(by_id=test_recommendation.id,
+        find_result_empty = Recommendation.find_by_id_relid(by_id=test_recommendation.product_id,
                                                             by_rel_id=3)
         self.assertEqual(len(find_result_empty.all()), 0)
 
@@ -170,8 +170,8 @@ class TestRecommendation(unittest.TestCase):
         """ Test find recommendation function """
         valid_recommendation = self._create_recommendations(count=1)[0]
         recommendation = Recommendation.find_recommendation( \
-                                                   valid_recommendation.id,
-                                                   valid_recommendation.rel_id,
+                                                   valid_recommendation.product_id,
+                                                   valid_recommendation.related_product_id,
                                                    valid_recommendation.status)
 
         self.assertEqual(recommendation.first(), valid_recommendation)
@@ -179,8 +179,8 @@ class TestRecommendation(unittest.TestCase):
         valid_recommendation = self._create_recommendations(count=1,
                                                             by_status=False)[0]
         recommendation = Recommendation.find_recommendation( \
-                                                   valid_recommendation.id,
-                                                   valid_recommendation.rel_id,
+                                                   valid_recommendation.product_id,
+                                                   valid_recommendation.related_product_id,
                                                    valid_recommendation.status)
 
         self.assertEqual(recommendation.first(), valid_recommendation)
@@ -189,13 +189,13 @@ class TestRecommendation(unittest.TestCase):
                                                             by_status=False)[0]
 
         self.assertRaises(TypeError, Recommendation.find_recommendation, \
-               "abcd", valid_recommendation.rel_id, valid_recommendation.status)
+               "abcd", valid_recommendation.related_product_id, valid_recommendation.status)
 
         self.assertRaises(TypeError, Recommendation.find_recommendation, \
-               valid_recommendation.id, "efgh", valid_recommendation.status)
+               valid_recommendation.product_id, "efgh", valid_recommendation.status)
 
         self.assertRaises(TypeError, Recommendation.find_recommendation, \
-               valid_recommendation.id, valid_recommendation.rel_id, "notbool")
+               valid_recommendation.product_id, valid_recommendation.related_product_id, "notbool")
 
     def test_check_if_product_exists(self):
         """ Test check if product exists """
@@ -204,29 +204,29 @@ class TestRecommendation(unittest.TestCase):
 
         exists = Recommendation.check_if_product_exists
 
-        recommendation_exists = exists(valid_recommendation.id)
+        recommendation_exists = exists(valid_recommendation.product_id)
         self.assertTrue(recommendation_exists)
 
-        recommendation_exists = exists(valid_recommendation.rel_id)
+        recommendation_exists = exists(valid_recommendation.related_product_id)
         self.assertTrue(recommendation_exists)
 
         recommendation_exists = exists(99999)
         self.assertFalse(recommendation_exists)
 
         self.assertRaises(TypeError, exists, "abcd")
-        self.assertRaises(TypeError, exists, valid_recommendation.id, "notbool")
+        self.assertRaises(TypeError, exists, valid_recommendation.product_id, "notbool")
 
     def test_find_by_id_status(self):
         """ Test find_by_id_status function """
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
-        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.id,
+        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.product_id,
                                                        by_status=test_recommendation.status)
 
         self.assertEqual(len(find_result.all()), 1)
         self.assertEqual(find_result.first(), test_recommendation)
 
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=2)
-        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.id,
+        find_result = Recommendation.find_by_id_status(by_id=test_recommendation.product_id,
                                                        by_status=test_recommendation.status)
 
         self.assertEqual(len(find_result.all()), 2)
@@ -237,15 +237,15 @@ class TestRecommendation(unittest.TestCase):
     def test_find_by_id_type(self):
         """ Test find_by_id_type function """
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
-        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.id,
-                                                     by_type=test_recommendation.typeid)
+        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.product_id,
+                                                     by_type=test_recommendation.type_id)
 
         self.assertEqual(len(find_result.all()), 1)
         self.assertEqual(find_result.first(), test_recommendation)
 
         test_recommendation = self._create_one_recommendation(by_id=1, by_rel_id=3, by_type=1)
-        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.id,
-                                                     by_type=test_recommendation.typeid)
+        find_result = Recommendation.find_by_id_type(by_id=test_recommendation.product_id,
+                                                     by_type=test_recommendation.type_id)
 
         self.assertEqual(len(find_result.all()), 2)
 
@@ -273,9 +273,9 @@ class TestRecommendation(unittest.TestCase):
 
     def _create_one_recommendation(self, by_id, by_rel_id, by_type, by_status=True):
         """ Create one specific recommendation for testing """
-        test_recommendation = Recommendation(id=by_id,
-                                             rel_id=by_rel_id,
-                                             typeid=by_type,
+        test_recommendation = Recommendation(product_id=by_id,
+                                             related_product_id=by_rel_id,
+                                             type_id=by_type,
                                              status= by_status)
         test_recommendation.create()
         return test_recommendation
