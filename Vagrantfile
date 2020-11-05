@@ -64,6 +64,13 @@ Vagrant.configure(2) do |config|
     apt-get update
     apt-get install -y git tree wget python3-dev python3-pip python3-venv apt-transport-https
     apt-get upgrade python3
+
+    echo "\n*****************************************"
+    echo " Installing Chrome Headless and Selenium"
+    echo "*****************************************\n"
+    apt-get install -y chromium-chromedriver python3-selenium
+    chromedriver --version
+
     echo "\n************************************"
     echo " Installing IBM Cloud CLI..."
     echo "************************************\n"
