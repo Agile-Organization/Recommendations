@@ -3,7 +3,7 @@
 applications:
 - name: nyu-recommendation-service-dev
   path: .
-  instances: 2
+  instances: 1
   memory: 64M
   routes:
   - route: nyu-recommendation-service-dev.us-south.cf.appdomain.cloud
