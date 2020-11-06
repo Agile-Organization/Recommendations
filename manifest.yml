@@ -1,5 +1,5 @@
 ---
-# This manifest deploys a Python Flask application with a Cloudant database
+# This manifest deploys a Python Flask application with a PostgreSQL database
 applications:
 - name: nyu-recommendation-service-dev
   path: .
@@ -8,7 +8,7 @@ applications:
   routes:
   - route: nyu-recommendation-service-dev.us-south.cf.appdomain.cloud
   disk_quota: 1024M
-  buildpacks: 
+  buildpacks:
   - python_buildpack
   timeout: 180
   services:
@@ -16,3 +16,19 @@ applications:
   env:
     FLASK_APP : service:app
     FLASK_DEBUG : false
+- name: nyu-recommendation-service-f20
+  path: .
+  instances: 1
+  memory: 64M
+  routes:
+  - route: nyu-recommendation-service-f20.us-south.cf.appdomain.cloud
+  disk_quota: 1024M
+  buildpacks:
+  - python_buildpack
+  timeout: 180
+  services:
+  - ElephantSQL
+  env:
+    FLASK_APP : service:app
+    FLASK_DEBUG : false
+
