@@ -5,8 +5,8 @@ applications:
   path: .
   instances: 1
   memory: 64M
-  host: nyu-recommendation-service-dev
-  domain: us-south.cf.appdomain.cloud
+  routes:
+  - route: nyu-recommendation-service-dev.us-south.cf.appdomain.cloud
   disk_quota: 1024M
   buildpacks:
   - python_buildpack
@@ -20,8 +20,8 @@ applications:
   path: .
   instances: 1
   memory: 64M
-  host: nyu-recommendation-service-f20
-  domain: us-south.cf.appdomain.cloud
+  routes:
+  - route: nyu-recommendation-service-f20.us-south.cf.appdomain.cloud
   disk_quota: 1024M
   buildpacks:
   - python_buildpack
