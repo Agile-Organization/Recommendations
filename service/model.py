@@ -105,7 +105,7 @@ class Recommendation(db.Model):
             data (dict): A dictionary containing the resource data
         """
         try:
-            if not 1 <= int(data["type-id"]) <= 3:
+            if not isinstance(data["type-id"], int):
                 raise DataValidationError("Invalid recommendation:"\
                                           " type_id outside [1,3]")
             if not isinstance(data["product-id"], int):
@@ -114,6 +114,9 @@ class Recommendation(db.Model):
                 raise DataValidationError("by_rel_id is not of type int")
             if not isinstance(data["status"], bool):
                 raise DataValidationError("by_status is not of type bool")
+            if not 1 <= data["type-id"] <= 3:
+                raise DataValidationError("Invalid recommendation:"\
+                                          " type_id outside [1,3]")
 
             self.product_id = data["product-id"]
             self.related_product_id  = data["related-product-id"]

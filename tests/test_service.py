@@ -224,7 +224,7 @@ class TestRecommendationService(unittest.TestCase):
     def test_get_related_products(self):
         """ Get related products by product_id tests"""
         # Test for valid product_id
-        recommendation = self._create_recommendations(count=200, by_status=True)
+        recommendation = self._create_recommendations(count=2, by_status=True)
 
         resp = self.app.get\
             ("/recommendations/" + str(recommendation[0][0].product_id))
