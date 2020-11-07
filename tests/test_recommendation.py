@@ -103,6 +103,18 @@ class TestRecommendation(unittest.TestCase):
         recommendation = Recommendation()
         self.assertRaises(DataValidationError,
                           recommendation.deserialize, invalid_recommendation)
+        
+        invalid_recommendation = \
+        {
+            "product-id": 10,
+            "related-product-id": 5,
+            "type-id": "not int",
+            "status": True
+        }
+
+        recommendation = Recommendation()
+        self.assertRaises(DataValidationError,
+                          recommendation.deserialize, invalid_recommendation)
 
         invalid_recommendation = \
         {
@@ -142,6 +154,39 @@ class TestRecommendation(unittest.TestCase):
         recommendation = self._create_recommendations(count=num_recs)[0]
         returned_records = recommendation.find(recommendation.product_id).count()
         self.assertEqual(returned_records, 1, "Only one record should exist")
+
+    def test_find_by_type_id(self):
+        """ Test find by product_id and related_product_id function """
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        result = Recommendation.find_by_type_id(by_type_id=recommendation.type_id)
+        
+        self.assertEqual(len(result.all()), 1)
+        self.assertEqual(result.first(), recommendation)
+
+        self.assertRaises(TypeError, Recommendation.find_by_type_id, "not int")
+        self.assertRaises(DataValidationError, Recommendation.find_by_type_id, 4)
+    
+    def test_find_by_status(self):
+        """ Test find by product_id and related_product_id function """
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        result = Recommendation.find_by_status(by_status=True)
+        
+        self.assertEqual(len(result.all()), 1)
+        self.assertEqual(result.first(), recommendation)
+
+        self.assertRaises(TypeError, Recommendation.find_by_status, "not bool")
+    
+    def test_find_by_type_id_status(self):
+        """ Test find by product_id and related_product_id function """
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
+        result = Recommendation.find_by_type_id_status(by_type_id=recommendation.type_id, by_status=True)
+        
+        self.assertEqual(len(result.all()), 1)
+        self.assertEqual(result.first(), recommendation)
+
+        self.assertRaises(TypeError, Recommendation.find_by_type_id_status, "not int", True)
+        self.assertRaises(DataValidationError, Recommendation.find_by_type_id_status, 4, True)
+        self.assertRaises(TypeError, Recommendation.find_by_type_id_status, 3, "not bool")
 
     def test_find_by_id_relid(self):
         """ Test find by product_id and related_product_id function """

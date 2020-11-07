@@ -68,6 +68,12 @@ def get_all_recommendations():
                 recommendations = Recommendation.find_by_id_status(int(product_id), bool(by_status))
             else:
                 recommendations = Recommendation.find(int(product_id))
+        elif type_id and by_status:
+            recommendations = Recommendation.find_by_type_id_status(int(type_id), bool(by_status))
+        elif type_id:
+            recommendations = Recommendation.find_by_type_id(int(type_id))
+        elif by_status:
+            recommendations = Recommendation.find_by_status(bool(by_status))
         else:
             recommendations = Recommendation.all()
     except DataValidationError as error:
