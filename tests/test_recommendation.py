@@ -252,6 +252,21 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(TypeError, Recommendation.find_by_id_type, "not_int", 2)
         self.assertRaises(TypeError, Recommendation.find_by_id_type, 1, "not_int")
         self.assertRaises(DataValidationError, Recommendation.find_by_id_type, 1, 5)
+    
+    def test_find_by_id_type_status(self):
+        """ Test find_by_id_type_status function """
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=3)
+        
+        result = Recommendation.find_by_id_type_status(by_id=recommendation.product_id,
+                                                     by_type=recommendation.type_id, by_status=recommendation.status)
+
+        self.assertEqual(len(result.all()), 1)
+        self.assertEqual(result.first(), recommendation)
+
+        self.assertRaises(TypeError, Recommendation.find_by_id_type_status, "not int", 2, 2)
+        self.assertRaises(TypeError, Recommendation.find_by_id_type_status, 1, "not int", 2)
+        self.assertRaises(TypeError, Recommendation.find_by_id_type_status, 1, 2, "not bool")
+        self.assertRaises(DataValidationError, Recommendation.find_by_id_type_status, 1, 5, True)
 
 
 ######################################################################
@@ -276,7 +291,7 @@ class TestRecommendation(unittest.TestCase):
         test_recommendation = Recommendation(product_id=by_id,
                                              related_product_id=by_rel_id,
                                              type_id=by_type,
-                                             status= by_status)
+                                             status=by_status)
         test_recommendation.create()
         return test_recommendation
 

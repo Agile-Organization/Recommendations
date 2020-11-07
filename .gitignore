@@ -16,3 +16,6 @@ __pycache__/
 tests/__pycache__/
 ubuntu-bionic-18.04-cloudimg-console.log
 unittests.xml
+
+# VSCode
+.vscode/
