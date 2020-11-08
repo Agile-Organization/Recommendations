@@ -19,12 +19,19 @@ from service.model import Recommendation, DataValidationError
 from . import app
 
 ######################################################################
+# GET HEALTH CHECK
+######################################################################
+@app.route('/healthcheck')
+def healthcheck():
+    """ Let them know our heart is still beating """
+    return make_response(jsonify(status=200, message='Healthy'), status.HTTP_200_OK)
+
+######################################################################
 # GET INDEX
 ######################################################################
-@app.route("/")
+@app.route('/')
 def index():
-    """ Root URL response """
-    return jsonify(datetime.datetime.now()), status.HTTP_200_OK
+    return app.send_static_file('index.html')
 
 ######################################################################
 # QUERY ALL RECOMMENDATIONS
@@ -42,9 +49,37 @@ def get_all_recommendations():
     
     With HTTP_200_OK status
     """
+    product_id = request.args.get('product-id')
+    related_product_id = request.args.get('related-product-id')
+    type_id = request.args.get('type-id')
+    by_status = request.args.get('status')
+
     app.logger.info("Request for all recommendations in the database")
 
-    recommendations = Recommendation.all()
+    try:
+        if product_id and related_product_id:
+            recommendations = Recommendation.find_by_id_relid(int(product_id), int(related_product_id))
+        elif product_id:
+            if type_id and by_status:
+                recommendations = Recommendation.find_by_id_type_status(int(product_id), int(type_id), bool(by_status))
+            elif type_id:
+                recommendations = Recommendation.find_by_id_type(int(product_id), int(type_id))
+            elif by_status:
+                recommendations = Recommendation.find_by_id_status(int(product_id), bool(by_status))
+            else:
+                recommendations = Recommendation.find(int(product_id))
+        elif type_id and by_status:
+            recommendations = Recommendation.find_by_type_id_status(int(type_id), bool(by_status))
+        elif type_id:
+            recommendations = Recommendation.find_by_type_id(int(type_id))
+        elif by_status:
+            recommendations = Recommendation.find_by_status(bool(by_status))
+        else:
+            recommendations = Recommendation.all()
+    except DataValidationError as error:
+        raise DataValidationError(str(error))
+    except ValueError as error:
+        raise DataValidationError(str(error))
     
     result = []
     for rec in recommendations:
