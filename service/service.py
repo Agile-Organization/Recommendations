@@ -61,19 +61,19 @@ def get_all_recommendations():
             recommendations = Recommendation.find_by_id_relid(int(product_id), int(related_product_id))
         elif product_id:
             if type_id and by_status:
-                recommendations = Recommendation.find_by_id_type_status(int(product_id), int(type_id), (by_status=="true"))
+                recommendations = Recommendation.find_by_id_type_status(int(product_id), int(type_id), (by_status=="True"))
             elif type_id:
                 recommendations = Recommendation.find_by_id_type(int(product_id), int(type_id))
             elif by_status:
-                recommendations = Recommendation.find_by_id_status(int(product_id), (by_status=="true"))
+                recommendations = Recommendation.find_by_id_status(int(product_id), (by_status=="True"))
             else:
                 recommendations = Recommendation.find(int(product_id))
         elif type_id and by_status:
-            recommendations = Recommendation.find_by_type_id_status(int(type_id), (by_status=="true"))
+            recommendations = Recommendation.find_by_type_id_status(int(type_id), (by_status=="True"))
         elif type_id:
             recommendations = Recommendation.find_by_type_id(int(type_id))
         elif by_status:
-            recommendations = Recommendation.find_by_status((by_status=="true"))
+            recommendations = Recommendation.find_by_status((by_status=="True"))
         else:
             recommendations = Recommendation.all()
     except DataValidationError as error:
@@ -380,7 +380,12 @@ def update_recommendation(product_id, related_product_id):
         recommendation.deserialize(request.get_json())
 
         find = Recommendation.find_recommendation
-        old_recommendation = find(by_id=recommendation.product_id, by_rel_id=recommendation.related_product_id).first()
+        old_recommendation = find(by_id=recommendation.product_id, 
+                                  by_rel_id=recommendation.related_product_id, 
+                                  by_status=True).first() \
+                          or find(by_id=recommendation.product_id, 
+                                  by_rel_id=recommendation.related_product_id,
+                                  by_status=False).first()
     except DataValidationError as error:
         raise DataValidationError(error)
 
