@@ -157,20 +157,18 @@ class TestRecommendationService(unittest.TestCase):
 
         # Test Case 2
         # Test for non-empty database
-        recommendations = self._create_recommendations(count=5, by_status=True)
+        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)[0]
+
         resp = self.app.get("/recommendations")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(resp.get_json()), 5)
+        self.assertEqual(len(resp.get_json()), 1)
 
         # Test for the accuracy
         resp = resp.get_json()
-        for i in range(5):
-            returned_recommendation = Recommendation()
-            returned_recommendation.deserialize(resp[i])
-            self.assertEqual(recommendations[i][0], returned_recommendation)
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp[0])
+        self.assertEqual(recommendation, returned_recommendation)
         
-        recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)[0]
-
         # Test Case 3
         resp = self.app.get("/recommendations?product-id={}&related-product-id={}".format(recommendation.product_id, recommendation.related_product_id))
         resp = resp.get_json()[0]
