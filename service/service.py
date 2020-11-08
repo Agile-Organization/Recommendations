@@ -61,19 +61,19 @@ def get_all_recommendations():
             recommendations = Recommendation.find_by_id_relid(int(product_id), int(related_product_id))
         elif product_id:
             if type_id and by_status:
-                recommendations = Recommendation.find_by_id_type_status(int(product_id), int(type_id), bool(by_status))
+                recommendations = Recommendation.find_by_id_type_status(int(product_id), int(type_id), (by_status=="true"))
             elif type_id:
                 recommendations = Recommendation.find_by_id_type(int(product_id), int(type_id))
             elif by_status:
-                recommendations = Recommendation.find_by_id_status(int(product_id), bool(by_status))
+                recommendations = Recommendation.find_by_id_status(int(product_id), (by_status=="true"))
             else:
                 recommendations = Recommendation.find(int(product_id))
         elif type_id and by_status:
-            recommendations = Recommendation.find_by_type_id_status(int(type_id), bool(by_status))
+            recommendations = Recommendation.find_by_type_id_status(int(type_id), (by_status=="true"))
         elif type_id:
             recommendations = Recommendation.find_by_type_id(int(type_id))
         elif by_status:
-            recommendations = Recommendation.find_by_status(bool(by_status))
+            recommendations = Recommendation.find_by_status((by_status=="true"))
         else:
             recommendations = Recommendation.all()
     except DataValidationError as error:

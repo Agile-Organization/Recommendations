@@ -190,7 +190,7 @@ $(function () {
     });
 
     // ****************************************
-    // Search for a Pet
+    // Search for a Recommendation
     // ****************************************
 
     $("#search-btn").click(function () {
@@ -198,7 +198,7 @@ $(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
-        var status = $("#recommendation_status").val() == "true";
+        var status = $("#recommendation_status").val();
 
         var queryString = ""
 
