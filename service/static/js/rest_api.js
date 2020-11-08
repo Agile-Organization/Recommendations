@@ -219,7 +219,7 @@ $(function () {
                 queryString += 'type-id=' + type_id
             }
         }
-        if (status) {
+        if (status && (status != "any")) {
             if (queryString.length > 0) {
                 queryString += '&status=' + status
             } else {
