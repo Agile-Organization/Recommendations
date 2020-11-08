@@ -38,7 +38,7 @@ $(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
-        var status = $("#recommendation_status").val() != "False";
+        var status = $("#recommendation_status").val() == "True";
 
         if (!type_id){
             type_id = "1";
@@ -83,7 +83,7 @@ $(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
-        var status = $("#recommendation_status").val() != "False";
+        var status = $("#recommendation_status").val() == "True";
 
         if (!type_id){
             type_id = "1";
@@ -219,7 +219,7 @@ $(function () {
                 queryString += 'type-id=' + type_id
             }
         }
-        if (status && (status != "Any")) {
+        if (status) {
             if (queryString.length > 0) {
                 queryString += '&status=' + status
             } else {
