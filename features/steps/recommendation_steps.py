@@ -18,6 +18,16 @@ def step_impl(context):
     """ Make a call to the base URL """
     context.driver.get(context.base_url)
 
+@then('I should see "{message}" in the title')
+def step_impl(context, message):
+    """ Check the document title for a message """
+    expect(context.driver.title).to_contain(message)
+
+@then('I should not see "{message}"')
+def step_impl(context, message):
+    error_msg = "I should not see '%s' in '%s'" % (message, context.resp.text)
+    ensure(message in context.resp.text, False, error_msg)
+
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower()
