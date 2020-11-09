@@ -5,10 +5,16 @@ Feature: The recommendation service back-end
 
 Background:
     Given the following recommendations:
-        | product_id | related_product_id | type_id | status |
+        | product-id | related-product-id | type-id | status |
         | 1          | 2                  | 1       | True   |
         | 1          | 3                  | 2       | True   |
         | 1          | 4                  | 3       | False  |
+        | 10         | 22                 | 2       | True   |
+
+Scenario: The server is running
+    When I visit the "Home Page"
+    Then I should see "Recommendation RESTful Service" in the title
+    And I should not see "404 Not Found"
 
 Scenario: Create a Recommendation
     When I visit the "Home Page"
