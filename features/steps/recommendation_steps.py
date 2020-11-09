@@ -28,10 +28,10 @@ def step_impl(context):
     create_url = context.base_url + '/recommendations'
     for row in context.table:
         data = {
-            "product-id": row['product-id'],
-            "related-product-id": row['related-product-id'],
-            "type-id": row['type-id'],
-            "status": row['status']
+            "product-id": int(row['product-id']),
+            "related-product-id": int(row['related-product-id']),
+            "type-id": int(row['type-id']),
+            "status": row['status'] == "True"
             }
         payload = json.dumps(data)
         context.resp = requests.post(create_url, data=payload, headers=headers)
