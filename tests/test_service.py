@@ -65,6 +65,7 @@ class TestRecommendationService(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """ Run once after all tests """
+        db.session.close()    # <-- Explicitly close the connection after all tests
 
     def setUp(self):
         """ Runs before each test """
