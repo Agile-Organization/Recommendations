@@ -87,6 +87,7 @@ def get_all_recommendations():
         result.append(record)
 
     return make_response(jsonify(result), status.HTTP_200_OK)
+    
 
 ######################################################################
 # QUERY RELATED PRODUCTS BY PRODUCT ID
@@ -119,9 +120,6 @@ def get_related_products(product_id):
 
     products = Recommendation.find_by_id_status(product_id) # need to replace find method with actual function name from model file
 
-    if not products.first():
-        raise NotFound("Product with product_id '{}' was not found.".format(product_id))
-
     # assume model returns records in format of: [{product_id: 1, related_product_id: 2, type_id: 1, status: true}]
     relationships = []
     type_1_active, type_1_inactive = [], []
@@ -136,13 +134,31 @@ def get_related_products(product_id):
         else:
             type_3_active.append(p.related_product_id) if p.status else type_3_inactive.append(p.related_product_id)
 
-    relationships = [
-        {"relation_id": 1, "ids": type_1_active, "inactive_ids": type_1_inactive},
-        {"relation_id": 2, "ids": type_2_active, "inactive_ids": type_2_inactive},
-        {"relation_id": 3, "ids": type_3_active, "inactive_ids": type_3_inactive}
-    ]
+
+    if len(type_1_active) or len(type_1_inactive):
+        relationships.append(
+            {
+                "relation_id": 1, 
+                "ids": type_1_active, 
+                "inactive_ids": type_1_inactive
+            })
+    if len(type_2_active) or len(type_2_inactive):
+        relationships.append(
+            {
+                "relation_id": 2, 
+                "ids": type_2_active, 
+                "inactive_ids": type_2_inactive
+            })
+    if len(type_3_active) or len(type_3_inactive):
+        relationships.append(
+            {
+                "relation_id": 3, 
+                "ids": type_3_active, 
+                "inactive_ids": type_3_inactive
+            })
 
     return make_response(jsonify(relationships), status.HTTP_200_OK)
+
 
 ######################################################################
 # QUERY ACTIVE RECOMMENDATIONS
@@ -185,13 +201,16 @@ def get_active_related_products(product_id):
         else:
             type2_products.append(recommendation.related_product_id)
 
-    result = [
-        {"relation_id": 1, "ids": type0_products},
-        {"relation_id": 2, "ids": type1_products},
-        {"relation_id": 3, "ids": type2_products}
-    ]
-
+    result = []
+    if len(type0_products):
+        result.append({"relation_id": 1, "ids": type0_products})
+    if len(type1_products):
+        result.append({"relation_id": 2, "ids": type1_products})
+    if len(type2_products):
+        result.append({"relation_id": 3, "ids": type2_products})
+    
     return make_response(jsonify(result), status.HTTP_200_OK)
+
 
 ######################################################################
 # QUERY RECOMMENDATIONS BY PRODUCT ID AND TYPE
@@ -210,17 +229,80 @@ def get_related_products_with_type(product_id, type_id):
         raise NotFound("Type {} recommendations for product {} not found".format(type_id, product_id))
 
     app.logger.info("Returning type %s recommendations for product %s", type_id, product_id)
-    products = []
-    product_status = []
+    active_products, inactive_products = [], []
     for recommendation in recommendations:
-        products.append(recommendation.related_product_id)
-        product_status.append(recommendation.status)
-
-    result = {"ids": products, "status": product_status}
+        if recommendation.status == "True":
+            active_products.append(recommendation.related_product_id)
+        else:
+            inactive_products.append(recommendation.related_product_id)
+    result = []
+    if(len(active_products)):
+        result.append(
+            {
+                "status": "True",
+                "ids": active_products
+            }
+        )
+    if(len(inactive_products)):
+        result.append(
+            {
+                "status": "False",
+                "ids": inactive_products
+            }
+        )
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
 
+######################################################################
+# QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
+######################################################################
+@app.route('/recommendations/relationship', methods=['GET'])
+def get_recommendation_relationship_type():
+    """
+    /recommendations/relationship?product1=<int:product_id>&product2=<int:product_id>
+    Returns recommendation for product1 and product2 if exists
+        {
+          "product-id" : <int:product-id>,
+          "related-product-id" : <int:related-product-id>,
+          "type-id" : <int:type_id>,
+          "status" : True
+        }
+        With HTTP_200_OK status
+    """
+    product_id = request.args.get('product1')
+    rel_product_id = request.args.get('product2')
+
+    product_id_valid = product_id \
+                       and product_id.isnumeric() \
+                       and "-" not in product_id
+    rel_product_id_valid = rel_product_id \
+                           and rel_product_id.isnumeric() \
+                           and "-" not in rel_product_id
+
+    if not product_id_valid or not rel_product_id_valid:
+        raise BadRequest("Bad Request 2 invalid product ids provided,"\
+                         " received product: {} and related product: {} do not"\
+                         " exist".format(product_id, rel_product_id))
+
+    product_id, rel_product_id = int(product_id), int(rel_product_id)
+
+    exists = Recommendation.check_if_product_exists
+    if not exists(product_id) or not exists(rel_product_id):
+        return '', status.HTTP_204_NO_CONTENT
+
+    app.logger.info("Querying active recommendation for product: {} and"\
+                    " related product: {}".format(product_id, rel_product_id))
+    recommendation = Recommendation.find_recommendation(by_id=product_id,\
+                                       by_rel_id=rel_product_id, by_status=True)
+
+    app.logger.info("Returning active recommendation for product: {} and"\
+                    " related product: {}".format(product_id, rel_product_id))
+
+    if recommendation and recommendation.first():
+        return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
+
+    return '', status.HTTP_204_NO_CONTENT
 ######################################################################
 # QUERY RECOMMENDATIONS BY PRODUCT ID AND RELATED PRODUCT ID
 ######################################################################
@@ -303,55 +385,7 @@ def create_recommendation(product_id, rel_product_id):
     return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url})
 
 
-######################################################################
-# QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
-######################################################################
-@app.route('/recommendations/relationship', methods=['GET'])
-def get_recommendation_relationship_type():
-    """
-    /recommendations/relationship?product1=<int:product_id>&product2=<int:product_id>
-    Returns recommendation for product1 and product2 if exists
-        {
-          "product-id" : <int:product-id>,
-          "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:type_id>,
-          "status" : True
-        }
-        With HTTP_200_OK status
-    """
-    product_id = request.args.get('product1')
-    rel_product_id = request.args.get('product2')
 
-    product_id_valid = product_id \
-                       and product_id.isnumeric() \
-                       and "-" not in product_id
-    rel_product_id_valid = rel_product_id \
-                           and rel_product_id.isnumeric() \
-                           and "-" not in rel_product_id
-
-    if not product_id_valid or not rel_product_id_valid:
-        raise BadRequest("Bad Request 2 invalid product ids provided,"\
-                         " received product: {} and related product: {} do not"\
-                         " exist".format(product_id, rel_product_id))
-
-    product_id, rel_product_id = int(product_id), int(rel_product_id)
-
-    exists = Recommendation.check_if_product_exists
-    if not exists(product_id) or not exists(rel_product_id):
-        return '', status.HTTP_204_NO_CONTENT
-
-    app.logger.info("Querying active recommendation for product: {} and"\
-                    " related product: {}".format(product_id, rel_product_id))
-    recommendation = Recommendation.find_recommendation(by_id=product_id,\
-                                       by_rel_id=rel_product_id, by_status=True)
-
-    app.logger.info("Returning active recommendation for product: {} and"\
-                    " related product: {}".format(product_id, rel_product_id))
-
-    if recommendation and recommendation.first():
-        return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
-
-    return '', status.HTTP_204_NO_CONTENT
 
 ######################################################################
 # UPDATE RECOMMENDATION
