@@ -4,9 +4,12 @@ Feature: The recommendation service back-end
     So that I can keep track of all the recommendations
 
 Background:
-    Given the following recommendations
-        | product-id       | related-product-id | type-id | status |
-        | 10               | 22                 | 2       | True   |
+    Given the following recommendations:
+        | product-id | related-product-id | type-id | status |
+        | 1          | 2                  | 1       | True   |
+        | 1          | 3                  | 2       | True   |
+        | 1          | 4                  | 3       | False  |
+        | 10         | 22                 | 2       | True   |
 
 Scenario: The server is running
     When I visit the "Home Page"
@@ -21,3 +24,11 @@ Scenario: Create a Recommendation
     And I select "True" in the "status" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
+
+Scenario: List all active recommendations
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see a recommendation from "1" to "2" with type "1"
+    And I should see a recommendation from "1" to "3" with type "2"
+    And I should not see a recommendation from "1" to "4" with type "3"
+
