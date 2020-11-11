@@ -82,14 +82,6 @@ def step_impl(context, message):
 
 @then('I should see a recommendation from "{product_id}" to "{related_product_id}" with type "{type_id}"')
 def step_impl(context, product_id, related_product_id, type_id):
-    #found = WebDriverWait(context.driver, WAIT_SECONDS).until(
-    #    expected_conditions.text_to_be_present_in_element(
-    #        (By.ID, 'search_results'),
-    #        product_id + " " + related_product_id + " " + type_id + " true"
-    #    )
-    #)
-    #expect(found).to_be(True)
-
     element = context.driver.find_element_by_id('search_results')
     found = False
     rows = element.find_elements(By.TAG_NAME, "tr")
