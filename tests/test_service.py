@@ -153,6 +153,23 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(status.HTTP_404_NOT_FOUND, resp.status_code)
 
+        # Test Case 5
+        recommendation = Recommendation(product_id=1000,
+                                        related_product_id=1000,
+                                        type_id=1,
+                                        status=True)
+
+        resp = self.app.post("/recommendations",
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+        resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
+                             json=recommendation.serialize(),
+                             content_type="application/json")
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+
     def test_get_all_recommendations(self):
         """ Get all recommendations tests"""
         # Test Case 1
