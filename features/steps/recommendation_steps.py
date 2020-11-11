@@ -99,17 +99,6 @@ class element_in_a_table(object):
 @then('I should see a recommendation from "{product_id}" to "{related_product_id}" with type "{type_id}"')
 def step_impl(context, product_id, related_product_id, type_id):
     found = WebDriverWait(context.driver, WAIT_SECONDS).until(element_in_a_table("search_results", product_id, related_product_id, type_id))
-    '''
-    element = context.driver.find_element_by_id('search_results')
-    found = False
-    rows = element.find_elements(By.TAG_NAME, "tr")
-    for row in rows:
-        cols = row.text.split(' ')
-        if cols[0] == product_id and cols[1] == related_product_id:
-            expect(row.text).to_equal(product_id + " " + related_product_id + " " + type_id + " true")
-            found = True
-            break
-    '''
     expect(found).to_be(True)
 
 class element_not_in_a_table(object):
@@ -131,15 +120,4 @@ class element_not_in_a_table(object):
 @then('I should not see a recommendation from "{product_id}" to "{related_product_id}" with type "{type_id}"')
 def step_impl(context, product_id, related_product_id, type_id):
     not_found = WebDriverWait(context.driver, WAIT_SECONDS).until(element_not_in_a_table("search_results", product_id, related_product_id, type_id))
-    '''
-    element = context.driver.find_element_by_id('search_results')
-    not_found = True
-    rows = element.find_elements(By.TAG_NAME, "tr")
-    for row in rows:
-        cols = row.text.split(' ')
-        if cols[0] == product_id and cols[1] == related_product_id and cols[2] == type_id:
-            not_found = False
-            break
-    expect(not_found).to_be(True)
-    '''
     expect(not_found).to_be(True)
