@@ -231,7 +231,7 @@ def get_related_products_with_type(product_id, type_id):
     app.logger.info("Returning type %s recommendations for product %s", type_id, product_id)
     active_products, inactive_products = [], []
     for recommendation in recommendations:
-        if recommendation.status == "True":
+        if recommendation.status == True:
             active_products.append(recommendation.related_product_id)
         else:
             inactive_products.append(recommendation.related_product_id)
