@@ -342,6 +342,9 @@ def create_recommendation_between_products():
     check_content_type("application/json")
     recommendation = Recommendation()
     recommendation.deserialize(request.get_json())
+    if recommendation.product_id == recommendation.related_product_id:
+        raise BadRequest('product_id cannot be the same as related_product_id') 
+
     recommendation.create()
     message = recommendation.serialize()
     location_url = url_for("get_related_products", product_id=recommendation.product_id, _external=True)
@@ -370,6 +373,9 @@ def create_recommendation(product_id, rel_product_id):
     check_content_type("application/json")
     recommendation = Recommendation()
     recommendation.deserialize(request.get_json())
+
+    if recommendation.product_id == recommendation.related_product_id:
+        raise BadRequest('product_id cannot be the same as related_product_id') 
 
     existing_recommendation = Recommendation.find_recommendation(recommendation.product_id, recommendation.related_product_id).first() or Recommendation.find_recommendation(recommendation.product_id, recommendation.related_product_id, by_status=False).first()
 
