@@ -32,3 +32,35 @@ Scenario: List all active recommendations
     And I should see a recommendation from "1" to "3" with type "2"
     And I should not see a recommendation from "1" to "4" with type "3"
 
+Scenario: Read an existing recommendation
+    When I visit the "Home Page"
+    And I set the "product_id" to "10"
+    And I set the "related_product_id" to "22"
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "2" in the "type_id" field
+    And I should see "True" in the "status" field
+
+Scenario: Read a non-exist recommendation
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "7"
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found"
+
+Scenario: Read a recommendation without providing product_id and related_product_id
+    When I visit the "Home Page"
+    And I press the "Retrieve" button
+    Then I should see the message "Please enter Product ID and Related Product ID"
+
+Scenario: Read a recommendation without providing product_id
+    When I visit the "Home Page"
+    And I set the "related_product_id" to "7"
+    And I press the "Retrieve" button
+    Then I should see the message "Please enter Product ID and Related Product ID"
+
+Scenario: Read a recommendation without providing product_id and related_product_id
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I press the "Retrieve" button
+    Then I should see the message "Please enter Product ID and Related Product ID"

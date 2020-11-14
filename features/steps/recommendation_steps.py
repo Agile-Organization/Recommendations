@@ -121,3 +121,14 @@ class element_not_in_a_table(object):
 def step_impl(context, product_id, related_product_id, type_id):
     not_found = WebDriverWait(context.driver, WAIT_SECONDS).until(element_not_in_a_table("search_results", product_id, related_product_id, type_id))
     expect(not_found).to_be(True)
+
+@then('I should see "{value}" in the "{element_name}" field')
+def step_impl(context, value, element_name):
+    element_id = ID_PREFIX + element_name.lower()
+    found = WebDriverWait(context.driver, WAIT_SECONDS).until(
+        expected_conditions.text_to_be_present_in_element_value(
+            (By.ID, element_id),
+            value
+        )
+    )
+    expect(found).to_be(True)
