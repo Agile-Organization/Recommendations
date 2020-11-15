@@ -35,7 +35,11 @@ DATABASE_URI = os.getenv(
 # Override if we are running in Cloud Foundry
 if 'VCAP_SERVICES' in os.environ:
     vcap = json.loads(os.environ['VCAP_SERVICES'])
-    DATABASE_URI = vcap['user-provided'][0]['credentials']['url']
+    user_provided_services = vcap['user-provided']
+    for service in user_provided_services:
+        if service['name'] == "ElephantSQL-test":
+            DATABASE_URI = service['credentials']['url']
+            break
 
 ######################################################################
 #  T E S T   C A S E S
@@ -55,6 +59,7 @@ class TestRecommendation(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """ These run once after Test suite """
+        db.session.close()    # <-- Explicitly close the connection after all tests
 
     def setUp(self):
         db.drop_all()  # clean up the last tests

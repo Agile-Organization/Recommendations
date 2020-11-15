@@ -10,9 +10,9 @@ $(function () {
         $("#recommendation_related_product_id").val(res["related-product-id"]);
         $("#recommendation_type_id").val(res["type-id"]);
         if (res["status"] == true) {
-            $("#recommendation_status").val("true");
+            $("#recommendation_status").val("True");
         } else {
-            $("#recommendation_status").val("false");
+            $("#recommendation_status").val("False");
         }
     }
 
@@ -38,7 +38,7 @@ $(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
-        var status = $("#recommendation_status").val() == "true";
+        var status = $("#recommendation_status").val() == "True";
 
         if (!type_id){
             type_id = "1";
@@ -83,7 +83,7 @@ $(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
-        var status = $("#recommendation_status").val() == "true";
+        var status = $("#recommendation_status").val() == "True";
 
         if (!type_id){
             type_id = "1";
@@ -190,7 +190,7 @@ $(function () {
     });
 
     // ****************************************
-    // Search for a Pet
+    // Search for a Recommendation
     // ****************************************
 
     $("#search-btn").click(function () {
@@ -198,7 +198,7 @@ $(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
-        var status = $("#recommendation_status").val() == "true";
+        var status = $("#recommendation_status").val();
 
         var queryString = ""
 
