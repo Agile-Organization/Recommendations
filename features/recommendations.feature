@@ -24,6 +24,17 @@ Scenario: Create a Recommendation
     And I select "True" in the "status" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
+    When I copy the "product_id" field
+    And I press the "Clear" button
+    Then the "product_id" field should be empty
+    And the "related_product_id" field should be empty
+    And the "type_id" field should be empty
+    When I paste the "product_id" field
+    And I set the "related_product_id" to "23"
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "1" in the "type_id" field
+    And I should see "True" in the "status" field
 
 Scenario: List all active recommendations
     When I visit the "Home Page"
