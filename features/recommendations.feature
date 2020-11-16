@@ -64,3 +64,28 @@ Scenario: Read a recommendation without providing product_id and related_product
     And I set the "product_id" to "1"
     And I press the "Retrieve" button
     Then I should see the message "Please enter Product ID and Related Product ID"
+
+Scenario: Update a recommendation with valid ids
+    When I visit the "Home Page"
+    And I set the "product_id" to "10"
+    And I set the "related_product_id" to "22"
+    And I set the "type_id" to "3"
+    And I select "False" in the "status" dropdown
+    And I press the "Update" button
+    Then I should see the message "Success"
+    When I press the "Clear" button
+    And I set the "product_id" to "10"
+    And I set the "related_product_id" to "22"
+    And I press the "Retrieve" button
+    Then I should see "3" in the "type_id" field
+    And I should see "False" in the "status" field
+
+
+Scenario: Update a recommendation with non-exists ids
+    When I visit the "Home Page"
+    And I set the "product_id" to "10"
+    And I set the "related_product_id" to "99"
+    And I set the "type_id" to "2"
+    And I select "False" in the "status" dropdown
+    And I press the "Update" button
+    Then I should see the message "404 Not Found"
