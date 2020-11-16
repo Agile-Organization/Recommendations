@@ -1,23 +1,9 @@
-<<<<<<< HEAD
-"""
-Recommendation Steps
-
-Steps file for recommendations.feature
-
-For information on Waiting until elements are present in the HTML see:
-    https://selenium-python.readthedocs.io/waits.html
-"""
-=======
->>>>>>> origin/master
 from os import getenv
 import logging
 import json
 import requests
 from behave import *
-<<<<<<< HEAD
-=======
 from service import app
->>>>>>> origin/master
 from compare import expect, ensure
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -25,9 +11,6 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions
 
 WAIT_SECONDS = int(getenv('WAIT_SECONDS', '60'))
-<<<<<<< HEAD
-ID_PREFIX = 'recommendation_'
-=======
 ID_PREFIX = 'recommendation_'
 
 @given('the following recommendations')
@@ -149,4 +132,3 @@ def step_impl(context, value, element_name):
         )
     )
     expect(found).to_be(True)
->>>>>>> origin/master

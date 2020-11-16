@@ -64,3 +64,10 @@ Scenario: Read a recommendation without providing product_id and related_product
     And I set the "product_id" to "1"
     And I press the "Retrieve" button
     Then I should see the message "Please enter Product ID and Related Product ID"
+
+Scenario: Delete an existed recommendation
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "2"
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
