@@ -447,9 +447,8 @@ def update_recommendation(product_id, related_product_id):
                     recommendation.related_product_id, old_typeid, recommendation.type_id)
 
     message = old_recommendation.serialize()
-    location_url = "/recommendations/{}/{}".format(old_recommendation.product_id, old_recommendation.related_product_id)
 
-    return make_response(jsonify(message), status.HTTP_200_OK, {"Location": location_url})
+    return make_response(jsonify(message), status.HTTP_200_OK)
 
 
 ######################################################################
