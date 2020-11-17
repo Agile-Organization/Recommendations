@@ -271,4 +271,33 @@ $(function () {
 
     });
 
+    // ****************************************
+    // Toggle the status of a recommendation
+    // ****************************************
+
+    $("#toggle-btn").click(function () {
+
+        var product_id = $("#recommendation_product_id").val();
+        var related_product_id = $("#recommendation_related_product_id").val();
+
+        if (product_id && related_product_id){
+            var ajax = $.ajax({
+                type: "PUT",
+                url: "/recommendations/" + product_id + "/" + related_product_id + "/toggle"
+            })
+
+            ajax.done(function(res){
+                flash_message("Success")
+            });
+
+            ajax.fail(function(res){
+                flash_message(res.responseJSON.message)
+            });
+        }
+        else {
+            flash_message("Please enter Product ID and Related Product ID")
+        }
+
+    });
+
 })
