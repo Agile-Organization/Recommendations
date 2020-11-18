@@ -100,3 +100,22 @@ Scenario: Update a recommendation with non-exists ids
     And I select "False" in the "status" dropdown
     And I press the "Update" button
     Then I should see the message "404 Not Found"
+
+Scenario: Flip the state of an existed recommendation with product_id and related_product_id
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "4"
+    And I press the "Toggle" button
+    Then I should see "3" in the "type_id" field
+    And I should see "True" in the "status" field
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "3"
+    And I press the "Toggle" button
+    Then I should see "2" in the "type_id" field
+    And I should see "False" in the "status" field
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "999"
+    And I press the "Toggle" button
+    Then I should see the message "404 Not Found"
