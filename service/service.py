@@ -446,7 +446,9 @@ def update_recommendation(product_id, related_product_id):
                     "related product %s from %s to %s.", recommendation.product_id,
                     recommendation.related_product_id, old_typeid, recommendation.type_id)
 
-    return '', status.HTTP_200_OK
+    message = old_recommendation.serialize()
+
+    return make_response(jsonify(message), status.HTTP_200_OK)
 
 
 ######################################################################
@@ -477,7 +479,7 @@ def toggle_recommendation_between_products(product_id, rel_product_id):
     app.logger.info("Toggled Recommendation status for product %s with "\
                     "related product %s.", product_id, rel_product_id)
 
-    return jsonify({'status': recommendation.status}), status.HTTP_200_OK
+    return make_response(jsonify(recommendation.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################

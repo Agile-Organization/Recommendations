@@ -471,11 +471,12 @@ class TestRecommendationService(unittest.TestCase):
         update_url = "/recommendations/" + str(old_recommendation.product_id) + "/" + str(old_recommendation.related_product_id)
         get_url = "/recommendations/relationship"
 
-        resp = self.app.put(update_url, json=new_recommendation.serialize(), content_type="application/json")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertIsNone(resp.get_json())
+        update_resp = self.app.put(update_url, json=new_recommendation.serialize(), content_type="application/json")
+        self.assertEqual(update_resp.status_code, status.HTTP_200_OK)
+        self.assertIsNotNone(update_resp.get_json())
 
         resp = self.app.get(get_url, query_string=dict(product1=old_recommendation.product_id, product2=old_recommendation.related_product_id))
+        self.assertEqual(resp.get_json(), update_resp.get_json())
         updated_recommendation = Recommendation()
         updated_recommendation.deserialize(resp.get_json())
         self.assertEqual(updated_recommendation, new_recommendation, "recommendation updated successfully")
