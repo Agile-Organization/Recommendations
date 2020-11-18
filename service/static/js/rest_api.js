@@ -21,7 +21,10 @@ $(function () {
         $("#recommendation_product_id").val("");
         $("#recommendation_related_product_id").val("");
         $("#recommendation_type_id").val("");
+        $("#recommendation_status").val("");
     }
+
+    clear_form_data(); 
 
     // Updates the flash message area
     function flash_message(message) {
