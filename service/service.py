@@ -479,7 +479,7 @@ def toggle_recommendation_between_products(product_id, rel_product_id):
     app.logger.info("Toggled Recommendation status for product %s with "\
                     "related product %s.", product_id, rel_product_id)
 
-    return jsonify({'status': recommendation.status}), status.HTTP_200_OK
+    return make_response(jsonify(recommendation.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
