@@ -287,7 +287,8 @@ $(function () {
             })
 
             ajax.done(function(res){
-                flash_message("Success")
+                flash_message("Success");
+                $("#search-btn").trigger('click');
             });
 
             ajax.fail(function(res){
