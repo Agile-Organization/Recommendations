@@ -41,7 +41,7 @@ Scenario: List all active recommendations
     And I press the "Search" button
     Then I should see a recommendation from "1" to "2" with type "1"
     And I should see a recommendation from "1" to "3" with type "2"
-    And I should not see a recommendation from "1" to "4" with type "3"
+    And I should see a recommendation from "1" to "4" with type "3"
 
 Scenario: Read an existing recommendation
     When I visit the "Home Page"
