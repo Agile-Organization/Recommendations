@@ -200,7 +200,7 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.product_id==by_id, cls.related_product_id==by_rel_id)
 
     @classmethod
-    def find_by_id_status(cls, by_id: int, by_status=True):
+    def find_by_id_status(cls, by_id: int, by_status):
         """ Find [status: active/inactive] recommendations of a [product: product_id] """
         if not by_id or not isinstance(by_id, int):
             raise TypeError("by_id is not of type int")
@@ -224,7 +224,7 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.product_id==by_id, cls.type_id==by_type)
 
     @classmethod
-    def find_by_id_type_status(cls, by_id: int, by_type: int, by_status=True):
+    def find_by_id_type_status(cls, by_id: int, by_type: int, by_status):
         """ Find recommendations of a [product: product_id] with [type: type_id] """
         if not by_id or not isinstance(by_id, int):
             raise TypeError("by_id is not of type int")

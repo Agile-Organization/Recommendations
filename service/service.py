@@ -118,7 +118,7 @@ def get_related_products(product_id):
     """
     app.logger.info("Request for related products with product_id: %s", product_id)
 
-    products = Recommendation.find_by_id_status(product_id) # need to replace find method with actual function name from model file
+    products = Recommendation.find_by_id_status(product_id, by_status=True) # need to replace find method with actual function name from model file
 
     # assume model returns records in format of: [{product_id: 1, related_product_id: 2, type_id: 1, status: true}]
     relationships = []
@@ -184,7 +184,7 @@ def get_active_related_products(product_id):
     ]
     """
     app.logger.info("Query active recommendations for product_id: %s", product_id)
-    recommendations = Recommendation.find_by_id_status(product_id)
+    recommendations = Recommendation.find_by_id_status(product_id, by_status=True)
 
     if not recommendations.all():
         raise NotFound("Active recommendations for product {} not found.".format(product_id))
@@ -491,7 +491,7 @@ def delete_by_type_status(product_id):
     This endpoint will delete all the recommendations based on
     the product id and the parameter type and stauts
     """
-    type_id = request.args.get('type_id')
+    type_id = request.args.get('type-id')
     recommendation_status = request.args.get('status')
 
     if not type_id and not recommendation_status:
@@ -506,7 +506,7 @@ def delete_by_type_status(product_id):
     if(type_id and recommendation_status):
         app.logger.info("Request to delete recommendations by type_id and status")
         type_id = int(type_id)
-        recommendation_status = bool(recommendation_status)
+        recommendation_status = bool(recommendation_status == "True")
 
         recommendations = Recommendation.find_by_id_type_status(product_id, type_id, recommendation_status)
 
@@ -533,7 +533,7 @@ def delete_by_type_status(product_id):
 
     elif(recommendation_status):
         app.logger.info("Request to delete recommendations by status")
-        recommendation_status = bool(recommendation_status)
+        recommendation_status = bool(recommendation_status == "True")
         recommendations = Recommendation.find_by_id_status(product_id, recommendation_status)
 
         for recommendation in recommendations:

@@ -76,14 +76,13 @@ Scenario: Read a recommendation without providing product_id and related_product
     And I press the "Retrieve" button
     Then I should see the message "Please enter Product ID and Related Product ID"
 
-<<<<<<< HEAD
 Scenario: Delete an existed recommendation
     When I visit the "Home Page"
     And I set the "product_id" to "1"
     And I set the "related_product_id" to "2"
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-=======
+    
 Scenario: Update a recommendation with valid ids
     When I visit the "Home Page"
     And I set the "product_id" to "10"
@@ -108,4 +107,3 @@ Scenario: Update a recommendation with non-exists ids
     And I select "False" in the "status" dropdown
     And I press the "Update" button
     Then I should see the message "404 Not Found"
->>>>>>> origin/master
