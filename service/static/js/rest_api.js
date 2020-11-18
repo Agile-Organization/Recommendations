@@ -288,7 +288,7 @@ $(function () {
 
             ajax.done(function(res){
                 flash_message("Success");
-                $("#search-btn").trigger('click');
+                update_form_data(res);
             });
 
             ajax.fail(function(res){
