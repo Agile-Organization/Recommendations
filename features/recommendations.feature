@@ -76,6 +76,86 @@ Scenario: Read a recommendation without providing product_id and related_product
     And I press the "Retrieve" button
     Then I should see the message "Please enter Product ID and Related Product ID"
 
+Scenario: Delete the recommendation without providing product_id
+    When I visit the "Home Page"
+    And I press the "Delete" button
+    Then I should see the message "Please enter Product ID or Product ID with proper parameters"
+
+Scenario: Delete the non-existed recommendation
+    When I visit the "Home Page"
+    And I set the "product_id" to "999"
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+
+Scenario: Delete an existed recommendation
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "2"
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+    When I set the "product_id" to "1"
+    And I set the "related_product_id" to "2"
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found: Recommendatin for product id 1 with related product id 2 not found"
+
+Scenario: Delete recommendations by using product ID and type ID
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I set the "related_product_id" to "5"
+    And I set the "type_id" to "2"
+    And I select "True" in the "status" dropdown
+    And I press the "Create" button
+    Then I should see the message "Success"
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
+    And I set the "type_id" to "2"
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+    When I set the "product_id" to "1"
+    And I press the "Search" button
+    Then I should not see a recommendation from "1" to "3" with type "2"
+    And I should not see a recommendation from "1" to "5" with type "2"
+    And I should see a recommendation from "1" to "2" with type "1"
+    And I should see a recommendation from "1" to "4" with type "3"
+
+Scenario: Delete recommendations by using product ID
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+    When I set the "product_id" to "1"
+    And I press the "Search" button
+    Then I should not see a recommendation from "1" to "2" with type "1"
+    And I should not see a recommendation from "1" to "3" with type "2"
+    And I should not see a recommendation from "1" to "4" with type "3"
+    When I press the "Clear" button
+    And I press the "Search" button
+    Then I should see a recommendation from "10" to "22" with type "2"
+
+Scenario: Delete active recommendations by product ID (The status is True)
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I select "True" in the "status" dropdown
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+    When I set the "product_id" to "1"
+    And I press the "Search" button
+    Then I should not see a recommendation from "1" to "2" with type "1"
+    And I should not see a recommendation from "1" to "3" with type "2"
+    And I should see a recommendation from "1" to "4" with type "3"
+
+Scenario: Delete inactive recommendations by product ID (The status is False)
+    When I visit the "Home Page"
+    And I set the "product_id" to "1"
+    And I select "False" in the "status" dropdown
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+    When I set the "product_id" to "1"
+    And I press the "Search" button
+    Then I should see a recommendation from "1" to "2" with type "1"
+    And I should see a recommendation from "1" to "3" with type "2"
+    And I should not see a recommendation from "1" to "4" with type "3"
+
 Scenario: Update a recommendation with valid ids
     When I visit the "Home Page"
     And I set the "product_id" to "10"
@@ -90,7 +170,6 @@ Scenario: Update a recommendation with valid ids
     And I press the "Retrieve" button
     Then I should see "3" in the "type_id" field
     And I should see "False" in the "status" field
-
 
 Scenario: Update a recommendation with non-exists ids
     When I visit the "Home Page"

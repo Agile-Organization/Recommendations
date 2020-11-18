@@ -595,7 +595,7 @@ class TestRecommendationService(unittest.TestCase):
         # Delete recommendation by valid product id and valid type_id
         resp = self.app.delete("/recommendations/"
                                 + str(recommendation.product_id)
-                                + "?type_id="
+                                + "?type-id="
                                 + str(recommendation.type_id)
                                 + "&status="
                                 + str(recommendation.status))
@@ -611,7 +611,7 @@ class TestRecommendationService(unittest.TestCase):
         # Delete recommendation by valid product id and valid type_id
         resp = self.app.delete("/recommendations/"
                                 + str(recommendation.product_id)
-                                + "?type_id="
+                                + "?type-id="
                                 + str(recommendation.type_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertIsNone(resp.get_json())
@@ -639,14 +639,14 @@ class TestRecommendationService(unittest.TestCase):
         # Delete recommendation by valid product id and string type
         resp = self.app.delete("/recommendations/"
                             + str(recommendation.product_id)
-                            + "?type_id="
+                            + "?type-id="
                             + str("TEST"))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Delete recommendation by valid product id and invalid type
         resp = self.app.delete("/recommendations/"
                             + str(recommendation.product_id)
-                            + "?type_id=" + str(5))
+                            + "?type-id=" + str(5))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Delete recommendation by valid product id, invalid status

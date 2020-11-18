@@ -158,16 +158,34 @@ $(function () {
     // ****************************************
 
     $("#delete-btn").click(function () {
-
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
+        var type_id = $("#recommendation_type_id").val();
+        var status = $("#recommendation_status").val();
+        
+        if (product_id) {
+            var queryString = ""
+            if (related_product_id) {
+                queryString += "/" + related_product_id
+            } 
+            else if (type_id && status) {
+                queryString += "?type-id=" + type_id + "&status=" + status
+            } 
+            else if (type_id) {
+                queryString += "?type-id=" + type_id
+            } 
+            else if (status) {
+                queryString += "?status=" + status
+            }
+            else {
+                queryString += "/all"
+            }
 
-        if (product_id && related_product_id){
             var ajax = $.ajax({
                 type: "DELETE",
-                url: "/recommendations/" + product_id + "/" + related_product_id,
+                url: "/recommendations/" + product_id + queryString,
                 contentType: "application/json",
-                data: '',
+                data: ''
             })
     
             ajax.done(function(res){
@@ -180,8 +198,8 @@ $(function () {
             });
         }
         else {
-            flash_message("Please enter Product ID and Related Product ID")
-        }
+            flash_message("Please enter Product ID or Product ID with proper parameters")
+        }  
     });
 
     // ****************************************
