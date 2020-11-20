@@ -42,7 +42,7 @@ api = Api(
 
 # Define the model so that the docs reflect what can be sent
 recommendation_model = api.model(
-    "Pet",
+    "Recommendation",
     {
         "product-id": fields.Integer(
             readOnly=True, description="The unique product ID"
@@ -259,7 +259,7 @@ def data_load(payload):
 
 
 def data_reset():
-    """ Removes all Pets from the database """
+    """ Removes all Recommendations from the database """
     Recommendation.remove_all()
 
 
