@@ -258,11 +258,6 @@ def data_load(payload):
     recommendation.create()
 
 
-def data_reset():
-    """ Removes all Recommendations from the database """
-    Recommendation.remove_all()
-
-
 def check_content_type(content_type):
     """ Checks that the media type is correct """
     if request.headers["Content-Type"] == content_type:

@@ -331,13 +331,3 @@ class Recommendation(db.Model):
             ).first()
             is not None
         )
-
-    ######################################################################
-    #  S T A T I C   D A T A B S E   M E T H O D S
-    ######################################################################
-
-    @classmethod
-    def remove_all(cls):
-        """ Removes all Recommendations from the database (used for testing)  """
-        for recommendation in cls.database:
-            recommendation.delete()
