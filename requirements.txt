@@ -1,6 +1,8 @@
 # Dependencies
 Flask==1.1.1
 Flask-API==1.1
+Werkzeug==0.16.0
+flask-restplus==0.13.0
 Flask-SQLAlchemy==2.4.1
 psycopg2-binary==2.8.4
 
@@ -14,6 +16,7 @@ honcho>=1.0.1
 # Code quality
 pylint==2.4.4
 flake8==3.7.9
+black==20.8b1
 
 # Test Driven Development
 factory-boy==2.12.0
