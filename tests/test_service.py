@@ -40,7 +40,7 @@ logging.disable(logging.CRITICAL)
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres"
 )
-BASE_URL = "/recommendations"
+BASE_URL = "/api/recommendations"
 # Override if we are running in Cloud Foundry
 if "VCAP_SERVICES" in os.environ:
     vcap = json.loads(os.environ["VCAP_SERVICES"])
@@ -565,7 +565,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(not recommendation.status, resp_message['status'])
 
-        resp = self.app.get("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
+        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -580,7 +580,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(recommendation.status, resp_message['status'])
 
-        resp = self.app.get("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
+        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -725,7 +725,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNone(resp.get_json())
 
         # try querying that recommendation
-        resp = self.app.get("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
+        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -734,15 +734,6 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertIsNone(resp.get_json())
-
-
-
-    def test_internal_server_error(self):
-        """ Test internal service error handler """
-        message = "Test error message"
-        resp = internal_server_error(message)
-        self.assertEqual(resp[1], status.HTTP_500_INTERNAL_SERVER_ERROR)
-        self.assertEqual(resp[0].get_json()["message"], message)
 
     ######################################################################
     #   HELPER FUNCTIONS
@@ -757,20 +748,23 @@ class TestRecommendationService(unittest.TestCase):
         for _ in range(count):
             test_recommendation = RecommendationFactory()
             test_recommendation.status = by_status
-            data_load(test_recommendation.serialize())
-            recommendations.append([test_recommendation])
+            resp = self.app.post("/recommendations",
+                                 json=test_recommendation.serialize(),
+                                 content_type="application/json")
+            recommendations.append([test_recommendation,
+                                    resp.headers.get("Location", None)])
         return recommendations
 
     def _create_one_recommendation(self, by_id, by_rel_id, by_type, by_status=True):
         """ Create one specific recommendation for testing """
-        test_recommendation = Recommendation(
-            product_id=by_id,
-            related_product_id=by_rel_id,
-            type_id=by_type,
-            status=by_status,
-        )
-        data_load(test_recommendation.serialize())
-        return [test_recommendation]
+        test_recommendation = Recommendation(product_id=by_id,
+                                             related_product_id=by_rel_id,
+                                             type_id=by_type,
+                                             status= by_status)
+        resp = self.app.post("/recommendations",
+                             json=test_recommendation.serialize(),
+                             content_type="application/json")
+        return [test_recommendation, resp.headers.get("Location", None)]
 
 
 ######################################################################

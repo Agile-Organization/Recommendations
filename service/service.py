@@ -33,7 +33,7 @@ api = Api(
     default="recommendations",
     default_label="Recommendation operations",
     doc="/apidocs",  # default also could use doc='/apidocs/'
-    prefix="",
+    prefix="/api",
 )
 
 # Define the model so that the docs reflect what can be sent
