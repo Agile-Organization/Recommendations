@@ -52,15 +52,33 @@ api = Api(app,
 
 # Define the model so that the docs reflect what can be sent
 recommendation_model = api.model('Recommendation', {
-    'product_id': fields.Integer(readOnly=True,
+    'product-id': fields.Integer(readOnly=True,
                          description='The first product id of a recommendation record'),
-    'related_product_id': fields.Integer(required=True,
+    'related-product-id': fields.Integer(required=True,
                           description='The second product id of a recommendation record'),
-    'type_id': fields.Integer(required=True,
+    'type-id': fields.Integer(required=True,
                               description='The type id of a recommendation record (between 1 and 3, 1: up-sell, 2: cross-sell, 3: accessory)'),
     'status': fields.Boolean(required=True,
                                 description='The status of a recommendation record - is it active?')
 })
+
+# query string arguments
+recommendation_args = reqparse.RequestParser()
+recommendation_args.add_argument(
+    "product-id", type=int, required=False, help="List Recommendations by product id"
+)
+recommendation_args.add_argument(
+    "related-product-id",
+    type=int,
+    required=False,
+    help="List Recommendations by related product id",
+)
+recommendation_args.add_argument(
+    "type-id", type=int, required=False, help="List Recommendations by type id"
+)
+recommendation_args.add_argument(
+    "status", type=inputs.boolean, required=False, help="List Recommendations by status"
+)
 
 
 ######################################################################
@@ -420,43 +438,6 @@ def create_recommendation_between_products():
 
 
 ######################################################################
-# CREATE RELATIONSHIP BETWEEN PRODUCTS (RESTful)
-######################################################################
-# @app.route('/recommendations/<int:product_id>/<int:rel_product_id>', methods=['POST'])
-# def create_recommendation(product_id, rel_product_id):
-#     """
-#     Creates a Recommendation
-#     This endpoint will create a recommendation based the data in the body that is posted
-#     {
-#         "product-id" : 1,
-#         "related-product-id" : 2,
-#         "type-id" : 1,
-#         "status" : 1
-#     }
-#     """
-#     app.logger.info("Request to create a recommendation")
-#     check_content_type("application/json")
-#     recommendation = Recommendation()
-#     recommendation.deserialize(request.get_json())
-
-#     if recommendation.product_id == recommendation.related_product_id:
-#         raise BadRequest('product_id cannot be the same as related_product_id') 
-
-#     existing_recommendation = Recommendation.find_recommendation(recommendation.product_id, recommendation.related_product_id).first() or Recommendation.find_recommendation(recommendation.product_id, recommendation.related_product_id, by_status=False).first()
-
-#     if existing_recommendation:
-#         raise BadRequest('Recommendation with given product id and related product id already exists')
-
-#     recommendation.create()
-#     message = recommendation.serialize()
-#     location_url = "/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id)
-
-#     app.logger.info("recommendation from product ID [%s] to related product ID [%s] created.",
-#                     recommendation.product_id, recommendation.related_product_id)
-#     return make_response(jsonify(message), status.HTTP_201_CREATED, {"Location": location_url})
-
-
-######################################################################
 #  PATH: /recommendations/{product-id}/{related-product-id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>")
@@ -466,19 +447,18 @@ class RecommendationResource(Resource):
     """
     RecommendationResource class
     Allows the manipulation of a single Recommendation
-    GET /recommendations/<product_id>/<related_product_id> - Returns the Recommendation
+    POST /recommendations/<product_id>/<related_product_id> - Create a new recommendation
     """
 
     # ------------------------------------------------------------------
     # ADD A NEW RECOMMENDATION
     # ------------------------------------------------------------------
-    @api.doc("create_recommendations", security="apikey")
+    @api.doc("create_recommendations")
     @api.expect(recommendation_model)
     @api.response(400, 'The posted data was not valid')
     @api.response(201, 'Recommendation created successfully')
     @api.marshal_with(recommendation_model, code=201)
-    # @token_required
-    def post(self):
+    def post(self, product_id, related_product_id):
         """
         Creates a Recommendation
         This endpoint will create a Recommendation based the data in the body that is posted
@@ -486,7 +466,7 @@ class RecommendationResource(Resource):
         app.logger.info("Request to create a recommendation")
         
         recommendation = Recommendation()
-        api.logger.debug('Payload = %s', api.payload)
+        app.logger.debug('Payload = %s', api.payload)
         recommendation.deserialize(api.payload)
 
         if recommendation.product_id == recommendation.related_product_id:

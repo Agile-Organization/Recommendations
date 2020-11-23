@@ -50,6 +50,8 @@ if 'VCAP_SERVICES' in os.environ:
             DATABASE_URI = service['credentials']['url']
             break
 
+API_ROUTE_PREFIX = "/api"
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
@@ -105,7 +107,7 @@ class TestRecommendationService(unittest.TestCase):
                                         type_id=1,
                                         status=True)
 
-        resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
+        resp = self.app.post(API_ROUTE_PREFIX+"/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
                              json=recommendation.serialize(),
                              content_type="application/json")
         resp_message = resp.get_json()
@@ -120,10 +122,9 @@ class TestRecommendationService(unittest.TestCase):
                                         type_id=1,
                                         status=True)
 
-        resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
+        resp = self.app.post(API_ROUTE_PREFIX+"/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
                              json=recommendation.serialize(),
                              content_type="application/json")
-        resp_message = resp.get_json()
 
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
 
@@ -133,10 +134,9 @@ class TestRecommendationService(unittest.TestCase):
                                         type_id=10,
                                         status=True)
 
-        resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
+        resp = self.app.post(API_ROUTE_PREFIX+"/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
                              json=recommendation.serialize(),
                              content_type="application/json")
-        resp_message = resp.get_json()
 
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
 
@@ -146,10 +146,9 @@ class TestRecommendationService(unittest.TestCase):
                                         type_id=1,
                                         status=True)
 
-        resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
+        resp = self.app.post(API_ROUTE_PREFIX+"/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
                              json=recommendation.serialize(),
                              content_type="application/json")
-        resp_message = resp.get_json()
 
         self.assertEqual(status.HTTP_404_NOT_FOUND, resp.status_code)
 
@@ -163,8 +162,7 @@ class TestRecommendationService(unittest.TestCase):
                              json=recommendation.serialize(),
                              content_type="application/json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
-
-        resp = self.app.post("/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
+        resp = self.app.post(API_ROUTE_PREFIX+"/recommendations/{}/{}".format(recommendation.product_id, recommendation.related_product_id),
                              json=recommendation.serialize(),
                              content_type="application/json")
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
