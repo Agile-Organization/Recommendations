@@ -163,15 +163,8 @@ class TestRecommendation(unittest.TestCase):
         self.assertEqual(returned_records, 1, "Only one record should exist")
 
     def test_find_by_type_id(self):
-<<<<<<< HEAD
         """ Test find by type_id function """
         recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
-=======
-        """ Test find by product_id and related_product_id function """
-        recommendation = self._create_one_recommendation(
-            by_id=1, by_rel_id=2, by_type=1
-        )
->>>>>>> origin/master
         result = Recommendation.find_by_type_id(by_type_id=recommendation.type_id)
 
         self.assertEqual(len(result.all()), 1)
@@ -181,15 +174,8 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(DataValidationError, Recommendation.find_by_type_id, 4)
 
     def test_find_by_status(self):
-<<<<<<< HEAD
         """ Test find by status function """
         recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
-=======
-        """ Test find by product_id and related_product_id function """
-        recommendation = self._create_one_recommendation(
-            by_id=1, by_rel_id=2, by_type=1
-        )
->>>>>>> origin/master
         result = Recommendation.find_by_status(by_status=True)
 
         self.assertEqual(len(result.all()), 1)
@@ -198,21 +184,10 @@ class TestRecommendation(unittest.TestCase):
         self.assertRaises(TypeError, Recommendation.find_by_status, "not bool")
 
     def test_find_by_type_id_status(self):
-<<<<<<< HEAD
         """ Test find by type_id and status function """
         recommendation = self._create_one_recommendation(by_id=1, by_rel_id=2, by_type=1)
         result = Recommendation.find_by_type_id_status(by_type_id=recommendation.type_id, by_status=True)
         
-=======
-        """ Test find by product_id and related_product_id function """
-        recommendation = self._create_one_recommendation(
-            by_id=1, by_rel_id=2, by_type=1
-        )
-        result = Recommendation.find_by_type_id_status(
-            by_type_id=recommendation.type_id, by_status=True
-        )
-
->>>>>>> origin/master
         self.assertEqual(len(result.all()), 1)
         self.assertEqual(result.first(), recommendation)
 

@@ -367,7 +367,6 @@ class TestRecommendationService(unittest.TestCase):
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
 
-<<<<<<< HEAD
     def test_get_all_recommendations_by_relid(self):
         """ Get all recommendations by related product id functions"""
         recommendation1 = self._create_one_recommendation(1, 2, 1)[0]
@@ -411,8 +410,6 @@ class TestRecommendationService(unittest.TestCase):
         result = Recommendation().deserialize(resp.get_json()[0])
         self.assertEqual(result, recommendation2)
 
-=======
->>>>>>> origin/master
     def test_get_related_products(self):
         """ Get related products by product_id tests"""
         # Test for valid product_id
