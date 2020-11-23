@@ -50,7 +50,6 @@ if "VCAP_SERVICES" in os.environ:
             DATABASE_URI = service["credentials"]["url"]
             break
 
-API_ROUTE_PREFIX = "/api"
 
 ######################################################################
 #  T E S T   C A S E S
@@ -152,8 +151,8 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            API_ROUTE_PREFIX
-            + "/recommendations/{}/{}".format(
+            BASE_URL
+            + "/{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             ),
             json=recommendation.serialize(),
@@ -177,8 +176,8 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            API_ROUTE_PREFIX
-            + "/recommendations/{}/{}".format(
+            BASE_URL
+            + "/{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             ),
             json=recommendation.serialize(),
@@ -193,8 +192,8 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            API_ROUTE_PREFIX
-            + "/recommendations/{}/{}".format(
+            BASE_URL
+            + "/{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             ),
             json=recommendation.serialize(),
@@ -209,8 +208,8 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            API_ROUTE_PREFIX
-            + "/recommendations/{}/{}".format(
+            BASE_URL
+            + "/{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             ),
             json=recommendation.serialize(),
@@ -231,8 +230,8 @@ class TestRecommendationService(unittest.TestCase):
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
         resp = self.app.post(
-            API_ROUTE_PREFIX
-            + "/recommendations/{}/{}".format(
+            BASE_URL
+            + "/{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             ),
             json=recommendation.serialize(),
