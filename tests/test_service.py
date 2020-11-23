@@ -29,7 +29,7 @@ from flask import request
 from flask_api import status
 from service.model import Recommendation, db
 from service import app
-from service.service import init_db, internal_server_error
+from service.service import init_db, data_load, internal_server_error
 from .recommendation_factory import RecommendationFactory
 from werkzeug.exceptions import NotFound
 
@@ -40,7 +40,7 @@ logging.disable(logging.CRITICAL)
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgres://postgres:postgres@localhost:5432/postgres"
 )
-
+BASE_URL = "/api/recommendations"
 # Override if we are running in Cloud Foundry
 if "VCAP_SERVICES" in os.environ:
     vcap = json.loads(os.environ["VCAP_SERVICES"])
@@ -97,6 +97,51 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIsNone(data)
+
+    def test_internal_server_error(self):
+        """ Test internal service error handler """
+        message = "Test error message"
+        resp = internal_server_error(message)
+        self.assertEqual(resp[1], status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(resp[0].get_json()["message"], message)
+
+    def test_get_recommendation(self):
+        """ Get Recommendation Tests"""
+        recommendation = self._create_recommendations(1)[0][0]
+
+        # Test Case 1
+        resp = self.app.get(
+            BASE_URL
+            + "/"
+            + str(recommendation.product_id)
+            + "/"
+            + str(recommendation.related_product_id)
+        )
+        print(resp.get_json())
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp.get_json())
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(recommendation, returned_recommendation)
+
+        # Test Case 2
+        resp = self.app.get(
+            BASE_URL + "/" + str(recommendation.product_id) + "/" + str(99999)
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 3
+        resp = self.app.get(
+            BASE_URL + "/" + str(recommendation.product_id) + "/" + str(-99999)
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test Case 4
+        resp = self.app.get(BASE_URL + "/" + str(recommendation.product_id) + "/abcd")
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_recommendation(self):
         """ Create Recommendation Tests """
@@ -383,44 +428,6 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(len(resp.get_json()) > 0)
 
-    def test_get_recommendation(self):
-        """ Get Recommendation Tests"""
-        recommendation = self._create_recommendations(count=1, by_status=True)[0][0]
-
-        # Test Case 1
-        resp = self.app.get(
-            "/recommendations/"
-            + str(recommendation.product_id)
-            + "/"
-            + str(recommendation.related_product_id)
-        )
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp.get_json())
-
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(recommendation, returned_recommendation)
-
-        # Test Case 2
-        resp = self.app.get(
-            "/recommendations/" + str(recommendation.product_id) + "/" + str(99999)
-        )
-
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
-        # Test Case 3
-        resp = self.app.get(
-            "/recommendations/" + str(recommendation.product_id) + "/" + str(-99999)
-        )
-
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
-        # Test Case 4
-        resp = self.app.get(
-            "/recommendations/" + str(recommendation.product_id) + "/abcd"
-        )
-
-        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
     def test_get_recommendation_relationship_type(self):
         """ Get recommendation relationship type for two products Tests"""
         valid_recommendation = self._create_recommendations(count=1)[0][0]
@@ -691,11 +698,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(not recommendation.status, resp_message["status"])
 
-        resp = self.app.get(
-            "/recommendations/{}/{}".format(
-                recommendation.product_id, recommendation.related_product_id
-            )
-        )
+        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -714,11 +717,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(recommendation.status, resp_message["status"])
 
-        resp = self.app.get(
-            "/recommendations/{}/{}".format(
-                recommendation.product_id, recommendation.related_product_id
-            )
-        )
+        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -881,11 +880,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNone(resp.get_json())
 
         # try querying that recommendation
-        resp = self.app.get(
-            "/recommendations/{}/{}".format(
-                recommendation.product_id, recommendation.related_product_id
-            )
-        )
+        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -898,13 +893,6 @@ class TestRecommendationService(unittest.TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertIsNone(resp.get_json())
-
-    def test_internal_server_error(self):
-        """ Test internal service error handler """
-        message = "Test error message"
-        resp = internal_server_error(message)
-        self.assertEqual(resp[1], status.HTTP_500_INTERNAL_SERVER_ERROR)
-        self.assertEqual(resp[0].get_json()["message"], message)
 
     ######################################################################
     #   HELPER FUNCTIONS
@@ -944,28 +932,6 @@ class TestRecommendationService(unittest.TestCase):
         )
         return [test_recommendation, resp.headers.get("Location", None)]
 
-    def test_create_recommendations(self):
-        """ Create recommendations Tests"""
-        recommendations = self._create_recommendations(count=10, by_status=True)
-        self.assertEqual(len(recommendations), 10)
-        for recommendation, location in recommendations:
-            self.assertTrue(recommendation.status)
-            self.assertIsNotNone(location)
-
-        recs = self._create_recommendations(count=10, by_status=False)
-        self.assertEqual(len(recs), 10)
-        for recommendation, location in recs:
-            self.assertFalse(recommendation.status)
-            self.assertIsNotNone(location)
-
-        recommendations = self._create_recommendations(count=-10)
-        self.assertEqual(len(recommendations), 0)
-
-        recommendations = self._create_recommendations(count="ab")
-        self.assertEqual(len(recommendations), 0)
-
-        recommendations = self._create_recommendations(count=20, by_status="ab")
-        self.assertEqual(len(recommendations), 0)
 
 
 ######################################################################

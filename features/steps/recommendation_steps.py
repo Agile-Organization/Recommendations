@@ -174,7 +174,7 @@ def step_impl(context, value, element_name):
 def step_impl(context, element_name):
     element_id = ID_PREFIX + element_name.lower()
     element = context.driver.find_element_by_id(element_id)
-    expect(element.get_attribute("value")).to_be(u"")
+    expect(element.get_attribute("value")).to_be("")
 
 
 ##################################################################
