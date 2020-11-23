@@ -6,6 +6,7 @@ from selenium import webdriver
 
 WAIT_SECONDS = int(getenv("WAIT_SECONDS", "60"))
 BASE_URL = getenv("BASE_URL", "http://localhost:5000")
+BASE_URL_RESTPLUS = getenv("BASE_URL_RESTPLUS", "http://localhost:5000/api")
 
 
 def before_all(context):
@@ -25,6 +26,7 @@ def before_all(context):
     # context.driver.set_window_size(1200, 600)
 
     context.base_url = BASE_URL
+    context.base_url_restplus = BASE_URL_RESTPLUS
     # -- SET LOG LEVEL: behave --logging-level=ERROR ...
     # on behave command-line or in "behave.ini"
     context.config.setup_logging()
