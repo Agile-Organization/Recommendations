@@ -47,7 +47,6 @@ api = Api(app,
           default='recommendations',
           default_label='Recommendation operations',
           doc='/apidocs',
-          authorizations=authorizations,
           prefix='/api'
          )
 
