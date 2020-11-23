@@ -193,7 +193,7 @@ class RecommendationResource(Resource):
         if not recommendation:
             api.abort(
                 status.HTTP_404_NOT_FOUND,
-                "404 Not Found Recommendation for product id {} with related product id {} not found".format(
+                "404 Not Found: Recommendation for product id {} with related product id {} not found".format(
                     product_id, related_product_id
                 ),
             )
