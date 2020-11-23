@@ -687,7 +687,8 @@ class TestRecommendationService(unittest.TestCase):
         recommendation = self._create_recommendations(count=1, by_status=True)[0][0]
         # Test Case 1
         resp = self.app.put(
-            "/recommendations/{}/{}/toggle".format(
+            BASE_URL
+            + "/{}/{}/toggle".format(
                 recommendation.product_id, recommendation.related_product_id
             )
         )
@@ -711,7 +712,8 @@ class TestRecommendationService(unittest.TestCase):
 
         # Test Case 2
         resp = self.app.put(
-            "/recommendations/{}/{}/toggle".format(
+            BASE_URL
+            + "/{}/{}/toggle".format(
                 recommendation.product_id, recommendation.related_product_id
             )
         )
@@ -735,21 +737,24 @@ class TestRecommendationService(unittest.TestCase):
 
         # Test Case 3
         resp = self.app.put(
-            "/recommendations/{}/{}/toggle".format(recommendation.product_id, 99999)
+            BASE_URL
+            + "/{}/{}/toggle".format(recommendation.product_id, 99999)
         )
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         # Test Case 4
         resp = self.app.put(
-            "/recommendations/{}/{}/toggle".format(recommendation.product_id, -99999)
+            BASE_URL
+            + "/{}/{}/toggle".format(recommendation.product_id, -99999)
         )
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         # Test Case 5
         resp = self.app.put(
-            "/recommendations/{}/{}/toggle".format(recommendation.product_id, "abcd")
+            BASE_URL
+            + "/{}/{}/toggle".format(recommendation.product_id, "abcd")
         )
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)

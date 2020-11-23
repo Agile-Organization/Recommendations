@@ -262,14 +262,63 @@ class RecommendationResource(Resource):
         return (
             recommendation.serialize(),
             status.HTTP_201_CREATED,
-            {"location": location_url},
+            {"location": location_url}
         )
+
+
+######################################################################
+#  PATH: /recommendations/{product-id}/{related-product-id}/toggle
+######################################################################
+@api.route("/recommendations/<int:product_id>/<int:related_product_id>/toggle")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
+class ToggleResource(Resource):
+    """ Toggle action of a single Recommendation """
+    # ------------------------------------------------------------------
+    # TOGGLE A NEW RECOMMENDATION
+    # ------------------------------------------------------------------
+    @api.doc("toggle_recommendations")
+    @api.response(404, "Recommendation not found")
+    def put(self, product_id, related_product_id):
+        app.logger.info("Request to toggle a recommendation status")
+
+        find = Recommendation.find_recommendation
+        recommendation = (
+            find(by_id=product_id, by_rel_id=related_product_id, by_status=False).first()
+            or find(by_id=product_id, by_rel_id=related_product_id, by_status=True).first()
+        )
+
+        if not recommendation:
+            api.abort(
+                status.HTTP_404_NOT_FOUND,
+                "404 Not Found: Recommendation for product id {} with related product id {} not found".format(
+                    product_id, related_product_id
+                ),
+            )
+
+        recommendation.status = not recommendation.status
+
+        app.logger.info(
+            "Toggling Recommendation status for product %s with related product %s.",
+            product_id,
+            related_product_id
+        )
+
+        recommendation.save()
+
+        app.logger.info(
+            "Toggled Recommendation status for product %s with related product %s.",
+            product_id,
+            related_product_id
+        )
+
+        return recommendation.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-@app.before_first_request
+
 def init_db():
     """ Initialies the SQLAlchemy app """
     global app
@@ -699,47 +748,6 @@ def update_recommendation(product_id, related_product_id):
 
     return make_response(jsonify(message), status.HTTP_200_OK)
 
-
-######################################################################
-# TOGGLE RECOMMENDATION STATUS FOR TWO PRODUCTS
-######################################################################
-@app.route(
-    "/recommendations/<int:product_id>/<int:rel_product_id>/toggle", methods=["PUT"]
-)
-def toggle_recommendation_between_products(product_id, rel_product_id):
-    """
-    Updates a Recommendation
-        This endpoint will toggle a recommendation status
-        if the recommendation exists.
-    """
-    app.logger.info("Request to toggle a recommendation status")
-
-    find = Recommendation.find_recommendation
-    recommendation = (
-        find(by_id=product_id, by_rel_id=rel_product_id, by_status=False).first()
-        or find(by_id=product_id, by_rel_id=rel_product_id, by_status=True).first()
-    )
-
-    if not recommendation:
-        raise NotFound("Recommendation does not exist")
-
-    recommendation.status = not recommendation.status
-
-    app.logger.info(
-        "Toggling Recommendation status for product %s with " "related product %s.",
-        product_id,
-        rel_product_id,
-    )
-
-    recommendation.save()
-
-    app.logger.info(
-        "Toggled Recommendation status for product %s with " "related product %s.",
-        product_id,
-        rel_product_id,
-    )
-
-    return make_response(jsonify(recommendation.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
