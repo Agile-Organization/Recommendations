@@ -11,6 +11,7 @@ class RecommendationFactory(factory.Factory):
 
     class Meta:
         """ Recommendation Factory uses Recommendation class as Meta model"""
+
         model = Recommendation
 
     product_id = FuzzyChoice(choices=range(1, 10001))

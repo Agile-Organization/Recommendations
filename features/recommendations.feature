@@ -129,7 +129,7 @@ Scenario: Delete an existed recommendation
     When I set the "product_id" to "1"
     And I set the "related_product_id" to "2"
     And I press the "Retrieve" button
-    Then I should see the message "404 Not Found: Recommendatin for product id 1 with related product id 2 not found"
+    Then I should see the message "404 Not Found: Recommendation for product id 1 with related product id 2 not found"
 
 Scenario: Delete recommendations by using product ID and type ID
     When I visit the "Home Page"
