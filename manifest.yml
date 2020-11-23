@@ -4,7 +4,7 @@ applications:
 - name: nyu-recommendation-service-dev
   path: .
   instances: 1
-  memory: 64M
+  memory: 128M
   routes:
   - route: nyu-recommendation-service-dev.us-south.cf.appdomain.cloud
   disk_quota: 1024M
@@ -19,7 +19,7 @@ applications:
 - name: nyu-recommendation-service-f20
   path: .
   instances: 1
-  memory: 64M
+  memory: 128M
   routes:
   - route: nyu-recommendation-service-f20.us-south.cf.appdomain.cloud
   disk_quota: 1024M
