@@ -264,6 +264,48 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.get("/recommendations?product-id={}&type-id={}&status={}".format(recommendation.product_id, 5, recommendation.status))
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
 
+    def test_get_all_recommendations_by_relid(self):
+        """ Get all recommendations by related product id functions"""
+        recommendation1 = self._create_one_recommendation(1, 2, 1)[0]
+        recommendation2 = self._create_one_recommendation(3, 2, 3, by_status=False)[0]
+
+        # Test Case 1
+        # Test search by related product id only
+        resp = self.app.get("/recommendations?related-product-id={}".format(2))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 2)
+
+        result1 = Recommendation().deserialize(resp.get_json()[0])
+        result2 = Recommendation().deserialize(resp.get_json()[1])
+        self.assertEqual(result1, recommendation1)
+        self.assertEqual(result2, recommendation2)
+
+        # Test Case 2
+        # Test search by related product id and type id
+        resp = self.app.get("/recommendations?related-product-id={}&type-id={}".format(2,1))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 1)
+
+        result = Recommendation().deserialize(resp.get_json()[0])
+        self.assertEqual(result, recommendation1)
+
+        # Test Case 3
+        # Test search by related product id and status
+        resp = self.app.get("/recommendations?related-product-id={}&status={}".format(2,False))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 1)
+
+        result = Recommendation().deserialize(resp.get_json()[0])
+        self.assertEqual(result, recommendation2)
+
+        # Test Case 4
+        # Test search by related product id with type id and status
+        resp = self.app.get("/recommendations?related-product-id={}&type-id={}&status={}".format(2,3,False))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 1)
+
+        result = Recommendation().deserialize(resp.get_json()[0])
+        self.assertEqual(result, recommendation2)
 
     def test_get_related_products(self):
         """ Get related products by product_id tests"""

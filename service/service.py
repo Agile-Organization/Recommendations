@@ -70,7 +70,7 @@ def get_all_recommendations():
                 recommendations = Recommendation.find(int(product_id))
         elif related_product_id:
             if type_id and by_status:
-                recommendations = Recommnedation.find_by_relid_type_status(int(related_product_id), int(type_id), (by_status=="True"))
+                recommendations = Recommendation.find_by_relid_type_status(int(related_product_id), int(type_id), (by_status=="True"))
             elif type_id:
                 recommendations = Recommendation.find_by_relid_type(int(related_product_id), int(type_id))
             elif by_status:
