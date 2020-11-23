@@ -698,7 +698,12 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(not recommendation.status, resp_message["status"])
 
-        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
+        resp = self.app.get(
+            BASE_URL
+            + "/{}/{}".format(
+                recommendation.product_id, recommendation.related_product_id
+            )
+        )
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -717,7 +722,12 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNotNone(resp_message)
         self.assertEqual(recommendation.status, resp_message["status"])
 
-        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
+        resp = self.app.get(
+            BASE_URL
+            + "/{}/{}".format(
+                recommendation.product_id, recommendation.related_product_id
+            )
+        )
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -880,7 +890,12 @@ class TestRecommendationService(unittest.TestCase):
         self.assertIsNone(resp.get_json())
 
         # try querying that recommendation
-        resp = self.app.get(BASE_URL + "/{}/{}".format(recommendation.product_id, recommendation.related_product_id))
+        resp = self.app.get(
+            BASE_URL
+            + "/{}/{}".format(
+                recommendation.product_id, recommendation.related_product_id
+            )
+        )
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -931,7 +946,6 @@ class TestRecommendationService(unittest.TestCase):
             content_type="application/json",
         )
         return [test_recommendation, resp.headers.get("Location", None)]
-
 
 
 ######################################################################

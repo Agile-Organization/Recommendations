@@ -239,7 +239,6 @@ class RecommendationResource(Resource):
 
         return recommendation.serialize(), status.HTTP_200_OK
 
-    
     # ------------------------------------------------------------------
     # ADD A NEW RECOMMENDATION
     # ------------------------------------------------------------------
@@ -516,6 +515,7 @@ def get_active_related_products(product_id):
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
+
 ######################################################################
 # QUERY RECOMMENDATIONS BY PRODUCT ID AND TYPE
 ######################################################################
@@ -591,12 +591,15 @@ def get_recommendation_relationship_type():
 
     exists = Recommendation.check_if_product_exists
     if not exists(product_id) or not exists(rel_product_id):
-        return '', status.HTTP_204_NO_CONTENT
-    
-    app.logger.info("Querying active recommendation for product: {} and"\
-                    " related product: {}".format(product_id, rel_product_id))
-    recommendation = Recommendation.find_recommendation(by_id=product_id,\
-                                       by_rel_id=rel_product_id, by_status=True)
+        return "", status.HTTP_204_NO_CONTENT
+
+    app.logger.info(
+        "Querying active recommendation for product: {} and"
+        " related product: {}".format(product_id, rel_product_id)
+    )
+    recommendation = Recommendation.find_recommendation(
+        by_id=product_id, by_rel_id=rel_product_id, by_status=True
+    )
 
     app.logger.info(
         "Returning active recommendation for product: {} and"
@@ -606,7 +609,7 @@ def get_recommendation_relationship_type():
     if recommendation and recommendation.first():
         return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
 
-    return '', status.HTTP_204_NO_CONTENT
+    return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
@@ -887,6 +890,7 @@ def delete_all_by_id(product_id):
 
     return "", status.HTTP_204_NO_CONTENT
 
+
 ######################################################################
 # DELETE A RELEATIONSHIP BETWEEN A PRODUCT and A RELATED PRODUCT
 ######################################################################
@@ -913,7 +917,10 @@ def delete_by_id_relid(product_id, rel_product_id):
         recommendation.related_product_id,
     )
     recommendation.delete()
-    app.logger.info("Deleted recommendation with product id %s and related product id %s ...", 
-                    recommendation.product_id, recommendation.related_product_id)
+    app.logger.info(
+        "Deleted recommendation with product id %s and related product id %s ...",
+        recommendation.product_id,
+        recommendation.related_product_id,
+    )
 
-    return '', status.HTTP_204_NO_CONTENT
+    return "", status.HTTP_204_NO_CONTENT
