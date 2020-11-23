@@ -304,7 +304,7 @@ $(function () {
         if (product_id && related_product_id){
             var ajax = $.ajax({
                 type: "PUT",
-                url: "/recommendations/" + product_id + "/" + related_product_id + "/toggle"
+                url: "/api/recommendations/" + product_id + "/" + related_product_id + "/toggle"
             })
 
             ajax.done(function(res){
