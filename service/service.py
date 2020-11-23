@@ -191,7 +191,12 @@ class RecommendationResource(Resource):
         )
 
         if not recommendation:
-            raise NotFound("Recommendatin for product id {} with related product id {} not found".format(product_id, related_product_id))
+            api.abort(
+                status.HTTP_404_NOT_FOUND,
+                "404 Not Found Recommendation for product id {} with related product id {} not found".format(
+                    product_id, related_product_id
+                ),
+            )
 
         app.logger.info(
             "Returning Recommendation for product id: %s and related product id: %s",
