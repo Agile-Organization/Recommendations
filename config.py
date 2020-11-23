@@ -9,12 +9,12 @@ DATABASE_URI = os.getenv(
 )
 
 # Override if we are running in Cloud Foundry
-if 'VCAP_SERVICES' in os.environ:
-    vcap = json.loads(os.environ['VCAP_SERVICES'])
-    user_provided_services = vcap['user-provided']
+if "VCAP_SERVICES" in os.environ:
+    vcap = json.loads(os.environ["VCAP_SERVICES"])
+    user_provided_services = vcap["user-provided"]
     for service in user_provided_services:
-        if service['name'] == "ElephantSQL":
-            DATABASE_URI = service['credentials']['url']
+        if service["name"] == "ElephantSQL":
+            DATABASE_URI = service["credentials"]["url"]
             break
 
 
@@ -28,4 +28,4 @@ SECRET_KEY = os.getenv("SECRET_KEY", "sup3r-s3cr3t")
 LOGGING_LEVEL = logging.INFO
 
 # Api key
-API_KEY = os.getenv('API_KEY')
+API_KEY = os.getenv("API_KEY")
