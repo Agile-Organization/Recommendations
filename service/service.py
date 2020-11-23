@@ -163,7 +163,7 @@ class RecommendationResource(Resource):
     RecommendationResource class
 
     Allows the manipulation of a single Recommendation
-    GET /recommendations/<product_id>/<related_product_id> - Returns the Recommendation
+    GET /api/recommendations/<product_id>/<related_product_id> - Returns the Recommendation
     """
 
     # ------------------------------------------------------------------
@@ -191,12 +191,7 @@ class RecommendationResource(Resource):
         )
 
         if not recommendation:
-            api.abort(
-                status.HTTP_404_NOT_FOUND,
-                "Recommendatin for product id {} with related product id {} not found".format(
-                    product_id, related_product_id
-                ),
-            )
+            raise NotFound("Recommendatin for product id {} with related product id {} not found".format(product_id, related_product_id))
 
         app.logger.info(
             "Returning Recommendation for product id: %s and related product id: %s",
