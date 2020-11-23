@@ -22,16 +22,6 @@ from service.model import Recommendation, DataValidationError
 # Import Flask application
 from . import app
 
-# Document the type of autorization required
-authorizations = {"apikey": {"type": "apiKey", "in": "header", "name": "X-Api-Key"}}
-
-######################################################################
-# Function to generate a random API key (good for testing)
-######################################################################
-def generate_apikey():
-    """ Helper function used when testing API keys """
-    return uuid.uuid4().hex
-
 
 ######################################################################
 # Configure Swagger before initilaizing it
@@ -86,24 +76,6 @@ recommendation_args.add_argument(
 recommendation_args.add_argument(
     "status", type=inputs.boolean, required=False, help="List Recommendations by status"
 )
-
-
-######################################################################
-# Authorization Decorator
-######################################################################
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        if "X-Api-Key" in request.headers:
-            token = request.headers["X-Api-Key"]
-
-        if app.config.get("API_KEY") and app.config["API_KEY"] == token:
-            return f(*args, **kwargs)
-        else:
-            return {"message": "Invalid or missing token"}, 401
-
-    return decorated
 
 
 ######################################################################
