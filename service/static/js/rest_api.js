@@ -183,7 +183,7 @@ $(function () {
 
             var ajax = $.ajax({
                 type: "DELETE",
-                url: "/api/recommendations/" + product_id + queryString,
+                url: "http://localhost:5000/api/recommendations/" + product_id + queryString,
                 contentType: "application/json",
                 data: ''
             })

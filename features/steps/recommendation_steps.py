@@ -24,7 +24,7 @@ def step_impl(context):
     for recommendation in context.resp.json():
         context.resp = requests.delete(
             context.base_url
-            + "/recommendations/"
+            + "/api/recommendations/"
             + str(recommendation["product-id"])
             + "/"
             + str(recommendation["related-product-id"]),
