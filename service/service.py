@@ -265,6 +265,40 @@ class RecommendationResource(Resource):
             {"location": location_url}
         )
 
+    ######################################################################
+    # DELETE A RELEATIONSHIP BETWEEN A PRODUCT and A RELATED PRODUCT
+    ######################################################################
+    @api.doc("delete_recommendations")
+    @api.response(204, 'Pet deleted')
+    def delete(product_id, rel_product_id):
+        """
+        Delete a recommendation
+        This endpoint will delete one unique recommendation based on
+        the product id and related product id provided in the URI
+        """
+        app.logger.info(
+            "Request to delete a recommendation by product id and related product id"
+        )
+
+        find_result = Recommendation.find_by_id_relid(product_id, rel_product_id)
+
+        if not find_result.first():
+            return "", status.HTTP_204_NO_CONTENT
+
+        recommendation = find_result.first()
+        app.logger.info(
+            "Deleting recommendation with product id %s and related product id %s ...",
+            recommendation.product_id,
+            recommendation.related_product_id,
+        )
+        recommendation.delete()
+        app.logger.info(
+            "Deleted recommendation with product id %s and related product id %s ...",
+            recommendation.product_id,
+            recommendation.related_product_id,
+        )
+
+        return "", status.HTTP_204_NO_CONTENT
 
 ######################################################################
 #  PATH: /recommendations/{product-id}/{related-product-id}/toggle
