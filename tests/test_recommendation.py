@@ -231,7 +231,7 @@ class TestRecommendation(unittest.TestCase):
     def test_find_by_relid_status(self):
         """ Test find by related_product_id and status"""
         recommendation1 = self._create_one_recommendation(1, 2, 1)
-        recommendation2 = self._create_one_recommendation(2, 2, 3, by_status=False)
+        recommendation2 = self._create_one_recommendation(3, 2, 3, by_status=False)
         result = Recommendation.find_by_relid_status(2, False)
         self.assertEqual(len(result.all()), 1)
         self.assertEqual(result.first(), recommendation2)
@@ -242,7 +242,7 @@ class TestRecommendation(unittest.TestCase):
     def test_find_by_relid_type(self):
         """ Test find by related_product_id and type_id"""
         recommendation1 = self._create_one_recommendation(1, 2, 3)
-        recommendation2 = self._create_one_recommendation(2, 2, 3, by_status=False)
+        recommendation2 = self._create_one_recommendation(3, 2, 3, by_status=False)
         result = Recommendation.find_by_relid_type(2, 3)
         self.assertEqual(len(result.all()), 2)
 
@@ -253,7 +253,7 @@ class TestRecommendation(unittest.TestCase):
     def test_find_by_relid_type_status(self):
         """ Test find by related product id with type id and status"""
         recommendation1 = self._create_one_recommendation(1, 2, 3)
-        recommendation2 = self._create_one_recommendation(2, 2, 3, by_status=False)
+        recommendation2 = self._create_one_recommendation(3, 2, 3, by_status=False)
         result = Recommendation.find_by_relid_type_status(2, 3, False)
         self.assertEqual(len(result.all()), 1)
         self.assertEqual(result.first(), recommendation2)
