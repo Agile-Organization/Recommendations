@@ -431,7 +431,7 @@ class RecommendationSubset(Resource):
 
         elif recommendation_status:
             app.logger.info("Request to delete recommendations by status")
-            recommendation_status = bool(recommendation_status == "True")
+            #recommendation_status = bool(recommendation_status == "True")
             recommendations = Recommendation.find_by_id_status(
                 product_id, recommendation_status
             )
