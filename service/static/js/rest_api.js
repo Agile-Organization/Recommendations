@@ -250,7 +250,7 @@ $(function () {
 
         var ajax = $.ajax({
             type: "GET",
-            url: "/recommendations?" + queryString,
+            url: "/api/recommendations?" + queryString,
             contentType: "application/json",
             data: ''
         })
