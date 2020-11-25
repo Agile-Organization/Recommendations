@@ -230,7 +230,7 @@ $(function () {
             if (queryString.length > 0) {
                 queryString += '&related-product-id=' + related_product_id
             } else {
-                queryString += 'related-product-id=' + category
+                queryString += 'related-product-id=' + related_product_id
             }
         }
         if (type_id) {

@@ -175,6 +175,12 @@ class Recommendation(db.Model):
         return cls.query.filter(cls.product_id == by_id)
 
     @classmethod
+    def find_by_rel_id(cls, by_rel_id):
+        "Finds a recommendation by it's related_product_id"
+        cls.logger.info("Processing lookup for related_product_id %s ...", by_rel_id)
+        return cls.query.filter(cls.related_product_id==by_rel_id)
+
+    @classmethod
     def find_by_type_id(cls, by_type_id):
         """ Finds a recommendation by it's type_id """
         if not by_type_id or not isinstance(by_type_id, int):
@@ -256,7 +262,7 @@ class Recommendation(db.Model):
 
     @classmethod
     def find_by_id_type_status(cls, by_id: int, by_type: int, by_status):
-        """ Find recommendations of a [product: product_id] with [type: type_id] """
+        """ Find recommendations of a [product: product_id] with [type: type_id] and [active status: status]"""
         if not by_id or not isinstance(by_id, int):
             raise TypeError("by_id is not of type int")
         if not by_type or not isinstance(by_type, int):
@@ -275,6 +281,45 @@ class Recommendation(db.Model):
         return cls.query.filter(
             cls.product_id == by_id, cls.type_id == by_type, cls.status == by_status
         )
+
+    @classmethod
+    def find_by_relid_status(cls, by_rel_id: int, by_status):
+        """ Find [status: active/inactive] recommendations of a [related product: related_product_id] """
+        if not by_rel_id or not isinstance(by_rel_id, int):
+            raise TypeError("by_rel_id is not of type int")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+
+        cls.logger.info("Processing lookup for related_product_id %s with status %s", by_rel_id, by_status)
+        return cls.query.filter(cls.related_product_id==by_rel_id, cls.status==by_status)
+
+    @classmethod
+    def find_by_relid_type(cls, by_rel_id: int, by_type: int):
+        """ Find recommendations of a [related product: related_product_id] with [type: type_id] """
+        if not by_rel_id or not isinstance(by_rel_id, int):
+            raise TypeError("by_rel_id is not of type int")
+        if not by_type or not isinstance(by_type, int):
+            raise TypeError("by_type is not of type int")
+        if not 1 <= by_type <= 3:
+            raise DataValidationError("Invalid recommendation: type_id outside [1,3]")
+
+        cls.logger.info("Processing lookup for related_product_id %s with type_id %s", by_rel_id, by_type)
+        return cls.query.filter(cls.related_product_id==by_rel_id, cls.type_id==by_type)
+
+    @classmethod
+    def find_by_relid_type_status(cls, by_rel_id:int, by_type:int, by_status: bool):
+        "Find recommendations of a [related product: related_product_id] with [type: type_id] and [active status: status] "
+        if not by_rel_id or not isinstance(by_rel_id, int):
+            raise TypeError("by_rel_id is not of type int")
+        if not by_type or not isinstance(by_type, int):
+            raise TypeError("by_type is not of type int")
+        if not 1 <= by_type <= 3:
+            raise DataValidationError("Invalid recommendation: type_id outside [1,3]")
+        if not isinstance(by_status, bool):
+            raise TypeError("by_status is not of type bool")
+        
+        cls.logger.info("Processing lookup for related_product_id %s with type_id %s and status %r", by_rel_id, by_type, by_status)
+        return cls.query.filter(cls.related_product_id==by_rel_id, cls.type_id==by_type, cls.status==by_status)
 
     @classmethod
     def find_recommendation(cls, by_id: int, by_rel_id: int, by_status=True):

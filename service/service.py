@@ -391,6 +391,15 @@ def get_all_recommendations():
                 )
             else:
                 recommendations = Recommendation.find(int(product_id))
+        elif related_product_id:
+            if type_id and by_status:
+                recommendations = Recommendation.find_by_relid_type_status(int(related_product_id), int(type_id), (by_status=="True"))
+            elif type_id:
+                recommendations = Recommendation.find_by_relid_type(int(related_product_id), int(type_id))
+            elif by_status:
+                recommendations = Recommendation.find_by_relid_status(int(related_product_id), (by_status=="True"))
+            else:
+                recommendations = Recommendation.find_by_rel_id(int(related_product_id))
         elif type_id and by_status:
             recommendations = Recommendation.find_by_type_id_status(
                 int(type_id), (by_status == "True")
