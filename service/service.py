@@ -452,6 +452,42 @@ class RecommendationSubset(Resource):
             return "", status.HTTP_204_NO_CONTENT
 
 ######################################################################
+#  PATH: /recommendations/{product_id}/all
+######################################################################
+@api.route("/recommendations/<int:product_id>/all")
+@api.param("product_id", "The product identifier")
+class RecommendationAll(Resource):
+    """ Handles all interactions with all recommendations owned by product_id """
+    ######################################################################
+    # DELETE ALL RELEATIONSHIP OF A PRODUCT BY PRODUCT ID
+    ######################################################################
+    @api.doc("delete_recommendations")
+    @api.response(204, 'Pet deleted')
+    def delete(self, product_id):
+        """Deletes recommendations
+        This endpoint will delete all the recommendations based on
+        the product id provided in the URI
+        """
+        app.logger.info("Request to delete recommendations by product id")
+        recommendations = Recommendation.find(product_id)
+ 
+        if not recommendations.first():
+            return "", status.HTTP_204_NO_CONTENT
+ 
+        for recommendation in recommendations:
+            app.logger.info(
+                "Deleting all related products for product %s with ",
+                recommendation.product_id,
+            )
+            recommendation.delete()
+            app.logger.info(
+                "Deleted all related products for product %s with ",
+                recommendation.product_id,
+            )
+
+        return "", status.HTTP_204_NO_CONTENT
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
