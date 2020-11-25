@@ -270,7 +270,7 @@ class RecommendationResource(Resource):
     ######################################################################
     @api.doc("delete_recommendations")
     @api.response(204, 'Pet deleted')
-    def delete(product_id, rel_product_id):
+    def delete(self, product_id, related_product_id):
         """
         Delete a recommendation
         This endpoint will delete one unique recommendation based on
@@ -280,7 +280,7 @@ class RecommendationResource(Resource):
             "Request to delete a recommendation by product id and related product id"
         )
 
-        find_result = Recommendation.find_by_id_relid(product_id, rel_product_id)
+        find_result = Recommendation.find_by_id_relid(product_id, related_product_id)
 
         if not find_result.first():
             return "", status.HTTP_204_NO_CONTENT
@@ -348,6 +348,108 @@ class ToggleResource(Resource):
 
         return recommendation.serialize(), status.HTTP_200_OK
 
+######################################################################
+#  PATH: /recommendations/{product_id}
+######################################################################
+@api.route("/recommendations/<int:product_id>")
+@api.param("product_id", "The product identifier")
+class RecommendationSubset(Resource):
+    """ Handles all interactions with collections of recommendations owned by product_id """
+    ######################################################################
+    # DELETE ALL RELEATIONSHIPS OF A PRODUCT BASED ON TYPE AND/OR STATUS
+    ######################################################################
+    @api.doc("delete_recommendations")
+    @api.expect(recommendation_args, validate=True)
+    @api.response(204, 'Pet deleted')
+    def delete(self, product_id):
+        """Deletes recommendations
+        This endpoint will delete all the recommendations based on
+        the product id and the parameter type and stauts
+        """
+        app.logger.debug("Payload = %s", api.payload)
+
+        args = recommendation_args.parse_args()
+
+        type_id = args["type-id"]
+        recommendation_status = args["status"]
+
+        if not type_id and not recommendation_status:
+            raise BadRequest("Bad Request must provide at least 1 parameter")
+
+
+        if type_id and type_id not in [1, 2, 3]:
+            raise BadRequest("Bad Request invalid type id provided")
+
+        if recommendation_status and recommendation_status not in [True, False]:
+            raise BadRequest("Bad Request invalid status provided")
+
+        if type_id and recommendation_status:
+            app.logger.info("Request to delete recommendations by type_id and status")
+            #type_id = int(type_id)
+            #recommendation_status = bool(recommendation_status == "True")
+
+            recommendations = Recommendation.find_by_id_type_status(
+                product_id, type_id, recommendation_status
+            )
+
+            for recommendation in recommendations:
+                app.logger.info(
+                    "Deleting all related products for product %s in type %s with status %r",
+                    recommendation.product_id,
+                    recommendation.type_id,
+                    recommendation.status,
+                )
+                recommendation.delete()
+                app.logger.info(
+                    "Deleted all related products for product %s in type %s with status %r",
+                    recommendation.product_id,
+                    recommendation.type_id,
+                    recommendation.status,
+                )
+
+            return "", status.HTTP_204_NO_CONTENT
+
+        elif type_id:
+            app.logger.info("Request to delete recommendations by type_id")
+            type_id = int(type_id)
+            recommendations = Recommendation.find_by_id_type(product_id, type_id)
+
+            for recommendation in recommendations:
+                app.logger.info(
+                    "Deleting all related products for product %s in type %s with ",
+                    recommendation.product_id,
+                    recommendation.type_id,
+                )
+                recommendation.delete()
+                app.logger.info(
+                    "Deleted all related products for product %s in type %s with ",
+                    recommendation.product_id,
+                    recommendation.type_id,
+                )
+
+            return "", status.HTTP_204_NO_CONTENT
+
+        elif recommendation_status:
+            app.logger.info("Request to delete recommendations by status")
+            recommendation_status = bool(recommendation_status == "True")
+            recommendations = Recommendation.find_by_id_status(
+                product_id, recommendation_status
+            )
+
+            for recommendation in recommendations:
+                app.logger.info(
+                    "Deleting all related products for product %s in status %r",
+                    recommendation.product_id,
+                    recommendation.status,
+                )
+                recommendation.delete()
+                app.logger.info(
+                    "Deleted all related products for product %s in status %r",
+                    recommendation.product_id,
+                    recommendation.status,
+                )
+
+            return "", status.HTTP_204_NO_CONTENT
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
@@ -885,7 +987,7 @@ def delete_all_by_id(product_id):
     """
 
     app.logger.info("Request to delete recommendations by product id")
-
+    
     recommendations = Recommendation.find(product_id)
 
     if not recommendations.first():
