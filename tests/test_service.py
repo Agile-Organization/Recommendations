@@ -801,16 +801,15 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
+    
     def test_delete_by_type_status(self):
-        """ Delete recommendation by type and status"""
         recommendations = self._create_recommendations(count=5, by_status=True)
 
         recommendation = recommendations[0][0]
 
         # Delete recommendation by valid product id and valid type_id
         resp = self.app.delete(
-            "/recommendations/"
+            BASE_URL + "/"
             + str(recommendation.product_id)
             + "?type-id="
             + str(recommendation.type_id)
@@ -818,7 +817,8 @@ class TestRecommendationService(unittest.TestCase):
             + str(recommendation.status)
         )
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
+        #self.assertIsNone(resp.get_json())
+        self.assertEqual(len(resp.data), 0)
 
         resp = self.app.get("/recommendations/" + str(recommendation.product_id))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -828,13 +828,14 @@ class TestRecommendationService(unittest.TestCase):
 
         # Delete recommendation by valid product id and valid type_id
         resp = self.app.delete(
-            "/recommendations/"
+            BASE_URL + "/"
             + str(recommendation.product_id)
             + "?type-id="
             + str(recommendation.type_id)
         )
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
+        #self.assertIsNone(resp.get_json())
+        self.assertEqual(len(resp.data), 0)
 
         resp = self.app.get("/recommendations/" + str(recommendation.product_id))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -844,13 +845,14 @@ class TestRecommendationService(unittest.TestCase):
 
         # Delete recommendation by valid product id and valid status
         resp = self.app.delete(
-            "/recommendations/"
+            BASE_URL + "/"
             + str(recommendation.product_id)
             + "?status="
             + str(recommendation.status)
         )
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
+        #self.assertIsNone(resp.get_json())
+        self.assertEqual(len(resp.data), 0)
 
         resp = self.app.get("/recommendations/" + str(recommendation.product_id))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -860,7 +862,7 @@ class TestRecommendationService(unittest.TestCase):
 
         # Delete recommendation by valid product id and string type
         resp = self.app.delete(
-            "/recommendations/"
+            BASE_URL + "/"
             + str(recommendation.product_id)
             + "?type-id="
             + str("TEST")
@@ -869,34 +871,35 @@ class TestRecommendationService(unittest.TestCase):
 
         # Delete recommendation by valid product id and invalid type
         resp = self.app.delete(
-            "/recommendations/" + str(recommendation.product_id) + "?type-id=" + str(5)
+            BASE_URL + "/" + str(recommendation.product_id) + "?type-id=" + str(5)
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Delete recommendation by valid product id, invalid status
         resp = self.app.delete(
-            "/recommendations/" + str(recommendation.product_id) + "?status=Test"
+            BASE_URL + "/" + str(recommendation.product_id) + "?status=Test"
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Delete recommendation without any parameters
-        resp = self.app.delete("/recommendations/" + str(recommendation.product_id))
+        resp = self.app.delete(BASE_URL + "/" + str(recommendation.product_id))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-
+    
     def test_delete_all_by_id(self):
-        """ Delete recommendation by Product Id Tests RESTful """
         recommendations = self._create_recommendations(count=5, by_status=True)
 
         recommendation = recommendations[0][0]
 
         resp = self.app.delete(
-            "/recommendations/{}/all".format(recommendation.product_id)
+            BASE_URL + "/" + "{}/all".format(recommendation.product_id)
         )
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
+        #self.assertIsNone(resp.get_json())
+        self.assertEqual(len(resp.data), 0)
 
-        resp = self.app.get("/recommendations/{}".format(recommendation.product_id))
+        #resp = self.app.get(BASE_URL + "/" + "{}".format(recommendation.product_id))
+        resp = self.app.get("/recommendations/" + "{}".format(recommendation.product_id))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.get_json(), [])
 
@@ -904,23 +907,23 @@ class TestRecommendationService(unittest.TestCase):
 
         # Delete recommendation by negative product id
         invalid_id = -99
-        resp = self.app.delete("/recommendations/{}/all".format(invalid_id))
+        resp = self.app.delete(BASE_URL + "/" + "{}/all".format(invalid_id))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         # Delete recommendation by string product id
         text_id = "text"
-        resp = self.app.delete("/recommendations/{}/all".format(text_id))
+        resp = self.app.delete(BASE_URL + "/" + "{}/all".format(text_id))
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         # Delete recommendation by non-exists product id
         non_exists_id = 999999
-        resp = self.app.delete("/recommendations/{}/all".format(non_exists_id))
+        resp = self.app.delete(BASE_URL + "/" + "{}/all".format(non_exists_id))
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
         resp = self.app.get("/recommendations/" + str(recommendation.product_id))
 
         self.assertTrue(len(resp.get_json()) > 0)
-
+    
     def test_delete_by_id_relid(self):
         recommendations = self._create_recommendations(count=5)
 
@@ -928,13 +931,14 @@ class TestRecommendationService(unittest.TestCase):
 
         # delete a unique recommendation
         resp = self.app.delete(
-            "/recommendations/{}/{}".format(
+            BASE_URL + "/" + "{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             )
         )
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
+        #self.assertIsNone(resp.get_json())
+        self.assertEqual(len(resp.data), 0)
 
         # try querying that recommendation
         resp = self.app.get(
@@ -948,13 +952,14 @@ class TestRecommendationService(unittest.TestCase):
 
         # repeat the delete
         resp = self.app.delete(
-            "/recommendations/{}/{}".format(
+            BASE_URL + "/" + "{}/{}".format(
                 recommendation.product_id, recommendation.related_product_id
             )
         )
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertIsNone(resp.get_json())
+        #self.assertIsNone(resp.get_json())
+        self.assertEqual(len(resp.data), 0)
 
     ######################################################################
     #   HELPER FUNCTIONS

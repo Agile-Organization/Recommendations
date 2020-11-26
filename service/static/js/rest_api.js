@@ -156,38 +156,55 @@ $(function () {
     // ****************************************
     // Delete a Recommendation
     // ****************************************
-
     $("#delete-btn").click(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
         var type_id = $("#recommendation_type_id").val();
         var status = $("#recommendation_status").val();
-        
+        var ajax;
+ 
         if (product_id) {
-            var queryString = ""
             if (related_product_id) {
-                queryString += "/" + related_product_id
+                ajax = $.ajax({
+                    type: "DELETE",
+                    url: "/api/recommendations/" + product_id + "/" + related_product_id,
+                    contentType: "application/json",
+                    data: ''
+                })
             } 
             else if (type_id && status) {
-                queryString += "?type-id=" + type_id + "&status=" + status
+            	ajax = $.ajax({
+                    type: "DELETE",
+                    url: "/api/recommendations/" + product_id,
+                    contentType: "application/json",
+                    data: JSON.stringify({"type-id": parseInt(type_id, 10), "status" : status == "True"})
+                })              
             } 
             else if (type_id) {
-                queryString += "?type-id=" + type_id
+                ajax = $.ajax({
+                    type: "DELETE",
+                    url: "/api/recommendations/" + product_id,
+                    contentType: "application/json",
+                    data: JSON.stringify({"type-id": parseInt(type_id, 10)})
+                })
             } 
             else if (status) {
-                queryString += "?status=" + status
+                ajax = $.ajax({
+                    type: "DELETE",
+                    url: "/api/recommendations/" + product_id,
+                    contentType: "application/json",
+                    data: JSON.stringify({"status": status == "True"})
+                })
             }
             else {
-                queryString += "/all"
+                ajax = $.ajax({
+                   type: "DELETE",
+                   url: "/api/recommendations/" + product_id + "/" + "all",
+                   contentType: "application/json",
+                   data: ''
+                })
             }
 
-            var ajax = $.ajax({
-                type: "DELETE",
-                url: "/recommendations/" + product_id + queryString,
-                contentType: "application/json",
-                data: ''
-            })
-    
             ajax.done(function(res){
                 clear_form_data()
                 flash_message("Recommendation has been Deleted!")
