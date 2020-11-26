@@ -1,3 +1,4 @@
+
 """
 Recommendations Service
 
@@ -366,24 +367,21 @@ class RecommendationSubset(Resource):
         This endpoint will delete all the recommendations based on
         the product id and the parameter type and stauts
         """
-        app.logger.debug("Payload = %s", api.payload)
-
         args = recommendation_args.parse_args()
-
         type_id = args["type-id"]
         recommendation_status = args["status"]
-
-        if not type_id and not recommendation_status:
+        app.logger.info(type_id)
+        app.logger.info(recommendation_status)        
+        if type_id is None and recommendation_status is None:
             raise BadRequest("Bad Request must provide at least 1 parameter")
 
-
-        if type_id and type_id not in [1, 2, 3]:
+        if  (not (type_id is None)) and type_id not in [1, 2, 3]:
             raise BadRequest("Bad Request invalid type id provided")
 
-        if recommendation_status and recommendation_status not in [True, False]:
+        if (not (recommendation_status is None)) and recommendation_status not in [True, False]:
             raise BadRequest("Bad Request invalid status provided")
 
-        if type_id and recommendation_status:
+        if (not (type_id is None)) and (not (recommendation_status is None)):
             app.logger.info("Request to delete recommendations by type_id and status")
             #type_id = int(type_id)
             #recommendation_status = bool(recommendation_status == "True")
@@ -409,9 +407,9 @@ class RecommendationSubset(Resource):
 
             return "", status.HTTP_204_NO_CONTENT
 
-        elif type_id:
+        elif (not (type_id is None)):
             app.logger.info("Request to delete recommendations by type_id")
-            type_id = int(type_id)
+            #type_id = int(type_id)
             recommendations = Recommendation.find_by_id_type(product_id, type_id)
 
             for recommendation in recommendations:
@@ -429,7 +427,7 @@ class RecommendationSubset(Resource):
 
             return "", status.HTTP_204_NO_CONTENT
 
-        elif recommendation_status:
+        elif (not (recommendation_status is None)):
             app.logger.info("Request to delete recommendations by status")
             #recommendation_status = bool(recommendation_status == "True")
             recommendations = Recommendation.find_by_id_status(
@@ -476,12 +474,12 @@ class RecommendationAll(Resource):
  
         for recommendation in recommendations:
             app.logger.info(
-                "Deleting all related products for product %s with ",
+                "Deleting all related products for product %s",
                 recommendation.product_id,
             )
             recommendation.delete()
             app.logger.info(
-                "Deleted all related products for product %s with ",
+                "Deleted all related products for product %s",
                 recommendation.product_id,
             )
 
