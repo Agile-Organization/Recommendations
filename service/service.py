@@ -270,7 +270,7 @@ class RecommendationResource(Resource):
     # DELETE A RELEATIONSHIP BETWEEN A PRODUCT and A RELATED PRODUCT
     ######################################################################
     @api.doc("delete_recommendations")
-    @api.response(204, 'Pet deleted')
+    @api.response(204, 'Recommendation deleted')
     def delete(self, product_id, related_product_id):
         """
         Delete a recommendation
@@ -361,7 +361,7 @@ class RecommendationSubset(Resource):
     ######################################################################
     @api.doc("delete_recommendations")
     @api.expect(recommendation_args, validate=True)
-    @api.response(204, 'Pet deleted')
+    @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
         """Deletes recommendations
         This endpoint will delete all the recommendations based on
@@ -460,7 +460,7 @@ class RecommendationAll(Resource):
     # DELETE ALL RELEATIONSHIP OF A PRODUCT BY PRODUCT ID
     ######################################################################
     @api.doc("delete_recommendations")
-    @api.response(204, 'Pet deleted')
+    @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
         """Deletes recommendations
         This endpoint will delete all the recommendations based on
