@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions
+from selenium.common.exceptions import StaleElementReferenceException
 
 WAIT_SECONDS = int(getenv("WAIT_SECONDS", "60"))
 ID_PREFIX = "recommendation_"
@@ -104,17 +105,25 @@ class element_in_a_table(object):
 
     def __call__(self, driver):
         element = driver.find_element_by_id(self.locator)
+        rows_number = len(element.find_elements(By.TAG_NAME, "tr"))
         rows = element.find_elements(By.TAG_NAME, "tr")
-        for row in rows:
-            cols = row.text.split(" ")
-            if (
-                cols[0] == self.product_id
-                and cols[1] == self.related_product_id
-                and cols[2] == self.type_id
-            ):
-                return True
+        for i in range(rows_number):
+            try:
+                cols = rows[i].text.split(" ")
+                if (
+                    cols[0] == self.product_id
+                    and cols[1] == self.related_product_id
+                    and cols[2] == self.type_id):
+                    return True
+            except StaleElementReferenceException:
+                rows = element.find_elements(By.TAG_NAME, "tr")
+                cols = rows[i].text.split(" ")
+                if (
+                    cols[0] == self.product_id
+                    and cols[1] == self.related_product_id
+                    and cols[2] == self.type_id):
+                    return True
         return False
-
 
 @then(
     'I should see a recommendation from "{product_id}" to "{related_product_id}" with type "{type_id}"'
@@ -135,17 +144,25 @@ class element_not_in_a_table(object):
 
     def __call__(self, driver):
         element = driver.find_element_by_id(self.locator)
+        rows_number = len(element.find_elements(By.TAG_NAME, "tr"))
         rows = element.find_elements(By.TAG_NAME, "tr")
-        for row in rows:
-            cols = row.text.split(" ")
-            if (
-                cols[0] == self.product_id
-                and cols[1] == self.related_product_id
-                and cols[2] == self.type_id
-            ):
-                return False
+        for i in range(rows_number):
+            try:
+                cols = rows[i].text.split(" ")
+                if (
+                    cols[0] == self.product_id
+                    and cols[1] == self.related_product_id
+                    and cols[2] == self.type_id):
+                    return False
+            except StaleElementReferenceException:
+                rows = element.find_elements(By.TAG_NAME, "tr")
+                cols = rows[i].text.split(" ")
+                if (
+                    cols[0] == self.product_id
+                    and cols[1] == self.related_product_id
+                    and cols[2] == self.type_id):
+                    return False
         return True
-
 
 @then(
     'I should not see a recommendation from "{product_id}" to "{related_product_id}" with type "{type_id}"'
