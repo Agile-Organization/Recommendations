@@ -344,7 +344,7 @@ class RecommendationResource(Resource):
     ######################################################################
     # DELETE A RELEATIONSHIP BETWEEN A PRODUCT and A RELATED PRODUCT
     ######################################################################
-    @api.doc("delete_recommendations")
+    @api.doc("delete a recommendation with product id and related product id")
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id, related_product_id):
         """
@@ -434,7 +434,7 @@ class RecommendationSubset(Resource):
     ######################################################################
     # DELETE ALL RELEATIONSHIPS OF A PRODUCT BASED ON TYPE AND/OR STATUS
     ######################################################################
-    @api.doc("delete_recommendations")
+    @api.doc("delete all recommendations of a product with a certain type or status")
     @api.expect(recommendation_args, validate=True)
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
@@ -534,7 +534,7 @@ class RecommendationAll(Resource):
     ######################################################################
     # DELETE ALL RELEATIONSHIP OF A PRODUCT BY PRODUCT ID
     ######################################################################
-    @api.doc("delete_recommendations")
+    @api.doc("delete all recommendations of a product")
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
         """Deletes recommendations
