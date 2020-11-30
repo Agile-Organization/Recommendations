@@ -111,7 +111,7 @@ Scenario: Delete recommendations by using product ID and type ID
     And I set the "type_id" to "2"
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-    When I set the "product_id" to "1"
+    When I press the "Clear" button
     And I press the "Search" button
     Then I should not see a recommendation from "1" to "3" with type "2"
     And I should not see a recommendation from "1" to "5" with type "2"
