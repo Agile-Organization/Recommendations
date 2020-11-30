@@ -243,6 +243,9 @@ class TestRecommendationService(unittest.TestCase):
         """ Get all recommendations tests"""
         # Test Case 1
         # Test for empty database
+        resp = self.app.get(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
         resp = self.app.get("/recommendations")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
@@ -251,6 +254,10 @@ class TestRecommendationService(unittest.TestCase):
         recommendation = self._create_one_recommendation(
             by_id=1, by_rel_id=2, by_type=1
         )[0]
+
+        resp = self.app.get(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(resp.get_json()) > 0)
 
         resp = self.app.get("/recommendations")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -264,6 +271,17 @@ class TestRecommendationService(unittest.TestCase):
 
         # Test Case 3
         resp = self.app.get(
+            BASE_URL + "?product-id={}&related-product-id={}".format(
+                recommendation.product_id, recommendation.related_product_id
+            )
+        )
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
+        resp = self.app.get(
             "/recommendations?product-id={}&related-product-id={}".format(
                 recommendation.product_id, recommendation.related_product_id
             )
@@ -276,6 +294,15 @@ class TestRecommendationService(unittest.TestCase):
 
         # Test Case 4
         resp = self.app.get(
+            BASE_URL + "?product-id={}".format(recommendation.product_id)
+        )
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
+        resp = self.app.get(
             "/recommendations?product-id={}".format(recommendation.product_id)
         )
         resp = resp.get_json()[0]
@@ -285,6 +312,17 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(recommendation, returned_recommendation)
 
         # Test Case 5
+        resp = self.app.get(
+            BASE_URL + "?product-id={}&type-id={}".format(
+                recommendation.product_id, recommendation.type_id
+            )
+        )
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
         resp = self.app.get(
             "/recommendations?product-id={}&type-id={}".format(
                 recommendation.product_id, recommendation.type_id
@@ -296,7 +334,18 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # Test Case 5
+        # Test Case 6
+        resp = self.app.get(
+            BASE_URL + "?product-id={}&status={}".format(
+                recommendation.product_id, recommendation.status
+            )
+        )
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
         resp = self.app.get(
             "/recommendations?product-id={}&status={}".format(
                 recommendation.product_id, recommendation.status
@@ -308,7 +357,18 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # Test Case 6
+        # Test Case 7
+        resp = self.app.get(
+            BASE_URL + "?product-id={}&type-id={}&status={}".format(
+                recommendation.product_id, recommendation.type_id, recommendation.status
+            )
+        )
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
         resp = self.app.get(
             "/recommendations?product-id={}&type-id={}&status={}".format(
                 recommendation.product_id, recommendation.type_id, recommendation.status
@@ -320,7 +380,19 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # Test Case 7
+        # Test Case 8
+        resp = self.app.get(
+            BASE_URL + "?type-id={}&status={}".format(
+                recommendation.type_id, recommendation.status
+            )
+        )
+        print(resp.get_json())
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
         resp = self.app.get(
             "/recommendations?type-id={}&status={}".format(
                 recommendation.type_id, recommendation.status
@@ -333,7 +405,16 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # Test Case 8
+        # Test Case 9
+        resp = self.app.get(
+            BASE_URL + "?type-id={}".format(recommendation.type_id)
+        )
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
         resp = self.app.get(
             "/recommendations?type-id={}".format(recommendation.type_id)
         )
@@ -343,15 +424,31 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # Test Case 9
-        resp = self.app.get("/recommendations?status={}".format(recommendation.status))
+        # Test Case 10
+        resp = self.app.get(
+            BASE_URL + "?status={}".format(recommendation.status))
         resp = resp.get_json()[0]
 
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # Test Case 10
+        resp = self.app.get(
+            "/recommendations?status={}".format(recommendation.status))
+        resp = resp.get_json()[0]
+
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
+
+        # Test Case 11
+        resp = self.app.get(
+            BASE_URL + "?product-id={}&type-id={}&status={}".format(
+                "invalid_product_id", recommendation.type_id, recommendation.status
+            )
+        )
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
         resp = self.app.get(
             "/recommendations?product-id={}&type-id={}&status={}".format(
                 "invalid_product_id", recommendation.type_id, recommendation.status
@@ -359,13 +456,63 @@ class TestRecommendationService(unittest.TestCase):
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
 
-        # Test Case 11
+        # Test Case 12
+        resp = self.app.get(
+            BASE_URL + "?product-id={}&type-id={}&status={}".format(
+                recommendation.product_id, 5, recommendation.status
+            )
+        )
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
         resp = self.app.get(
             "/recommendations?product-id={}&type-id={}&status={}".format(
                 recommendation.product_id, 5, recommendation.status
             )
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
+
+    def test_get_all_recommendations_by_relid(self):
+        """ Get all recommendations by related product id functions"""
+        recommendation1 = self._create_one_recommendation(1, 2, 1)[0]
+        recommendation2 = self._create_one_recommendation(3, 2, 3, by_status=False)[0]
+
+        # Test Case 1
+        # Test search by related product id only
+        resp = self.app.get("/recommendations?related-product-id={}".format(2))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 2)
+
+        result1 = Recommendation().deserialize(resp.get_json()[0])
+        result2 = Recommendation().deserialize(resp.get_json()[1])
+        self.assertEqual(result1, recommendation1)
+        self.assertEqual(result2, recommendation2)
+
+        # Test Case 2
+        # Test search by related product id and type id
+        resp = self.app.get("/recommendations?related-product-id={}&type-id={}".format(2,1))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 1)
+
+        result = Recommendation().deserialize(resp.get_json()[0])
+        self.assertEqual(result, recommendation1)
+
+        # Test Case 3
+        # Test search by related product id and status
+        resp = self.app.get("/recommendations?related-product-id={}&status={}".format(2,False))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 1)
+
+        result = Recommendation().deserialize(resp.get_json()[0])
+        self.assertEqual(result, recommendation2)
+
+        # Test Case 4
+        # Test search by related product id with type id and status
+        resp = self.app.get("/recommendations?related-product-id={}&type-id={}&status={}".format(2,3,False))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 1)
+
+        result = Recommendation().deserialize(resp.get_json()[0])
+        self.assertEqual(result, recommendation2)
 
     def test_get_related_products(self):
         """ Get related products by product_id tests"""

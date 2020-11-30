@@ -156,6 +156,81 @@ def index():
     """ Index page """
     return app.send_static_file("index.html")
 
+######################################################################
+#  PATH: /recommendations
+######################################################################
+@api.route("/recommendations")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
+@api.param("type_id", "The relationship type of a recommendation")
+@api.param("status", "The status of a recommendation")
+class SearchResource(Resource):
+    """
+    SearchResource class
+
+    GET /api/recommendations - Returns recommendation based on query parameters
+    """
+    # ------------------------------------------------------------------
+    # SEARCH recommendations
+    # ------------------------------------------------------------------
+    @api.doc("search_recommendations")
+    @api.response(404, "Recommendation not found")
+    @api.marshal_with(recommendation_model)
+    def get(self):
+        """
+            Search recommendation based on query parameters
+
+            This endpoint will return recommendation based on it's product id, related product id, type, and status.
+        """
+        product_id = request.args.get("product-id")
+        related_product_id = request.args.get("related-product-id")
+        type_id = request.args.get("type-id")
+        by_status = request.args.get("status")
+
+        app.logger.info("Request for all recommendations in the database")
+
+        try:
+            if product_id and related_product_id:
+                recommendations = Recommendation.find_by_id_relid(
+                    int(product_id), int(related_product_id)
+                )
+            elif product_id:
+                if type_id and by_status:
+                    recommendations = Recommendation.find_by_id_type_status(
+                        int(product_id), int(type_id), (by_status == "True")
+                    )
+                elif type_id:
+                    recommendations = Recommendation.find_by_id_type(
+                        int(product_id), int(type_id)
+                    )
+                elif by_status:
+                    recommendations = Recommendation.find_by_id_status(
+                        int(product_id), (by_status == "True")
+                    )
+                else:
+                    recommendations = Recommendation.find(int(product_id))
+            elif type_id and by_status:
+                recommendations = Recommendation.find_by_type_id_status(
+                    int(type_id), (by_status == "True")
+                )
+            elif type_id:
+                recommendations = Recommendation.find_by_type_id(int(type_id))
+            elif by_status:
+                recommendations = Recommendation.find_by_status((by_status == "True"))
+            else:
+                recommendations = Recommendation.all()
+        except DataValidationError as error:
+            raise DataValidationError(str(error))
+        except ValueError as error:
+            raise DataValidationError(str(error))
+
+        result = []
+        for rec in recommendations:
+            record = rec.serialize()
+            result.append(record)
+
+        return result, status.HTTP_200_OK    
+
 
 ######################################################################
 #  PATH: /recommendations/{product-id}/{related-product-id}
@@ -561,6 +636,15 @@ def get_all_recommendations():
                 )
             else:
                 recommendations = Recommendation.find(int(product_id))
+        elif related_product_id:
+            if type_id and by_status:
+                recommendations = Recommendation.find_by_relid_type_status(int(related_product_id), int(type_id), (by_status=="True"))
+            elif type_id:
+                recommendations = Recommendation.find_by_relid_type(int(related_product_id), int(type_id))
+            elif by_status:
+                recommendations = Recommendation.find_by_relid_status(int(related_product_id), (by_status=="True"))
+            else:
+                recommendations = Recommendation.find_by_rel_id(int(related_product_id))
         elif type_id and by_status:
             recommendations = Recommendation.find_by_type_id_status(
                 int(type_id), (by_status == "True")

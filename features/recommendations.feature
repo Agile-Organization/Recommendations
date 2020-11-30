@@ -9,6 +9,7 @@ Background:
         | 1          | 2                  | 1       | True   |
         | 1          | 3                  | 2       | True   |
         | 1          | 4                  | 3       | False  |
+        | 5          | 2                  | 3       | False  |
         | 10         | 22                 | 2       | True   |
 
 Scenario: The server is running
@@ -42,6 +43,38 @@ Scenario: List all active recommendations
     Then I should see a recommendation from "1" to "2" with type "1"
     And I should see a recommendation from "1" to "3" with type "2"
     And I should see a recommendation from "1" to "4" with type "3"
+
+Scenario: List all recommendations of a same related product id
+    When I visit the "Home Page"
+    And I set the "related_product_id" to "2"
+    And I press the "Search" button
+    Then I should see a recommendation from "1" to "2" with type "1"
+    And I should see a recommendation from "5" to "2" with type "3"
+
+Scenario: List all recommendations by related product id and type id
+    When I visit the "Home Page"
+    And I set the "related_product_id" to "2"
+    And I set the "type_id" to "1"
+    And I press the "Search" button
+    Then I should see a recommendation from "1" to "2" with type "1"
+    And I should not see a recommendation from "5" to "2" with type "3"
+
+Scenario: List all recommendations by related product id and status
+    When I visit the "Home Page"
+    And I set the "related_product_id" to "2"
+    And I select "False" in the "status" dropdown
+    And I press the "Search" button
+    Then I should see a recommendation from "5" to "2" with type "3"
+    And I should not see a recommendation from "1" to "2" with type "1"
+
+Scenario: List all recommendations by related product id and type id and status
+    When I visit the "Home Page"
+    And I set the "related_product_id" to "2"
+    And I set the "type_id" to "3"
+    And I select "False" in the "status" dropdown
+    And I press the "Search" button
+    Then I should see a recommendation from "5" to "2" with type "3"
+    And I should not see a recommendation from "1" to "2" with type "1"
 
 Scenario: Read an existing recommendation
     When I visit the "Home Page"

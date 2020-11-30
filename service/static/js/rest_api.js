@@ -247,7 +247,7 @@ $(function () {
             if (queryString.length > 0) {
                 queryString += '&related-product-id=' + related_product_id
             } else {
-                queryString += 'related-product-id=' + category
+                queryString += 'related-product-id=' + related_product_id
             }
         }
         if (type_id) {
@@ -267,7 +267,7 @@ $(function () {
 
         var ajax = $.ajax({
             type: "GET",
-            url: "/recommendations?" + queryString,
+            url: "/api/recommendations?" + queryString,
             contentType: "application/json",
             data: ''
         })
