@@ -69,13 +69,19 @@ recommendation_args.add_argument(
     "related-product-id",
     type=int,
     required=False,
-    help="List Recommendations by related product id",
+    help="List Recommendations by related product id"
 )
 recommendation_args.add_argument(
     "type-id", type=int, required=False, help="List Recommendations by type id"
 )
 recommendation_args.add_argument(
     "status", type=inputs.boolean, required=False, help="List Recommendations by status"
+)
+recommendation_args.add_argument(
+    "product1", type=int, required=False, help="Get a unique recommendation"
+)
+recommendation_args.add_argument(
+    "product2", type=int, required=False, help="Get a unique recommendation"
 )
 
 
@@ -303,60 +309,37 @@ class RecommendationResource(Resource):
         app.logger.info('Request to Update a recommendation with product-id [%s] and related-product-id [%s]', product_id, related_product_id)
 
         try:
-            app.logger.debug('Payload = %s', api.payload)
-            data = api.payload
-            recommendation = Recommendation()
-            recommendation.deserialize(data)
-
             find = Recommendation.find_recommendation
-            old_recommendation = (
+            recommendation = (
                 find(
-                    by_id=recommendation.product_id,
-                    by_rel_id=recommendation.related_product_id,
-                    by_status=True,
+                    by_id=product_id,
+                    by_rel_id=related_product_id,
+                    by_status=True
                 ).first()
-                or find(
-                    by_id=recommendation.product_id,
-                    by_rel_id=recommendation.related_product_id,
-                    by_status=False,
+                or 
+                find(
+                    by_id=product_id,
+                    by_rel_id=related_product_id,
+                    by_status=False
                 ).first()
             )
         except DataValidationError as error:
             raise DataValidationError(error)
 
-        if not old_recommendation:
+        if not recommendation:
             api.abort(
                 status.HTTP_404_NOT_FOUND,
-                "Recommendation for product id '{}' with related product id '{}' not found.Please call POST to create this record.".format(
+                "404 Not Found: Recommendation for product id '{}' with related product id '{}' not found.Please call POST to create this record.".format(
                     product_id, related_product_id
                 )
             )
 
-        old_typeid = old_recommendation.type_id
-        old_recommendation.type_id = recommendation.type_id
-        old_recommendation.status = recommendation.status
+        app.logger.debug('Payload = %s', api.payload)
+        recommendation.deserialize(api.payload)
 
-        app.logger.info(
-            "Updating Recommendation type_id for product %s with "
-            "related product %s from %s to %s.",
-            recommendation.product_id,
-            recommendation.related_product_id,
-            old_typeid,
-            recommendation.type_id,
-        )
+        recommendation.save()
 
-        old_recommendation.save()
-
-        app.logger.info(
-            "Recommendation type_id updated for product %s with "
-            "related product %s from %s to %s.",
-            recommendation.product_id,
-            recommendation.related_product_id,
-            old_typeid,
-            recommendation.type_id,
-        )
-
-        return old_recommendation.serialize(), status.HTTP_200_OK
+        return recommendation.serialize(), status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # ADD A NEW RECOMMENDATION
@@ -632,6 +615,62 @@ class RecommendationAll(Resource):
         return "", status.HTTP_204_NO_CONTENT
 
 ######################################################################
+#  PATH: /recommendations/relationship
+######################################################################
+@api.route("/recommendations/relationship")
+class RecommendationRelation(Resource):
+    """ Handles the fucntion to get a unique recommendation """
+    # ------------------------------------------------------------------
+    # QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
+    # ------------------------------------------------------------------
+    @api.doc("get_unique_recommendation")
+    @api.expect(recommendation_args, validate=True)
+    @api.marshal_list_with(recommendation_model)
+    def get(self):
+        "Returns a unique recommendation if exists"
+        args = recommendation_args.parse_args()
+        product_id = args["product1"]
+        related_product_id = args["product2"]
+
+        app.logger.info(
+            "Querying active recommendation for product: {} and"
+            " related product: {}".format(product_id, related_product_id)
+        )
+
+        product_id_valid = product_id and product_id > 0
+        rel_product_id_valid = (
+            related_product_id and related_product_id > 0
+            )
+
+        if not product_id_valid or not rel_product_id_valid:
+            raise BadRequest(
+                "Bad Request 2 invalid product ids provided,"
+                " received product: {} and related product: {} do not"
+                " exist".format(product_id, related_product_id)
+            )
+
+        exists = Recommendation.check_if_product_exists
+        if not exists(product_id) or not exists(related_product_id):
+            return "", status.HTTP_204_NO_CONTENT
+
+        find = Recommendation.find_recommendation
+        recommendation = (
+            find(by_id=product_id, by_rel_id=related_product_id, by_status=True)
+            or
+            find(by_id=product_id, by_rel_id=related_product_id, by_status=False)
+        )
+
+        app.logger.info(
+            "Returning active recommendation for product: {} and"
+            " related product: {}".format(product_id, related_product_id)
+        )
+
+        if recommendation and recommendation.first():
+            return recommendation.first().serialize(), status.HTTP_200_OK
+
+        return "", status.HTTP_204_NO_CONTENT
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 
@@ -901,63 +940,6 @@ def get_related_products_with_type(product_id, type_id):
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
-
-######################################################################
-# QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
-######################################################################
-@app.route("/recommendations/relationship", methods=["GET"])
-def get_recommendation_relationship_type():
-    """
-    /recommendations/relationship?product1=<int:product_id>&product2=<int:product_id>
-    Returns recommendation for product1 and product2 if exists
-        {
-          "product-id" : <int:product-id>,
-          "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:type_id>,
-          "status" : True
-        }
-        With HTTP_200_OK status
-    """
-    product_id = request.args.get("product1")
-    rel_product_id = request.args.get("product2")
-
-    product_id_valid = product_id and product_id.isnumeric() and "-" not in product_id
-    rel_product_id_valid = (
-        rel_product_id and rel_product_id.isnumeric() and "-" not in rel_product_id
-    )
-
-    if not product_id_valid or not rel_product_id_valid:
-        raise BadRequest(
-            "Bad Request 2 invalid product ids provided,"
-            " received product: {} and related product: {} do not"
-            " exist".format(product_id, rel_product_id)
-        )
-
-    product_id, rel_product_id = int(product_id), int(rel_product_id)
-
-    exists = Recommendation.check_if_product_exists
-    if not exists(product_id) or not exists(rel_product_id):
-        return "", status.HTTP_204_NO_CONTENT
-
-    app.logger.info(
-        "Querying active recommendation for product: {} and"
-        " related product: {}".format(product_id, rel_product_id)
-    )
-    recommendation = Recommendation.find_recommendation(
-        by_id=product_id, by_rel_id=rel_product_id, by_status=True
-    )
-
-    app.logger.info(
-        "Returning active recommendation for product: {} and"
-        " related product: {}".format(product_id, rel_product_id)
-    )
-
-    if recommendation and recommendation.first():
-        return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
-
-    return "", status.HTTP_204_NO_CONTENT
-
-
 ######################################################################
 # CREATE RELATIONSHIP BETWEEN PRODUCTS
 ######################################################################
@@ -994,81 +976,3 @@ def create_recommendation_between_products():
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
-
-
-######################################################################
-# UPDATE RECOMMENDATION
-######################################################################
-@app.route(
-    "/recommendations/<int:product_id>/<int:related_product_id>", methods=["PUT"]
-)
-def update_recommendation(product_id, related_product_id):
-    """
-    Updates a Recommendation
-        This endpoint will update a recommendation based the data in the request body.
-        Expected data in body:
-        {
-          "product-id" : <int:product-id>,
-          "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:type_id>,
-          "status" : <bool: status>
-        }
-        The old recommendation will be replaced with data
-        sent in the request body if any old recommendation exists.
-        If no old recommendation exists returns a HTTP_404_NOT_FOUND
-    """
-    app.logger.info("Request to update a recommendation")
-    check_content_type("application/json")
-
-    try:
-        recommendation = Recommendation()
-        recommendation.deserialize(request.get_json())
-
-        find = Recommendation.find_recommendation
-        old_recommendation = (
-            find(
-                by_id=recommendation.product_id,
-                by_rel_id=recommendation.related_product_id,
-                by_status=True,
-            ).first()
-            or find(
-                by_id=recommendation.product_id,
-                by_rel_id=recommendation.related_product_id,
-                by_status=False,
-            ).first()
-        )
-    except DataValidationError as error:
-        raise DataValidationError(error)
-
-    if not old_recommendation:
-        raise NotFound(
-            "Recommendation does not exist. Please call POST to create this record"
-        )
-
-    old_typeid = old_recommendation.type_id
-    old_recommendation.type_id = recommendation.type_id
-    old_recommendation.status = recommendation.status
-
-    app.logger.info(
-        "Updating Recommendation type_id for product %s with "
-        "related product %s from %s to %s.",
-        recommendation.product_id,
-        recommendation.related_product_id,
-        old_typeid,
-        recommendation.type_id,
-    )
-
-    old_recommendation.save()
-
-    app.logger.info(
-        "Recommendation type_id updated for product %s with "
-        "related product %s from %s to %s.",
-        recommendation.product_id,
-        recommendation.related_product_id,
-        old_typeid,
-        recommendation.type_id,
-    )
-
-    message = old_recommendation.serialize()
-
-    return make_response(jsonify(message), status.HTTP_200_OK)

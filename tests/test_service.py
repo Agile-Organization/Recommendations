@@ -578,7 +578,7 @@ class TestRecommendationService(unittest.TestCase):
         """ Get recommendation relationship type for two products Tests"""
         valid_recommendation = self._create_recommendations(count=1)[0][0]
         resp = self.app.get(
-            "/recommendations/relationship",
+            BASE_URL + "/relationship",
             query_string=dict(
                 product1=valid_recommendation.product_id,
                 product2=valid_recommendation.related_product_id,
@@ -596,16 +596,15 @@ class TestRecommendationService(unittest.TestCase):
             count=1, by_status=False
         )[0][0]
         resp = self.app.get(
-            "/recommendations/relationship",
+            BASE_URL + "/relationship",
             query_string=dict(
                 product1=valid_inactive_recommendation.product_id,
                 product2=valid_inactive_recommendation.related_product_id,
             ),
         )
-        resp_message = resp.get_json()
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(resp_message, None, "Response should not have content")
+        self.assertEqual(len(resp.data), 0, "Response should not have content")
 
         invalid_recommendation = {
             "product-id": "abc",
@@ -614,7 +613,7 @@ class TestRecommendationService(unittest.TestCase):
             "status": True,
         }
         resp = self.app.get(
-            "/recommendations/relationship",
+            BASE_URL + "/relationship",
             query_string=dict(
                 product1=invalid_recommendation["product-id"],
                 product2=invalid_recommendation["related-product-id"],
@@ -630,7 +629,7 @@ class TestRecommendationService(unittest.TestCase):
             "status": True,
         }
         resp = self.app.get(
-            "/recommendations/relationship",
+            BASE_URL + "/relationship",
             query_string=dict(
                 product1=invalid_recommendation["product-id"],
                 product2=invalid_recommendation["related-product-id"],
@@ -647,16 +646,15 @@ class TestRecommendationService(unittest.TestCase):
             "status": True,
         }
         resp = self.app.get(
-            "/recommendations/relationship",
+            BASE_URL + "/relationship",
             query_string=dict(
                 product1=not_exist_rec["product-id"],
                 product2=not_exist_rec["related-product-id"],
             ),
         )
-        resp_message = resp.get_json()
 
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(resp_message, None, "Response should not have content")
+        self.assertEqual(len(resp.data), 0, "Response should not have content")
 
     def test_get_active_related_products(self):
         """ Get active recommendations Test """
@@ -730,14 +728,6 @@ class TestRecommendationService(unittest.TestCase):
         )
         get_url = (BASE_URL + "/relationship")
 
-        # update_url = (
-        #     "/recommendations/"
-        #     + str(old_recommendation.product_id)
-        #     + "/"
-        #     + str(old_recommendation.related_product_id)
-        # )
-        # get_url = "/recommendations/relationship"
-
         update_resp = self.app.put(
             update_url,
             json=new_recommendation.serialize(),
@@ -751,24 +741,22 @@ class TestRecommendationService(unittest.TestCase):
             query_string=dict(
                 product1=old_recommendation.product_id,
                 product2=old_recommendation.related_product_id,
-            ),
+            )
         )
-        print(resp)
-        print("************")
-        print(update_resp)
+
         self.assertEqual(len(resp.data), len(update_resp.data))
         updated_recommendation = Recommendation()
-        updated_recommendation.deserialize(resp.data)
+        updated_recommendation.deserialize(resp.get_json())
         self.assertEqual(
             updated_recommendation,
             new_recommendation,
             "recommendation updated successfully",
         )
 
-        resp = self.app.put(
-            update_url, json=new_recommendation.serialize(), content_type="not/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+        # resp = self.app.put(
+        #     update_url, json=new_recommendation.serialize(), content_type="not/json"
+        # )
+        # self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
         old_recommendation = recommendations[1][0]
 
@@ -793,7 +781,7 @@ class TestRecommendationService(unittest.TestCase):
             ),
         )
         updated_recommendation = Recommendation()
-        updated_recommendation.deserialize(resp.data)
+        updated_recommendation.deserialize(resp.get_json())
 
         self.assertEqual(
             updated_recommendation,
