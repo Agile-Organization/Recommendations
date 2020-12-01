@@ -722,9 +722,9 @@ class TestRecommendationService(unittest.TestCase):
 
         update_url = (
            BASE_URL + "/"
-            + str(old_recommendation.product_id)
+            + str(new_recommendation.product_id)
             + "/"
-            + str(old_recommendation.related_product_id)
+            + str(new_recommendation.related_product_id)
         )
         get_url = (BASE_URL + "/relationship")
 
@@ -768,6 +768,13 @@ class TestRecommendationService(unittest.TestCase):
             "status": True,
         }
 
+        update_url = (
+           BASE_URL + "/"
+            + str(invalid_recommendation["product-id"])
+            + "/"
+            + str(invalid_recommendation["related-product-id"])
+        )
+
         resp = self.app.put(
             update_url, json=invalid_recommendation, content_type="application/json"
         )
@@ -797,6 +804,13 @@ class TestRecommendationService(unittest.TestCase):
             "status": True,
         }
 
+        update_url = (
+           BASE_URL + "/"
+            + str(invalid_recommendation["product-id"])
+            + "/"
+            + str(invalid_recommendation["related-product-id"])
+        )
+
         resp = self.app.put(
             update_url, json=invalid_recommendation, content_type="application/json"
         )
@@ -810,6 +824,13 @@ class TestRecommendationService(unittest.TestCase):
             "status": True,
         }
 
+        update_url = (
+           BASE_URL + "/"
+            + str(invalid_recommendation["product-id"])
+            + "/"
+            + str(invalid_recommendation["related-product-id"])
+        )
+
         resp = self.app.put(
             update_url, json=invalid_recommendation, content_type="application/json"
         )
@@ -822,6 +843,13 @@ class TestRecommendationService(unittest.TestCase):
             "type-id": 2,
             "status": True,
         }
+
+        update_url = (
+           BASE_URL + "/"
+            + str(non_exist_recommendation["product-id"])
+            + "/"
+            + str(non_exist_recommendation["related-product-id"])
+        )
 
         resp = self.app.put(
             update_url, json=non_exist_recommendation, content_type="application/json"

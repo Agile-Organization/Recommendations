@@ -337,7 +337,31 @@ class RecommendationResource(Resource):
         app.logger.debug('Payload = %s', api.payload)
         recommendation.deserialize(api.payload)
 
+        # recommendation.product_id = product_id
+        # recommendation.related_product_id = related_product_id
+        # old_typeid = old_recommendation.type_id
+        # old_recommendation.type_id = recommendation.type_id
+        # old_recommendation.status = recommendation.status
+
+        # app.logger.info(
+        #     "Updating Recommendation type_id for product %s with "
+        #     "related product %s from %s to %s.",
+        #     recommendation.product_id,
+        #     recommendation.related_product_id,
+        #     old_typeid,
+        #     recommendation.type_id,
+        # )
+
         recommendation.save()
+
+        # app.logger.info(
+        #     "Recommendation type_id updated for product %s with "
+        #     "related product %s from %s to %s.",
+        #     recommendation.product_id,
+        #     recommendation.related_product_id,
+        #     old_typeid,
+        #     recommendation.type_id,
+        # )
 
         return recommendation.serialize(), status.HTTP_200_OK
 
