@@ -126,7 +126,8 @@ Scenario: Delete an existed recommendation
     And I set the "related_product_id" to "2"
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-    When I set the "product_id" to "1"
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
     And I set the "related_product_id" to "2"
     And I press the "Retrieve" button
     Then I should see the message "404 Not Found: Recommendation for product id 1 with related product id 2 not found"
@@ -144,7 +145,8 @@ Scenario: Delete recommendations by using product ID and type ID
     And I set the "type_id" to "2"
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-    When I set the "product_id" to "1"
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
     And I press the "Search" button
     Then I should not see a recommendation from "1" to "3" with type "2"
     And I should not see a recommendation from "1" to "5" with type "2"
@@ -156,7 +158,8 @@ Scenario: Delete recommendations by using product ID
     And I set the "product_id" to "1"
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-    When I set the "product_id" to "1"
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
     And I press the "Search" button
     Then I should not see a recommendation from "1" to "2" with type "1"
     And I should not see a recommendation from "1" to "3" with type "2"
@@ -171,7 +174,8 @@ Scenario: Delete active recommendations by product ID (The status is True)
     And I select "True" in the "status" dropdown
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-    When I set the "product_id" to "1"
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
     And I press the "Search" button
     Then I should not see a recommendation from "1" to "2" with type "1"
     And I should not see a recommendation from "1" to "3" with type "2"
@@ -183,7 +187,8 @@ Scenario: Delete inactive recommendations by product ID (The status is False)
     And I select "False" in the "status" dropdown
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
-    When I set the "product_id" to "1"
+    When I press the "Clear" button
+    And I set the "product_id" to "1"
     And I press the "Search" button
     Then I should see a recommendation from "1" to "2" with type "1"
     And I should see a recommendation from "1" to "3" with type "2"
