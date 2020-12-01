@@ -619,12 +619,12 @@ class TestRecommendationService(unittest.TestCase):
         new_recommendation.status = True
 
         update_url = (
-            "/recommendations/"
+           BASE_URL + "/"
             + str(old_recommendation.product_id)
             + "/"
             + str(old_recommendation.related_product_id)
         )
-        get_url = "/recommendations/relationship"
+        get_url = BASE_URL + "/relationship"
 
         update_resp = self.app.put(
             update_url,
@@ -632,7 +632,7 @@ class TestRecommendationService(unittest.TestCase):
             content_type="application/json",
         )
         self.assertEqual(update_resp.status_code, status.HTTP_200_OK)
-        self.assertIsNotNone(update_resp.get_json())
+        self.assertNotEqual(len(update_resp.data), 0)
 
         resp = self.app.get(
             get_url,
@@ -641,9 +641,9 @@ class TestRecommendationService(unittest.TestCase):
                 product2=old_recommendation.related_product_id,
             ),
         )
-        self.assertEqual(resp.get_json(), update_resp.get_json())
+        self.assertEqual(len(resp.data), len(update_resp.data))
         updated_recommendation = Recommendation()
-        updated_recommendation.deserialize(resp.get_json())
+        updated_recommendation.deserialize(resp.data)
         self.assertEqual(
             updated_recommendation,
             new_recommendation,
@@ -678,7 +678,7 @@ class TestRecommendationService(unittest.TestCase):
             ),
         )
         updated_recommendation = Recommendation()
-        updated_recommendation.deserialize(resp.get_json())
+        updated_recommendation.deserialize(resp.data)
 
         self.assertEqual(
             updated_recommendation,

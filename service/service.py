@@ -211,6 +211,46 @@ class RecommendationResource(Resource):
 
         return recommendation.serialize(), status.HTTP_200_OK
 
+    #------------------------------------------------------------------
+    # UPDATE AN EXISTING PET
+    #------------------------------------------------------------------
+    @api.doc('update_recommendations')
+    @api.response(404, 'Recommendation not found')
+    @api.response(400, 'The posted Recommendation data was not valid')
+    @api.expect(recommendation_model)
+    @api.marshal_with(recommendation_model)
+    def put(self, product_id, related_product_id):
+        """
+        Update a Recommendation
+        This endpoint will update a Recommendation based the body that is posted
+        """
+        app.logger.info('Request to Update a recommendation with product-id [%s] and related-product-id [%s]', product_id, related_product_id)
+
+        recommendation = (
+            Recommendation.find_recommendation(product_id, related_product_id).first() 
+            or 
+            Recommendation.find_recommendation(product_id, related_product_id, False).first()
+            )
+
+        if not recommendation:
+            api.abort(
+                status.HTTP_404_NOT_FOUND,
+                "Recommendation for product id '{}' with related product id '{}' not found.Please call POST to create this record.".format(
+                    product_id, related_product_id
+                )
+            )
+
+        app.logger.debug('Payload = %s', api.payload)
+        data = api.payload
+        recommendation.deserialize(data)
+
+        recommendation.product_id = product_id
+        recommendation.related_product_id = related_product_id
+        recommendation.save()
+
+        return recommendation.serialize(), status.HTTP_200_OK
+
+
     # ------------------------------------------------------------------
     # ADD A NEW RECOMMENDATION
     # ------------------------------------------------------------------
