@@ -624,7 +624,15 @@ class TestRecommendationService(unittest.TestCase):
             + "/"
             + str(old_recommendation.related_product_id)
         )
-        get_url = BASE_URL + "/relationship"
+        get_url = (BASE_URL + "/relationship")
+
+        # update_url = (
+        #     "/recommendations/"
+        #     + str(old_recommendation.product_id)
+        #     + "/"
+        #     + str(old_recommendation.related_product_id)
+        # )
+        # get_url = "/recommendations/relationship"
 
         update_resp = self.app.put(
             update_url,
@@ -641,6 +649,9 @@ class TestRecommendationService(unittest.TestCase):
                 product2=old_recommendation.related_product_id,
             ),
         )
+        print(resp)
+        print("************")
+        print(update_resp)
         self.assertEqual(len(resp.data), len(update_resp.data))
         updated_recommendation = Recommendation()
         updated_recommendation.deserialize(resp.data)

@@ -226,13 +226,29 @@ class RecommendationResource(Resource):
         """
         app.logger.info('Request to Update a recommendation with product-id [%s] and related-product-id [%s]', product_id, related_product_id)
 
-        recommendation = (
-            Recommendation.find_recommendation(product_id, related_product_id).first() 
-            or 
-            Recommendation.find_recommendation(product_id, related_product_id, False).first()
-            )
+        try:
+            app.logger.debug('Payload = %s', api.payload)
+            data = api.payload
+            recommendation = Recommendation()
+            recommendation.deserialize(data)
 
-        if not recommendation:
+            find = Recommendation.find_recommendation
+            old_recommendation = (
+                find(
+                    by_id=recommendation.product_id,
+                    by_rel_id=recommendation.related_product_id,
+                    by_status=True,
+                ).first()
+                or find(
+                    by_id=recommendation.product_id,
+                    by_rel_id=recommendation.related_product_id,
+                    by_status=False,
+                ).first()
+            )
+        except DataValidationError as error:
+            raise DataValidationError(error)
+
+        if not old_recommendation:
             api.abort(
                 status.HTTP_404_NOT_FOUND,
                 "Recommendation for product id '{}' with related product id '{}' not found.Please call POST to create this record.".format(
@@ -240,16 +256,31 @@ class RecommendationResource(Resource):
                 )
             )
 
-        app.logger.debug('Payload = %s', api.payload)
-        data = api.payload
-        recommendation.deserialize(data)
+        old_typeid = old_recommendation.type_id
+        old_recommendation.type_id = recommendation.type_id
+        old_recommendation.status = recommendation.status
 
-        recommendation.product_id = product_id
-        recommendation.related_product_id = related_product_id
-        recommendation.save()
+        app.logger.info(
+            "Updating Recommendation type_id for product %s with "
+            "related product %s from %s to %s.",
+            recommendation.product_id,
+            recommendation.related_product_id,
+            old_typeid,
+            recommendation.type_id,
+        )
 
-        return recommendation.serialize(), status.HTTP_200_OK
+        old_recommendation.save()
 
+        app.logger.info(
+            "Recommendation type_id updated for product %s with "
+            "related product %s from %s to %s.",
+            recommendation.product_id,
+            recommendation.related_product_id,
+            old_typeid,
+            recommendation.type_id,
+        )
+
+        return old_recommendation.serialize(), status.HTTP_200_OK
 
     # ------------------------------------------------------------------
     # ADD A NEW RECOMMENDATION
