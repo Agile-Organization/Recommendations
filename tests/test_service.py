@@ -778,7 +778,7 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.put(
             update_url, json=invalid_recommendation, content_type="application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         resp = self.app.get(
             get_url,
@@ -814,7 +814,7 @@ class TestRecommendationService(unittest.TestCase):
         resp = self.app.put(
             update_url, json=invalid_recommendation, content_type="application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
         # Test invalid type
         invalid_recommendation = {
