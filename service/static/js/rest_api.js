@@ -241,33 +241,33 @@ $(function () {
         var queryString = ""
 
         if (product_id) {
-            queryString += '?product-id=' + product_id
+            queryString += 'product-id=' + product_id
         }
         if (related_product_id) {
             if (queryString.length > 0) {
                 queryString += '&related-product-id=' + related_product_id
             } else {
-                queryString += '?related-product-id=' + related_product_id
+                queryString += 'related-product-id=' + related_product_id
             }
         }
         if (type_id) {
             if (queryString.length > 0) {
                 queryString += '&type-id=' + type_id
             } else {
-                queryString += '?type-id=' + type_id
+                queryString += 'type-id=' + type_id
             }
         }
         if (status) {
             if (queryString.length > 0) {
                 queryString += '&status=' + status
             } else {
-                queryString += '?status=' + status
+                queryString += 'status=' + status
             }
         }
 
         var ajax = $.ajax({
             type: "GET",
-            url: "/api/recommendations" + queryString,
+            url: "/api/recommendations?" + queryString,
             contentType: "application/json",
             data: ''
         })
@@ -286,10 +286,7 @@ $(function () {
             var firstRecommendation = "";
             for(var i = 0; i < res.length; i++) {
                 var recommendation = res[i];
-                var row = "<tr><td>"+recommendation["product-id"]
-                        +"</td><td>"+recommendation["related-product-id"]
-                        +"</td><td>"+recommendation["type-id"]+
-                        "</td><td>"+recommendation["status"]+"</td></tr>";
+                var row = "<tr><td>"+recommendation["product-id"]+"</td><td>"+recommendation["related-product-id"]+"</td><td>"+recommendation["type-id"]+"</td><td>"+recommendation["status"]+"</td></tr>";
                 $("#search_results").append(row);
                 if (i == 0) {
                     firstRecommendation = recommendation;
