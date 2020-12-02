@@ -84,7 +84,6 @@ recommendation_args.add_argument(
     "product2", type=int, required=False, help="Get a unique recommendation"
 )
 
-
 ######################################################################
 # Special Error Handlers
 ######################################################################
@@ -608,62 +607,6 @@ class RecommendationAll(Resource):
                 "Deleted all related products for product %s",
                 recommendation.product_id,
             )
-
-        return "", status.HTTP_204_NO_CONTENT
-
-######################################################################
-#  PATH: /recommendations/relationship
-######################################################################
-@api.route("/recommendations/relationship")
-class RecommendationRelation(Resource):
-    """ Handles the fucntion to get a unique recommendation """
-    # ------------------------------------------------------------------
-    # QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
-    # ------------------------------------------------------------------
-    @api.doc("get_unique_recommendation")
-    @api.expect(recommendation_args, validate=True)
-    @api.marshal_list_with(recommendation_model)
-    def get(self):
-        "Returns a unique recommendation if exists"
-        args = recommendation_args.parse_args()
-        product_id = args["product1"]
-        related_product_id = args["product2"]
-
-        app.logger.info(
-            "Querying active recommendation for product: {} and"
-            " related product: {}".format(product_id, related_product_id)
-        )
-
-        product_id_valid = product_id and product_id > 0
-        rel_product_id_valid = (
-            related_product_id and related_product_id > 0
-            )
-
-        if not product_id_valid or not rel_product_id_valid:
-            raise BadRequest(
-                "Bad Request 2 invalid product ids provided,"
-                " received product: {} and related product: {} do not"
-                " exist".format(product_id, related_product_id)
-            )
-
-        exists = Recommendation.check_if_product_exists
-        if not exists(product_id) or not exists(related_product_id):
-            return "", status.HTTP_204_NO_CONTENT
-
-        find = Recommendation.find_recommendation
-        recommendation = (
-            find(by_id=product_id, by_rel_id=related_product_id, by_status=True)
-            or
-            find(by_id=product_id, by_rel_id=related_product_id, by_status=False)
-        )
-
-        app.logger.info(
-            "Returning active recommendation for product: {} and"
-            " related product: {}".format(product_id, related_product_id)
-        )
-
-        if recommendation and recommendation.first():
-            return recommendation.first().serialize(), status.HTTP_200_OK
 
         return "", status.HTTP_204_NO_CONTENT
 
