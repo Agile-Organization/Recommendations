@@ -46,10 +46,10 @@ The API endpoints available as of now are:
 ## Database Schema
 Recommendations service has only one database table with the following columns.
 | Column | Type | Contraint | Description |Details|
-| :---------: | :---------: | :------------: |  :------------: | :------------: |  
+| :---------: | :---------: | :------------: |  :------------: | :-----------: |  
 |product_id|Integer|Primary Key|Represents the id of the product|
 |related_product_id|Integer|Primary Key|Represents the id of the related product||
-|type_id|Integer||Represents relationship type between product and related product|1: upshell<br/>2: cross-sell<br/>3: accessory|
+|type_id|Integer||Represents relationship type between product and related product|1:upshell<br/>2:cross-sell<br/> 3:accessory|
 |status|Boolean||Represents if the recommendation is active or in-active|
 
 ## Running Unit Tests
