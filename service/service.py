@@ -159,9 +159,9 @@ def index():
 #  PATH: /recommendations
 ######################################################################
 @api.route("/recommendations")
-@api.param("product_id", "The product identifier")
-@api.param("related_product_id", "The related product identifier")
-@api.param("type_id", "The relationship type of a recommendation")
+@api.param("product-id", "The product identifier")
+@api.param("related-product-id", "The related product identifier")
+@api.param("type-id", "The relationship type of a recommendation")
 @api.param("status", "The status of a recommendation")
 class SearchResource(Resource):
     """
@@ -187,7 +187,7 @@ class SearchResource(Resource):
         by_status = request.args.get("status")
 
         app.logger.info("Request for all recommendations in the database")
-
+        
         try:
             if product_id and related_product_id:
                 recommendations = Recommendation.find_by_id_relid(
@@ -208,6 +208,21 @@ class SearchResource(Resource):
                     )
                 else:
                     recommendations = Recommendation.find(int(product_id))
+            elif related_product_id:
+                if type_id and by_status:
+                    recommendations = Recommendation.find_by_relid_type_status(
+                        int(related_product_id), int(type_id), (by_status == "True")
+                        )
+                elif type_id:
+                    recommendations = Recommendation.find_by_relid_type(
+                        int(related_product_id), int(type_id)
+                        )
+                elif by_status:
+                    recommendations = Recommendation.find_by_relid_status(
+                        int(related_product_id), (by_status == "True")
+                        )
+                else:
+                    recommendations = Recommendation.find_by_rel_id(int(related_product_id))
             elif type_id and by_status:
                 recommendations = Recommendation.find_by_type_id_status(
                     int(type_id), (by_status == "True")
@@ -235,8 +250,8 @@ class SearchResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>")
-@api.param("product_id", "The product identifier")
-@api.param("related_product_id", "The related product identifier")
+@api.param("product-id", "The product identifier")
+@api.param("related-product-id", "The related product identifier")
 class RecommendationResource(Resource):
     """
     RecommendationResource class
@@ -345,6 +360,7 @@ class RecommendationResource(Resource):
         This endpoint will create a Recommendation based the data in the body that is posted
         """
         app.logger.info("Request to create a recommendation")
+        check_content_type("application/json")
 
         recommendation = Recommendation()
         app.logger.debug("Payload = %s", api.payload)
@@ -355,9 +371,11 @@ class RecommendationResource(Resource):
 
         existing_recommendation = (
             Recommendation.find_recommendation(
-                recommendation.product_id, recommendation.related_product_id
+                recommendation.product_id, 
+                recommendation.related_product_id
             ).first()
-            or Recommendation.find_recommendation(
+            or 
+            Recommendation.find_recommendation(
                 recommendation.product_id,
                 recommendation.related_product_id,
                 by_status=False,
@@ -370,9 +388,12 @@ class RecommendationResource(Resource):
             )
 
         recommendation.create()
-        location_url = "/recommendations/{}/{}".format(
-            recommendation.product_id, recommendation.related_product_id
-        )
+        location_url = api.url_for(
+            RecommendationResource, 
+            product_id=recommendation.product_id, 
+            related_product_id=recommendation.related_product_id,
+            _external=True
+            )
 
         app.logger.info(
             "recommendation from product ID [%s] to related product ID [%s] created.",
@@ -424,8 +445,8 @@ class RecommendationResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}/toggle
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>/toggle")
-@api.param("product_id", "The product identifier")
-@api.param("related_product_id", "The related product identifier")
+@api.param("product-id", "The product identifier")
+@api.param("related-product-id", "The related product identifier")
 class ToggleResource(Resource):
     """ Toggle action of a single Recommendation """
     # ------------------------------------------------------------------
@@ -472,7 +493,7 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
-@api.param("product_id", "The product identifier")
+@api.param("product-id", "The product identifier")
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
@@ -502,8 +523,6 @@ class RecommendationSubset(Resource):
 
         if (not (type_id is None)) and (not (recommendation_status is None)):
             app.logger.info("Request to delete recommendations by type_id and status")
-            #type_id = int(type_id)
-            #recommendation_status = bool(recommendation_status == "True")
 
             recommendations = Recommendation.find_by_id_type_status(
                 product_id, type_id, recommendation_status
@@ -528,7 +547,6 @@ class RecommendationSubset(Resource):
 
         elif (not (type_id is None)):
             app.logger.info("Request to delete recommendations by type_id")
-            #type_id = int(type_id)
             recommendations = Recommendation.find_by_id_type(product_id, type_id)
 
             for recommendation in recommendations:
@@ -548,7 +566,6 @@ class RecommendationSubset(Resource):
 
         elif (not (recommendation_status is None)):
             app.logger.info("Request to delete recommendations by status")
-            #recommendation_status = bool(recommendation_status == "True")
             recommendations = Recommendation.find_by_id_status(
                 product_id, recommendation_status
             )
@@ -572,7 +589,7 @@ class RecommendationSubset(Resource):
 #  PATH: /recommendations/{product_id}/all
 ######################################################################
 @api.route("/recommendations/<int:product_id>/all")
-@api.param("product_id", "The product identifier")
+@api.param("product-id", "The product identifier")
 class RecommendationAll(Resource):
     """ Handles all interactions with all recommendations owned by product_id """
     ######################################################################
@@ -604,7 +621,6 @@ class RecommendationAll(Resource):
 
         return "", status.HTTP_204_NO_CONTENT
 
-
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
@@ -632,282 +648,3 @@ def check_content_type(content_type):
         return
     app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
     abort(415, "Content-Type must be {}".format(content_type))
-
-
-######################################################################
-#  Non - RESTPlus Endpoints
-######################################################################
-
-######################################################################
-# QUERY ALL RECOMMENDATIONS
-######################################################################
-@app.route("/recommendations", methods=["GET"])
-def get_all_recommendations():
-    """
-    Returns all the recommendations
-    [
-        {product_id: 1, related_product_id: 10001, type: 1, status: True},
-        {product_id: 2, related_product_id: 10002, type: 2, status: True},
-        {product_id: 3, related_product_id: 10003, type: 3, status: False},
-        ...
-    ]
-
-    With HTTP_200_OK status
-    """
-    product_id = request.args.get("product-id")
-    related_product_id = request.args.get("related-product-id")
-    type_id = request.args.get("type-id")
-    by_status = request.args.get("status")
-
-    app.logger.info("Request for all recommendations in the database")
-
-    try:
-        if product_id and related_product_id:
-            recommendations = Recommendation.find_by_id_relid(
-                int(product_id), int(related_product_id)
-            )
-        elif product_id:
-            if type_id and by_status:
-                recommendations = Recommendation.find_by_id_type_status(
-                    int(product_id), int(type_id), (by_status == "True")
-                )
-            elif type_id:
-                recommendations = Recommendation.find_by_id_type(
-                    int(product_id), int(type_id)
-                )
-            elif by_status:
-                recommendations = Recommendation.find_by_id_status(
-                    int(product_id), (by_status == "True")
-                )
-            else:
-                recommendations = Recommendation.find(int(product_id))
-        elif related_product_id:
-            if type_id and by_status:
-                recommendations = Recommendation.find_by_relid_type_status(int(related_product_id), int(type_id), (by_status=="True"))
-            elif type_id:
-                recommendations = Recommendation.find_by_relid_type(int(related_product_id), int(type_id))
-            elif by_status:
-                recommendations = Recommendation.find_by_relid_status(int(related_product_id), (by_status=="True"))
-            else:
-                recommendations = Recommendation.find_by_rel_id(int(related_product_id))
-        elif type_id and by_status:
-            recommendations = Recommendation.find_by_type_id_status(
-                int(type_id), (by_status == "True")
-            )
-        elif type_id:
-            recommendations = Recommendation.find_by_type_id(int(type_id))
-        elif by_status:
-            recommendations = Recommendation.find_by_status((by_status == "True"))
-        else:
-            recommendations = Recommendation.all()
-    except DataValidationError as error:
-        raise DataValidationError(str(error))
-    except ValueError as error:
-        raise DataValidationError(str(error))
-
-    result = []
-    for rec in recommendations:
-        record = rec.serialize()
-        result.append(record)
-
-    return make_response(jsonify(result), status.HTTP_200_OK)
-
-
-######################################################################
-# QUERY RELATED PRODUCTS BY PRODUCT ID
-######################################################################
-@app.route("/recommendations/<int:product_id>", methods=["GET"])
-def get_related_products(product_id):
-    """
-    Retrieve all related products by providing a product id
-    returns a list of 3 objects, showing a list of active ids
-    and inactive ids for each realationship type
-    [
-        {
-            relationship-id: 1,
-            ids: [id1, id2, id3, ...],
-            inactive-ids: [id10, id20, id30, ...]
-        },
-        {
-            relationship-id: 2,
-            ids: [id4, id5, id6, ...],
-            inactive-ids: [id40, id50, id60, ...]
-        },
-        {
-            relationship-id: 3,
-            ids: [id7, id8, id9, ...],
-            inactive-ids: [id70, id80, id90, ...]
-        }
-    ]
-    """
-    app.logger.info("Request for related products with product_id: %s", product_id)
-
-    products = Recommendation.find_by_id_status(
-        product_id, by_status=True
-    )  # need to replace find method with actual function name from model file
-
-    # assume model returns records in format of: [{product_id: 1, related_product_id: 2, type_id: 1, status: true}]
-    relationships = []
-    type_1_active, type_1_inactive = [], []
-    type_2_active, type_2_inactive = [], []
-    type_3_active, type_3_inactive = [], []
-
-    for p in products:
-        if p.type_id == 1:
-            type_1_active.append(
-                p.related_product_id
-            ) if p.status else type_1_inactive.append(p.related_product_id)
-        elif p.type_id == 2:
-            type_2_active.append(
-                p.related_product_id
-            ) if p.status else type_2_inactive.append(p.related_product_id)
-        else:
-            type_3_active.append(
-                p.related_product_id
-            ) if p.status else type_3_inactive.append(p.related_product_id)
-
-    if len(type_1_active) or len(type_1_inactive):
-        relationships.append(
-            {"relation_id": 1, "ids": type_1_active, "inactive_ids": type_1_inactive}
-        )
-    if len(type_2_active) or len(type_2_inactive):
-        relationships.append(
-            {"relation_id": 2, "ids": type_2_active, "inactive_ids": type_2_inactive}
-        )
-    if len(type_3_active) or len(type_3_inactive):
-        relationships.append(
-            {"relation_id": 3, "ids": type_3_active, "inactive_ids": type_3_inactive}
-        )
-
-    return make_response(jsonify(relationships), status.HTTP_200_OK)
-
-
-######################################################################
-# QUERY ACTIVE RECOMMENDATIONS
-######################################################################
-@app.route("/recommendations/<int:product_id>/active", methods=["GET"])
-def get_active_related_products(product_id):
-    """
-    Query active recommendations of a product by providing product_id.
-    Results are returned in the form of
-    [
-        {
-            relation_id: 1,
-            ids: [id1, id2, ...]
-        },
-        {
-            relation_id: 2,
-            ids: [id1, id2, ...]
-        },
-        {
-            relation_id: 3,
-            ids: [id1, id2, ...]
-        }
-    ]
-    """
-    app.logger.info("Query active recommendations for product_id: %s", product_id)
-    recommendations = Recommendation.find_by_id_status(product_id, by_status=True)
-
-    if not recommendations.all():
-        raise NotFound(
-            "Active recommendations for product {} not found.".format(product_id)
-        )
-
-    app.logger.info("Returning recommendations for product %s", product_id)
-    type0_products = []
-    type1_products = []
-    type2_products = []
-    for recommendation in recommendations:
-        if recommendation.type_id == 1:
-            type0_products.append(recommendation.related_product_id)
-        elif recommendation.type_id == 2:
-            type1_products.append(recommendation.related_product_id)
-        else:
-            type2_products.append(recommendation.related_product_id)
-
-    result = []
-    if len(type0_products):
-        result.append({"relation_id": 1, "ids": type0_products})
-    if len(type1_products):
-        result.append({"relation_id": 2, "ids": type1_products})
-    if len(type2_products):
-        result.append({"relation_id": 3, "ids": type2_products})
-
-    return make_response(jsonify(result), status.HTTP_200_OK)
-
-
-######################################################################
-# QUERY RECOMMENDATIONS BY PRODUCT ID AND TYPE
-######################################################################
-@app.route("/recommendations/<int:product_id>/type/<int:type_id>", methods=["GET"])
-def get_related_products_with_type(product_id, type_id):
-    """
-    Query recommendations by product_id and type.
-    Results are returned in the form of
-    {ids: [id1, id2, ...], status: [status1, status2, ...]}
-    """
-    app.logger.info(
-        "Query type: %s recommendations for product_id: %s", type_id, product_id
-    )
-    recommendations = Recommendation.find_by_id_type(product_id, type_id)
-
-    if not recommendations.all():
-        raise NotFound(
-            "Type {} recommendations for product {} not found".format(
-                type_id, product_id
-            )
-        )
-
-    app.logger.info(
-        "Returning type %s recommendations for product %s", type_id, product_id
-    )
-    active_products, inactive_products = [], []
-    for recommendation in recommendations:
-        if recommendation.status == True:
-            active_products.append(recommendation.related_product_id)
-        else:
-            inactive_products.append(recommendation.related_product_id)
-    result = []
-    if len(active_products):
-        result.append({"status": "True", "ids": active_products})
-    if len(inactive_products):
-        result.append({"status": "False", "ids": inactive_products})
-
-    return make_response(jsonify(result), status.HTTP_200_OK)
-
-######################################################################
-# CREATE RELATIONSHIP BETWEEN PRODUCTS
-######################################################################
-@app.route("/recommendations", methods=["POST"])
-def create_recommendation_between_products():
-    """
-    Creates a Recommendation
-    This endpoint will create a recommendation based the data in the body that is posted
-    {
-        "product-id" : 1,
-        "related-product-id" : 2,
-        "type-id" : 1,
-        "status" : 1
-    }
-    """
-    app.logger.info("Request to create a recommendation")
-    check_content_type("application/json")
-    recommendation = Recommendation()
-    recommendation.deserialize(request.get_json())
-    if recommendation.product_id == recommendation.related_product_id:
-        raise BadRequest("product_id cannot be the same as related_product_id")
-
-    recommendation.create()
-    message = recommendation.serialize()
-    location_url = url_for(
-        "get_related_products", product_id=recommendation.product_id, _external=True
-    )
-
-    app.logger.info(
-        "recommendation from ID [%s] to ID [%s] created.",
-        recommendation.product_id,
-        recommendation.related_product_id,
-    )
-    return make_response(
-        jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
-    )
