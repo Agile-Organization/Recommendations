@@ -69,7 +69,7 @@ recommendation_args.add_argument(
     "related-product-id",
     type=int,
     required=False,
-    help="List Recommendations by related product id",
+    help="List Recommendations by related product id"
 )
 recommendation_args.add_argument(
     "type-id", type=int, required=False, help="List Recommendations by type id"
@@ -77,7 +77,6 @@ recommendation_args.add_argument(
 recommendation_args.add_argument(
     "status", type=inputs.boolean, required=False, help="List Recommendations by status"
 )
-
 
 ######################################################################
 # Special Error Handlers
@@ -284,6 +283,51 @@ class RecommendationResource(Resource):
             product_id,
             related_product_id,
         )
+
+        return recommendation.serialize(), status.HTTP_200_OK
+
+    #------------------------------------------------------------------
+    # UPDATE AN EXISTING PET
+    #------------------------------------------------------------------
+    @api.doc('update_recommendations')
+    @api.response(404, 'Recommendation not found')
+    @api.response(400, 'The posted Recommendation data was not valid')
+    @api.expect(recommendation_model)
+    @api.marshal_with(recommendation_model)
+    def put(self, product_id, related_product_id):
+        """
+        Update a Recommendation
+        This endpoint will update a Recommendation based the body that is posted
+        """
+        app.logger.info('Request to Update a recommendation with product-id [%s] and related-product-id [%s]', product_id, related_product_id)
+        check_content_type("application/json")
+
+        find = Recommendation.find_recommendation
+        recommendation = (
+            find(
+                by_id=product_id,
+                by_rel_id=related_product_id,
+                by_status=True
+            ).first()
+            or 
+            find(
+                by_id=product_id,
+                by_rel_id=related_product_id,
+                by_status=False
+            ).first()
+        )
+
+        if not recommendation:
+            api.abort(
+                status.HTTP_404_NOT_FOUND,
+                "404 Not Found: Recommendation for product id '{}' with related product id '{}' not found.Please call POST to create this record.".format(
+                    product_id, related_product_id
+                )
+            )
+
+        app.logger.debug('Payload = %s', api.payload)
+        recommendation.deserialize(api.payload)
+        recommendation.save()
 
         return recommendation.serialize(), status.HTTP_200_OK
 
@@ -560,6 +604,7 @@ class RecommendationAll(Resource):
 
         return "", status.HTTP_204_NO_CONTENT
 
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
@@ -830,63 +875,6 @@ def get_related_products_with_type(product_id, type_id):
 
     return make_response(jsonify(result), status.HTTP_200_OK)
 
-
-######################################################################
-# QUERY RELATIONSHIP BETWEEN TWO PRODUCTS
-######################################################################
-@app.route("/recommendations/relationship", methods=["GET"])
-def get_recommendation_relationship_type():
-    """
-    /recommendations/relationship?product1=<int:product_id>&product2=<int:product_id>
-    Returns recommendation for product1 and product2 if exists
-        {
-          "product-id" : <int:product-id>,
-          "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:type_id>,
-          "status" : True
-        }
-        With HTTP_200_OK status
-    """
-    product_id = request.args.get("product1")
-    rel_product_id = request.args.get("product2")
-
-    product_id_valid = product_id and product_id.isnumeric() and "-" not in product_id
-    rel_product_id_valid = (
-        rel_product_id and rel_product_id.isnumeric() and "-" not in rel_product_id
-    )
-
-    if not product_id_valid or not rel_product_id_valid:
-        raise BadRequest(
-            "Bad Request 2 invalid product ids provided,"
-            " received product: {} and related product: {} do not"
-            " exist".format(product_id, rel_product_id)
-        )
-
-    product_id, rel_product_id = int(product_id), int(rel_product_id)
-
-    exists = Recommendation.check_if_product_exists
-    if not exists(product_id) or not exists(rel_product_id):
-        return "", status.HTTP_204_NO_CONTENT
-
-    app.logger.info(
-        "Querying active recommendation for product: {} and"
-        " related product: {}".format(product_id, rel_product_id)
-    )
-    recommendation = Recommendation.find_recommendation(
-        by_id=product_id, by_rel_id=rel_product_id, by_status=True
-    )
-
-    app.logger.info(
-        "Returning active recommendation for product: {} and"
-        " related product: {}".format(product_id, rel_product_id)
-    )
-
-    if recommendation and recommendation.first():
-        return jsonify(recommendation.first().serialize()), status.HTTP_200_OK
-
-    return "", status.HTTP_204_NO_CONTENT
-
-
 ######################################################################
 # CREATE RELATIONSHIP BETWEEN PRODUCTS
 ######################################################################
@@ -923,81 +911,3 @@ def create_recommendation_between_products():
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
-
-
-######################################################################
-# UPDATE RECOMMENDATION
-######################################################################
-@app.route(
-    "/recommendations/<int:product_id>/<int:related_product_id>", methods=["PUT"]
-)
-def update_recommendation(product_id, related_product_id):
-    """
-    Updates a Recommendation
-        This endpoint will update a recommendation based the data in the request body.
-        Expected data in body:
-        {
-          "product-id" : <int:product-id>,
-          "related-product-id" : <int:related-product-id>,
-          "type-id" : <int:type_id>,
-          "status" : <bool: status>
-        }
-        The old recommendation will be replaced with data
-        sent in the request body if any old recommendation exists.
-        If no old recommendation exists returns a HTTP_404_NOT_FOUND
-    """
-    app.logger.info("Request to update a recommendation")
-    check_content_type("application/json")
-
-    try:
-        recommendation = Recommendation()
-        recommendation.deserialize(request.get_json())
-
-        find = Recommendation.find_recommendation
-        old_recommendation = (
-            find(
-                by_id=recommendation.product_id,
-                by_rel_id=recommendation.related_product_id,
-                by_status=True,
-            ).first()
-            or find(
-                by_id=recommendation.product_id,
-                by_rel_id=recommendation.related_product_id,
-                by_status=False,
-            ).first()
-        )
-    except DataValidationError as error:
-        raise DataValidationError(error)
-
-    if not old_recommendation:
-        raise NotFound(
-            "Recommendation does not exist. Please call POST to create this record"
-        )
-
-    old_typeid = old_recommendation.type_id
-    old_recommendation.type_id = recommendation.type_id
-    old_recommendation.status = recommendation.status
-
-    app.logger.info(
-        "Updating Recommendation type_id for product %s with "
-        "related product %s from %s to %s.",
-        recommendation.product_id,
-        recommendation.related_product_id,
-        old_typeid,
-        recommendation.type_id,
-    )
-
-    old_recommendation.save()
-
-    app.logger.info(
-        "Recommendation type_id updated for product %s with "
-        "related product %s from %s to %s.",
-        recommendation.product_id,
-        recommendation.related_product_id,
-        old_typeid,
-        recommendation.type_id,
-    )
-
-    message = old_recommendation.serialize()
-
-    return make_response(jsonify(message), status.HTTP_200_OK)
