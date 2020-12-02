@@ -307,6 +307,7 @@ class RecommendationResource(Resource):
         This endpoint will update a Recommendation based the body that is posted
         """
         app.logger.info('Request to Update a recommendation with product-id [%s] and related-product-id [%s]', product_id, related_product_id)
+        check_content_type("application/json")
 
         find = Recommendation.find_recommendation
         recommendation = (

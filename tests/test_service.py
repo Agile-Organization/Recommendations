@@ -753,10 +753,11 @@ class TestRecommendationService(unittest.TestCase):
             "recommendation updated successfully",
         )
 
-        # resp = self.app.put(
-        #     update_url, json=new_recommendation.serialize(), content_type="not/json"
-        # )
-        # self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+        resp = self.app.put(
+            update_url, json=new_recommendation.serialize(), content_type="not/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
 
         old_recommendation = recommendations[1][0]
 
