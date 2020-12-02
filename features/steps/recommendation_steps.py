@@ -20,7 +20,7 @@ def step_impl(context):
     """ Delete all Recommendations and load new ones """
     headers = {"Content-Type": "application/json"}
     # list all of the recommendations and delete them one by one
-    context.resp = requests.get(context.base_url + "/recommendations", headers=headers)
+    context.resp = requests.get(context.base_url + "/api/recommendations")
     expect(context.resp.status_code).to_equal(200)
     for recommendation in context.resp.json():
         context.resp = requests.delete(
@@ -34,7 +34,7 @@ def step_impl(context):
         expect(context.resp.status_code).to_equal(204)
 
     # load the database with new recommendations
-    create_url = context.base_url + "/recommendations"
+    create_url = context.base_url
     for row in context.table:
         data = {
             "product-id": int(row["product-id"]),
@@ -43,7 +43,14 @@ def step_impl(context):
             "status": row["status"] == "True",
         }
         payload = json.dumps(data)
-        context.resp = requests.post(create_url, data=payload, headers=headers)
+        context.resp = requests.post(
+            create_url 
+            + "/api/recommendations/"
+            + str(data["product-id"]) 
+            + "/"
+            + str(data["related-product-id"]),
+            data=payload, 
+            headers=headers)
         expect(context.resp.status_code).to_equal(201)
 
 
