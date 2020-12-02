@@ -173,68 +173,70 @@ class SearchResource(Resource):
     # SEARCH recommendations
     # ------------------------------------------------------------------
     @api.doc("search_recommendations")
-    @api.expect(recommendation_args, validate=True)
-    @api.marshal_list_with(recommendation_model)
+    @api.response(404, "Recommendation not found")
+    @api.response(400, "The posted data was not valid")
+    @api.marshal_with(recommendation_model)
     def get(self):
         """
             Search recommendation based on query parameters
 
             This endpoint will return recommendation based on it's product id, related product id, type, and status.
         """
-        args = recommendation_args.parse_args()
-        product_id = args["product-id"]
-        related_product_id = args["related-product-id"]
-        type_id = args["type-id"]
-        by_status = args["status"]
+        product_id = request.args.get("product-id")
+        related_product_id = request.args.get("related-product-id")
+        type_id = request.args.get("type-id")
+        by_status = request.args.get("status")
 
         app.logger.info("Request for all recommendations in the database")
-
+        
         try:
             if product_id and related_product_id:
                 recommendations = Recommendation.find_by_id_relid(
-                    product_id, related_product_id
+                    int(product_id), int(related_product_id)
                 )
             elif product_id:
-                if type_id and by_status is not None:
+                if type_id and by_status:
                     recommendations = Recommendation.find_by_id_type_status(
-                        product_id, type_id, by_status
+                        int(product_id), int(type_id), (by_status == "True")
                     )
                 elif type_id:
                     recommendations = Recommendation.find_by_id_type(
-                        product_id, type_id
+                        int(product_id), int(type_id)
                     )
-                elif by_status is not None:
+                elif by_status:
                     recommendations = Recommendation.find_by_id_status(
-                        product_id, by_status
+                        int(product_id), (by_status == "True")
                     )
                 else:
-                    recommendations = Recommendation.find(product_id)
+                    recommendations = Recommendation.find(int(product_id))
             elif related_product_id:
-                if type_id and by_status is not None:
+                if type_id and by_status:
                     recommendations = Recommendation.find_by_relid_type_status(
-                        related_product_id, type_id, by_status
+                        int(related_product_id), int(type_id), (by_status == "True")
                         )
                 elif type_id:
                     recommendations = Recommendation.find_by_relid_type(
-                        related_product_id, type_id
+                        int(related_product_id), int(type_id)
                         )
-                elif by_status is not None:
+                elif by_status:
                     recommendations = Recommendation.find_by_relid_status(
-                        related_product_id, by_status
+                        int(related_product_id), (by_status == "True")
                         )
                 else:
-                    recommendations = Recommendation.find_by_rel_id(related_product_id)
-            elif type_id and by_status is not None:
+                    recommendations = Recommendation.find_by_rel_id(int(related_product_id))
+            elif type_id and by_status:
                 recommendations = Recommendation.find_by_type_id_status(
-                    type_id, by_status
+                    int(type_id), (by_status == "True")
                 )
             elif type_id:
-                recommendations = Recommendation.find_by_type_id(type_id)
-            elif by_status is not None:
-                recommendations = Recommendation.find_by_status(by_status)
+                recommendations = Recommendation.find_by_type_id(int(type_id))
+            elif by_status:
+                recommendations = Recommendation.find_by_status((by_status == "True"))
             else:
                 recommendations = Recommendation.all()
         except DataValidationError as error:
+            raise DataValidationError(str(error))
+        except ValueError as error:
             raise DataValidationError(str(error))
 
         result = []
