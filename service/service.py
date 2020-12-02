@@ -269,7 +269,7 @@ class RecommendationResource(Resource):
     @api.marshal_with(recommendation_model)
     def get(self, product_id, related_product_id):
         """
-        Retrieve a single Recommendation
+        Retrieve a single recommendation
 
         This endpoint will return a Recommendation based on it's product id and related product id.
         """
@@ -311,7 +311,7 @@ class RecommendationResource(Resource):
     @api.marshal_with(recommendation_model)
     def put(self, product_id, related_product_id):
         """
-        Update a Recommendation
+        Update a recommendation
         This endpoint will update a Recommendation based the body that is posted
         """
         app.logger.info('Request to Update a recommendation with product-id [%s] and related-product-id [%s]', product_id, related_product_id)
@@ -356,7 +356,7 @@ class RecommendationResource(Resource):
     @api.marshal_with(recommendation_model, code=201)
     def post(self, product_id, related_product_id):
         """
-        Creates a Recommendation
+        Creates a recommendation
         This endpoint will create a Recommendation based the data in the body that is posted
         """
         app.logger.info("Request to create a recommendation")
@@ -448,13 +448,16 @@ class RecommendationResource(Resource):
 @api.param("product-id", "The product identifier")
 @api.param("related-product-id", "The related product identifier")
 class ToggleResource(Resource):
-    """ Toggle action of a single Recommendation """
+    """ Handle the toggle action of a single Recommendation """
     # ------------------------------------------------------------------
     # TOGGLE A NEW RECOMMENDATION
     # ------------------------------------------------------------------
     @api.doc("toggle_recommendations")
     @api.response(404, "Recommendation not found")
     def put(self, product_id, related_product_id):
+        """ 
+        Toggle the status of a recommendation
+        """
         app.logger.info("Request to toggle a recommendation status")
 
         find = Recommendation.find_recommendation
@@ -503,7 +506,8 @@ class RecommendationSubset(Resource):
     @api.expect(recommendation_args, validate=True)
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
-        """Deletes recommendations
+        """
+        Deletes recommendations based on product id and query parameters
         This endpoint will delete all the recommendations based on
         the product id and the parameter type and stauts
         """
@@ -598,7 +602,8 @@ class RecommendationAll(Resource):
     @api.doc("delete all recommendations of a product")
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
-        """Deletes recommendations
+        """
+        Deletes all recommendations
         This endpoint will delete all the recommendations based on
         the product id provided in the URI
         """

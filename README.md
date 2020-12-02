@@ -32,77 +32,52 @@ To run the flask service application execute the following commands:
 ## API Endpoints
 You can invoke the API endpoints at http://0.0.0.0:5000/ on your machine once the flask application is running.
 The API endpoints available as of now are:
-```shell
-    POST /recommendations
-      - Creates a Recommendation
-        This endpoint will create a recommendation based the data in the body that is posted
-        Expected data in request body:
-          {
-              "product-id" : <int:product_id>,
-              "related-product-id" : <int:related_product_id>,
-              "type-id" : <int:type_id>,
-              "status" : True
-        }
-        Returns a success message and HTTP_201_CREATED status if successful
-    GET /recommendations/relationship?product1=<int:product_id>&product2=<int:related_product_id>
-      - Returns recommendation for product1 and product2 if exists
-        {
-              "product-id" : <int:product_id>,
-              "related-product-id" : <int:related_product_id>,
-              "type-id" : <int:type_id>,
-              "status" : True
-        }
-        Returns HTTP_200_OK status
+| Method | Path | Description |
+| :---------: | :---------: | :------------: |
+|GET|/recommendations|Search recommendation based on query parameters|
+|GET|/recommendations/{product_id}/{related_product_id}|Retrieve a single recommendation|
+|POST|/recommendations/{product_id}/{related_product_id}|Creates a recommendation|
+|PUT|/recommendations/{product_id}/{related_product_id}|Update a recommendation|
+|PUT|/recommendations/{product_id}/{related_product_id}/toggle|Toggle the status of a recommendation|
+|DELETE|/recommendations/{product-id}|Deletes recommendations based on product id and query parameters|
+|DELETE|/recommendations/{product-id}/all|Delete all recommendations|
+|DELETE|/recommendations/{product_id}/{related_product_id}|Delete a recommendation|
 
-        Returns Null with HTTP_204_NO_CONTENT if no recommendation exists for product1 and product2
-    GET /recommendations/active/<int:product_id>
-      - Returns all active recommendations for the product id provided in route url;
-        Return Format:
-        [
-            {"relation_id": 1, "ids": <type0_products_list>},
-            {"relation_id": 2, "ids": <type1_products_list>},
-            {"relation_id": 3, "ids": <type2_products_list>}
-        ]
-        Returns HTTP_200_OK status
-    PUT /recommendations/<int:product_id>/<int:related_product_id>
-      - Updates a Recommendation
-        This endpoint will search for an unique recommendation based the product_id and related_product_id from URI, 
-        and use the data provided in the request body to update the record.
-        Expected data in body:
-        {
-              "product-id" : <int:product_id>,
-              "related-product-id" : <int:related_product_id>,
-              "type-id" : <int:type_id>,
-              "status" : <bool: status>
-        }
-        The old recommendation will be replaced with data sent in the request body if any old recommendation exists.
-        If everything works out well returns HTTP_200_OK status
-        If no old recommendation exists returns a HTTP_404_NOT_FOUND
-    DELETE /recommendations/<int:product_id>?related_product_id=<int:related_product_id>&type_id=<int:type_id>
-      - Deletes recommendation(s)
-        This endpoint will delete recommendation(s) based on the product id, related product id, and type id. 
-        The related product id and type id are optional. 
-        Without both related product id and type id, it will delete all the records related to a given product id. 
-        If related product id being provided, it will delete the record between the two product. 
-        If type id being provided, it will delete records that have the certain type of relationship with the given prodcut. 
-        Returns: HTTP_204_NO_CONTENT
-
-
-```
 ## Database Schema
 Recommendations service has only one database table with the following columns.
-```shell
-    product_id = <Integer> Primary Key: Represents the product id
-    related_product_id = <Integer> Primary Key: Represents the related product id
-    type_id = <Integer> : Represents relationship type between product and related product; (1: up-sell, 2: cross-sell, 3: accessory)
-    status = <Boolean> : Represents if the recommendation is active or in-active
-```
+| Column | Type | Contraint | Description |Details|
+| :---------: | :---------: | :------------: |  :------------: | :------------: |  
+|product_id|Integer|Primary Key|Represents the id of the product|
+|related_product_id|Integer|Primary Key|Represents the id of the related product||
+|type_id|Integer||Represents relationship type between product and related product|1: upshell<br/>2: cross-sell<br/>3: accessory|
+|status|Boolean||Represents if the recommendation is active or in-active|
+
 ## Running Unit Tests
 
 Once in the `/vagrant` directory just run the following command to run the unit tests and get coverage report at the end of your tests. Nose is pre configured to run coverage and show coverage report.
 
 ```shell
     $ nosetests
+```
+
+## Start the server locally and run Behave Tests
+
+Also in the `/vagrant` directory, run the following command to start the server at http://localhost:5000/ .
+
+```shell
+    $ honcho start
+```
+
+Then you can open another terminal and run behave tests with the following command once in the `/vagrant` directory.
+
+```shell
+    $ behave
+```
+ 
+Or in the `/vagrant` directory, run the following command to start the server and run the behave tests at the same time.
+
+```shell
+    $ honcho start & behave
 ```
 
 ## Code Analysis Using Pylint
