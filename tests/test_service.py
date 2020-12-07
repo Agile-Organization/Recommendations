@@ -312,12 +312,12 @@ class TestRecommendationService(unittest.TestCase):
                 recommendation.product_id, recommendation.status
             )
         )
-        # if(len(resp.get_json())):
-        resp = resp.get_json()[0]
+        if(len(resp.get_json())):
+            resp = resp.get_json()[0]
 
-        returned_recommendation = Recommendation()
-        returned_recommendation.deserialize(resp)
-        self.assertEqual(recommendation, returned_recommendation)
+            returned_recommendation = Recommendation()
+            returned_recommendation.deserialize(resp)
+            self.assertEqual(recommendation, returned_recommendation)
 
         # Test Case 7
         resp = self.app.get(
