@@ -61,20 +61,22 @@ recommendation_model = api.model(
 )
 
 # query string arguments
-recommendation_args = reqparse.RequestParser()
-recommendation_args.add_argument(
+status_type_args = reqparse.RequestParser()
+'''
+status_type_args.add_argument(
     "product-id", type=int, required=False, help="List Recommendations by product id"
 )
-recommendation_args.add_argument(
+status_type_args.add_argument(
     "related-product-id",
     type=int,
     required=False,
     help="List Recommendations by related product id"
 )
-recommendation_args.add_argument(
+'''
+status_type_args.add_argument(
     "type-id", type=int, required=False, help="List Recommendations by type id"
 )
-recommendation_args.add_argument(
+status_type_args.add_argument(
     "status", type=inputs.boolean, required=False, help="List Recommendations by status"
 )
 
@@ -496,14 +498,17 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
+<<<<<<< HEAD
 @api.param("product_id", "The product identifier")
+=======
+>>>>>>> master
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
     # DELETE ALL RELEATIONSHIPS OF A PRODUCT BASED ON TYPE AND/OR STATUS
     ######################################################################
     @api.doc("delete all recommendations of a product with a certain type or status")
-    @api.expect(recommendation_args, validate=True)
+    @api.expect(status_type_args, validate=True)
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
         """
@@ -511,7 +516,7 @@ class RecommendationSubset(Resource):
         This endpoint will delete all the recommendations based on
         the product id and the parameter type and stauts
         """
-        args = recommendation_args.parse_args()
+        args = status_type_args.parse_args()
         type_id = args["type-id"]
         recommendation_status = args["status"]
         app.logger.info(type_id)
@@ -593,7 +598,10 @@ class RecommendationSubset(Resource):
 #  PATH: /recommendations/{product_id}/all
 ######################################################################
 @api.route("/recommendations/<int:product_id>/all")
+<<<<<<< HEAD
 @api.param("product_id", "The product identifier")
+=======
+>>>>>>> master
 class RecommendationAll(Resource):
     """ Handles all interactions with all recommendations owned by product_id """
     ######################################################################
