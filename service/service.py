@@ -10,6 +10,7 @@ Will add more routes in the future for additional API endpoints.
 import sys
 import uuid
 import logging
+import json
 from functools import wraps
 from flask import jsonify, request, url_for, make_response, render_template, abort
 from flask_api import status  # HTTP Status Codes
@@ -60,7 +61,23 @@ recommendation_model = api.model(
     },
 )
 
-# query string arguments
+# query string
+recommendation_args = reqparse.RequestParser()
+
+recommendation_args.add_argument(
+    "product-id", type=int, required=False, help="List Recommendations by product id"
+)
+recommendation_args.add_argument(
+    "related-product-id", type=int, required=False, help="List Recommendations by related product id"
+)
+
+recommendation_args.add_argument(
+    "type-id", type=int, required=False, help="List Recommendations by type id"
+)
+recommendation_args.add_argument(
+    "status", type=inputs.boolean, required=False, help="List Recommendations by status"
+)
+
 status_type_args = reqparse.RequestParser()
 
 status_type_args.add_argument(
@@ -165,6 +182,7 @@ class SearchResource(Resource):
     # SEARCH recommendations
     # ------------------------------------------------------------------
     @api.doc("search_recommendations")
+    @api.expect(recommendation_args, validate=True)
     @api.response(404, "Recommendation not found")
     @api.marshal_with(recommendation_model)
     def get(self):
@@ -173,10 +191,17 @@ class SearchResource(Resource):
 
             This endpoint will return recommendation based on it's product id, related product id, type, and status.
         """
-        product_id = request.args.get("product-id")
-        related_product_id = request.args.get("related-product-id")
-        type_id = request.args.get("type-id")
-        by_status = request.args.get("status")
+
+        args = recommendation_args.parse_args()
+        product_id = args["product-id"]
+        related_product_id = args["related-product-id"]
+        type_id = args["type-id"]
+        by_status = args["status"]
+        # print("rel_id: " + str(related_product_id))
+        print("args: " + json.dumps(args)) 
+        # if(by_status is not None):
+            # print("status: " + json.dumps(by_status))
+            # print("check: " + by_status == "True" or by_status == "true")
 
         app.logger.info("Request for all recommendations in the database")
         
@@ -186,43 +211,43 @@ class SearchResource(Resource):
                     int(product_id), int(related_product_id)
                 )
             elif product_id:
-                if type_id and by_status:
+                if type_id and by_status is not None:
                     recommendations = Recommendation.find_by_id_type_status(
-                        int(product_id), int(type_id), (by_status == "True" or by_status == "true")
+                        int(product_id), int(type_id), by_status in("True", "true")
                     )
                 elif type_id:
                     recommendations = Recommendation.find_by_id_type(
                         int(product_id), int(type_id)
                     )
-                elif by_status:
+                elif by_status is not None:
                     recommendations = Recommendation.find_by_id_status(
-                        int(product_id), (by_status == "True" or by_status == "true")
+                        int(product_id), by_status in("True", "true")
                     )
                 else:
                     recommendations = Recommendation.find(int(product_id))
             elif related_product_id:
-                if type_id and by_status:
+                if type_id and by_status is not None:
                     recommendations = Recommendation.find_by_relid_type_status(
-                        int(related_product_id), int(type_id), (by_status == "True" or by_status == "true")
+                        int(related_product_id), int(type_id), bool(by_status in("True", "true"))
                         )
                 elif type_id:
                     recommendations = Recommendation.find_by_relid_type(
                         int(related_product_id), int(type_id)
                         )
-                elif by_status:
+                elif by_status is not None:
                     recommendations = Recommendation.find_by_relid_status(
-                        int(related_product_id), (by_status == "True" or by_status == "true")
+                        int(related_product_id), by_status
                         )
                 else:
                     recommendations = Recommendation.find_by_rel_id(int(related_product_id))
-            elif type_id and by_status:
+            elif type_id and by_status is not None:
                 recommendations = Recommendation.find_by_type_id_status(
-                    int(type_id), (by_status == "True" or by_status == "true")
+                    int(type_id), bool(by_status in("True", "true"))
                 )
             elif type_id:
                 recommendations = Recommendation.find_by_type_id(int(type_id))
-            elif by_status:
-                recommendations = Recommendation.find_by_status((by_status == "True" or by_status == "true"))
+            elif by_status is not None:
+                recommendations = Recommendation.find_by_status(bool(by_status in("True", "true")))
             else:
                 recommendations = Recommendation.all()
         except DataValidationError as error:
@@ -233,6 +258,7 @@ class SearchResource(Resource):
         result = []
         for rec in recommendations:
             record = rec.serialize()
+            print(record)
             result.append(record)
 
         return result, status.HTTP_200_OK    
@@ -294,7 +320,7 @@ class RecommendationResource(Resource):
         return recommendation.serialize(), status.HTTP_200_OK
 
     #------------------------------------------------------------------
-    # UPDATE AN EXISTING PET
+    # UPDATE AN EXISTING RECOMMENDATION
     #------------------------------------------------------------------
     @api.doc('update_recommendations')
     @api.response(404, 'Recommendation not found')
