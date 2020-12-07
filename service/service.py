@@ -498,6 +498,7 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
+@api.param('product_id', "The product identifier")
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
@@ -518,7 +519,7 @@ class RecommendationSubset(Resource):
         app.logger.info(type_id)
         app.logger.info(recommendation_status)        
         if type_id is None and recommendation_status is None:
-            raise BadRequest("Bad Request must provide at least 1 parameter")
+            raise BadRequest("Bad Request must provide at least 1 parameter : a valid type id or a valid status")
 
         if  (not (type_id is None)) and type_id not in [1, 2, 3]:
             raise BadRequest("Bad Request invalid type id provided")

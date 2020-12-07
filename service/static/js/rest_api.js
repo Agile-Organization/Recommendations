@@ -156,15 +156,30 @@ $(function () {
     // ****************************************
     // Delete a Recommendation
     // ****************************************
+    function isNaturalInteger(str) {
+        var n = Math.floor(Number(str));
+        return n !== Infinity && String(n) === str && n >= 0;
+    }
+
     $("#delete-btn").click(function () {
         var product_id = $("#recommendation_product_id").val();
         var related_product_id = $("#recommendation_related_product_id").val();
+
+        if (isNaturalInteger(product_id) == false) {
+	    flash_message("Product ID should be natural number")
+            return;
+	}
+
         var type_id = $("#recommendation_type_id").val();
         var status = $("#recommendation_status").val();
         var ajax;
  
         if (product_id) {
             if (related_product_id) {
+                if (isNaturalInteger(related_product_id) == false) {
+                    flash_message("Related Product ID should be natural number")
+                    return
+                }
                 ajax = $.ajax({
                     type: "DELETE",
                     url: "/api/recommendations/" + product_id + "/" + related_product_id,
@@ -211,7 +226,7 @@ $(function () {
             });
     
             ajax.fail(function(res){
-                flash_message("Server error!")
+                flash_message(res.responseJSON.message)
             });
         }
         else {

@@ -112,7 +112,7 @@ Scenario: Read a recommendation without providing product_id and related_product
 Scenario: Delete the recommendation without providing product_id
     When I visit the "Home Page"
     And I press the "Delete" button
-    Then I should see the message "Please enter Product ID or Product ID with proper parameters"
+    Then I should see the message "Product ID should be natural number"
 
 Scenario: Delete the non-existed recommendation
     When I visit the "Home Page"
