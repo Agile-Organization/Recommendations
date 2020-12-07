@@ -498,10 +498,7 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
-<<<<<<< HEAD
 @api.param("product_id", "The product identifier")
-=======
->>>>>>> master
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
@@ -598,10 +595,7 @@ class RecommendationSubset(Resource):
 #  PATH: /recommendations/{product_id}/all
 ######################################################################
 @api.route("/recommendations/<int:product_id>/all")
-<<<<<<< HEAD
 @api.param("product_id", "The product identifier")
-=======
->>>>>>> master
 class RecommendationAll(Resource):
     """ Handles all interactions with all recommendations owned by product_id """
     ######################################################################
