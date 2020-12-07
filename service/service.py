@@ -159,10 +159,6 @@ def index():
 #  PATH: /recommendations
 ######################################################################
 @api.route("/recommendations")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
-@api.param("type-id", "The relationship type of a recommendation")
-@api.param("status", "The status of a recommendation")
 class SearchResource(Resource):
     """
     SearchResource class
@@ -174,6 +170,7 @@ class SearchResource(Resource):
     # ------------------------------------------------------------------
     @api.doc("search_recommendations")
     @api.response(404, "Recommendation not found")
+    @api.expect(recommendation_model)
     @api.marshal_with(recommendation_model)
     def get(self):
         """
@@ -181,10 +178,14 @@ class SearchResource(Resource):
 
             This endpoint will return recommendation based on it's product id, related product id, type, and status.
         """
-        product_id = request.args.get("product-id")
-        related_product_id = request.args.get("related-product-id")
-        type_id = request.args.get("type-id")
-        by_status = request.args.get("status")
+        recommendation = Recommendation()
+        app.logger.debug("Payload = %s", api.payload)
+        recommendation.deserialize(api.payload)
+
+        product_id = recommendation.product_id
+        related_product_id = recommendation.related_product_id
+        type_id = recommendation.type_id
+        by_status = recommendation.status
 
         app.logger.info("Request for all recommendations in the database")
         
@@ -250,8 +251,6 @@ class SearchResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
 class RecommendationResource(Resource):
     """
     RecommendationResource class
@@ -445,8 +444,6 @@ class RecommendationResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}/toggle
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>/toggle")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
 class ToggleResource(Resource):
     """ Handle the toggle action of a single Recommendation """
     # ------------------------------------------------------------------
@@ -496,14 +493,13 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
-@api.param("product-id", "The product identifier")
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
     # DELETE ALL RELEATIONSHIPS OF A PRODUCT BASED ON TYPE AND/OR STATUS
     ######################################################################
     @api.doc("delete all recommendations of a product with a certain type or status")
-    @api.expect(recommendation_args, validate=True)
+    @api.expect(recommendation_model)
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
         """
@@ -511,9 +507,12 @@ class RecommendationSubset(Resource):
         This endpoint will delete all the recommendations based on
         the product id and the parameter type and stauts
         """
-        args = recommendation_args.parse_args()
-        type_id = args["type-id"]
-        recommendation_status = args["status"]
+        recommendation = Recommendation()
+        app.logger.debug("Payload = %s", api.payload)
+        recommendation.deserialize(api.payload)
+
+        type_id = recommendation.type_id
+        recommendation_status = recommendation.status
         app.logger.info(type_id)
         app.logger.info(recommendation_status)        
         if type_id is None and recommendation_status is None:
@@ -593,7 +592,6 @@ class RecommendationSubset(Resource):
 #  PATH: /recommendations/{product_id}/all
 ######################################################################
 @api.route("/recommendations/<int:product_id>/all")
-@api.param("product-id", "The product identifier")
 class RecommendationAll(Resource):
     """ Handles all interactions with all recommendations owned by product_id """
     ######################################################################
