@@ -62,17 +62,7 @@ recommendation_model = api.model(
 
 # query string arguments
 status_type_args = reqparse.RequestParser()
-'''
-status_type_args.add_argument(
-    "product-id", type=int, required=False, help="List Recommendations by product id"
-)
-status_type_args.add_argument(
-    "related-product-id",
-    type=int,
-    required=False,
-    help="List Recommendations by related product id"
-)
-'''
+
 status_type_args.add_argument(
     "type-id", type=int, required=False, help="List Recommendations by type id"
 )
@@ -161,10 +151,10 @@ def index():
 #  PATH: /recommendations
 ######################################################################
 @api.route("/recommendations")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
-@api.param("type-id", "The relationship type of a recommendation")
-@api.param("status", "The status of a recommendation")
+@api.param("product-id", "The product identifier", type=int)
+@api.param("related-product-id", "The related product identifier", type=int)
+@api.param("type-id", "The relationship type of a recommendation", type=int)
+@api.param("status", "The status of a recommendation", type=bool)
 class SearchResource(Resource):
     """
     SearchResource class
@@ -198,7 +188,7 @@ class SearchResource(Resource):
             elif product_id:
                 if type_id and by_status:
                     recommendations = Recommendation.find_by_id_type_status(
-                        int(product_id), int(type_id), (by_status == "True")
+                        int(product_id), int(type_id), (by_status == "True" or by_status == "true")
                     )
                 elif type_id:
                     recommendations = Recommendation.find_by_id_type(
@@ -206,14 +196,14 @@ class SearchResource(Resource):
                     )
                 elif by_status:
                     recommendations = Recommendation.find_by_id_status(
-                        int(product_id), (by_status == "True")
+                        int(product_id), (by_status == "True" or by_status == "true")
                     )
                 else:
                     recommendations = Recommendation.find(int(product_id))
             elif related_product_id:
                 if type_id and by_status:
                     recommendations = Recommendation.find_by_relid_type_status(
-                        int(related_product_id), int(type_id), (by_status == "True")
+                        int(related_product_id), int(type_id), (by_status == "True" or by_status == "true")
                         )
                 elif type_id:
                     recommendations = Recommendation.find_by_relid_type(
@@ -221,18 +211,18 @@ class SearchResource(Resource):
                         )
                 elif by_status:
                     recommendations = Recommendation.find_by_relid_status(
-                        int(related_product_id), (by_status == "True")
+                        int(related_product_id), (by_status == "True" or by_status == "true")
                         )
                 else:
                     recommendations = Recommendation.find_by_rel_id(int(related_product_id))
             elif type_id and by_status:
                 recommendations = Recommendation.find_by_type_id_status(
-                    int(type_id), (by_status == "True")
+                    int(type_id), (by_status == "True" or by_status == "true")
                 )
             elif type_id:
                 recommendations = Recommendation.find_by_type_id(int(type_id))
             elif by_status:
-                recommendations = Recommendation.find_by_status((by_status == "True"))
+                recommendations = Recommendation.find_by_status((by_status == "True" or by_status == "true"))
             else:
                 recommendations = Recommendation.all()
         except DataValidationError as error:
@@ -252,8 +242,8 @@ class SearchResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
 class RecommendationResource(Resource):
     """
     RecommendationResource class
@@ -447,8 +437,8 @@ class RecommendationResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}/toggle
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>/toggle")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
 class ToggleResource(Resource):
     """ Handle the toggle action of a single Recommendation """
     # ------------------------------------------------------------------
@@ -498,7 +488,7 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
-@api.param('product_id', "The product identifier")
+@api.param("product_id", "The product identifier")
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
@@ -595,6 +585,7 @@ class RecommendationSubset(Resource):
 #  PATH: /recommendations/{product_id}/all
 ######################################################################
 @api.route("/recommendations/<int:product_id>/all")
+@api.param("product_id", "The product identifier")
 class RecommendationAll(Resource):
     """ Handles all interactions with all recommendations owned by product_id """
     ######################################################################
