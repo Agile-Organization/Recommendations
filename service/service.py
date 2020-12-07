@@ -492,15 +492,14 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
-@api.param("type-id", "The relationship type of a recommendation")
-@api.param("status", "The status of a recommendation")
+@api.param("product-id", "The product identifier")
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
     # DELETE ALL RELEATIONSHIPS OF A PRODUCT BASED ON TYPE AND/OR STATUS
     ######################################################################
     @api.doc("delete all recommendations of a product with a certain type or status")
-    @api.expect(recommendation_model)
+    @api.expect(recommendation_args, validate=True)
     @api.response(204, 'Recommendation deleted')
     def delete(self, product_id):
         """
@@ -508,9 +507,9 @@ class RecommendationSubset(Resource):
         This endpoint will delete all the recommendations based on
         the product id and the parameter type and stauts
         """
-
-        type_id = request.args.get("type-id")
-        recommendation_status = request.args.get("status")
+        args = recommendation_args.parse_args()
+        type_id = args["type-id"]
+        recommendation_status = args["status"]
         app.logger.info(type_id)
         app.logger.info(recommendation_status)        
         if type_id is None and recommendation_status is None:
