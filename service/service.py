@@ -159,9 +159,9 @@ def index():
 #  PATH: /recommendations
 ######################################################################
 @api.route("/recommendations")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
-@api.param("type-id", "The relationship type of a recommendation")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
+@api.param("type_id", "The relationship type of a recommendation")
 @api.param("status", "The status of a recommendation")
 class SearchResource(Resource):
     """
@@ -250,8 +250,8 @@ class SearchResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
 class RecommendationResource(Resource):
     """
     RecommendationResource class
@@ -445,8 +445,8 @@ class RecommendationResource(Resource):
 #  PATH: /recommendations/{product-id}/{related-product-id}/toggle
 ######################################################################
 @api.route("/recommendations/<int:product_id>/<int:related_product_id>/toggle")
-@api.param("product-id", "The product identifier")
-@api.param("related-product-id", "The related product identifier")
+@api.param("product_id", "The product identifier")
+@api.param("related_product_id", "The related product identifier")
 class ToggleResource(Resource):
     """ Handle the toggle action of a single Recommendation """
     # ------------------------------------------------------------------
@@ -496,7 +496,7 @@ class ToggleResource(Resource):
 #  PATH: /recommendations/{product_id}
 ######################################################################
 @api.route("/recommendations/<int:product_id>")
-@api.param("product-id", "The product identifier")
+@api.param("product_id", "The product identifier")
 class RecommendationSubset(Resource):
     """ Handles all interactions with collections of recommendations owned by product_id """
     ######################################################################
@@ -593,7 +593,7 @@ class RecommendationSubset(Resource):
 #  PATH: /recommendations/{product_id}/all
 ######################################################################
 @api.route("/recommendations/<int:product_id>/all")
-@api.param("product-id", "The product identifier")
+@api.param("product_id", "The product identifier")
 class RecommendationAll(Resource):
     """ Handles all interactions with all recommendations owned by product_id """
     ######################################################################
