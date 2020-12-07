@@ -39,10 +39,11 @@ Scenario: Create a Recommendation
 
 Scenario: List all active recommendations
     When I visit the "Home Page"
+    And I select "True" in the "status" dropdown
     And I press the "Search" button
     Then I should see a recommendation from "1" to "2" with type "1"
     And I should see a recommendation from "1" to "3" with type "2"
-    And I should see a recommendation from "1" to "4" with type "3"
+    And I should not see a recommendation from "1" to "4" with type "3"
 
 Scenario: List all recommendations of a same related product id
     When I visit the "Home Page"
