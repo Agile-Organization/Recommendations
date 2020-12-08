@@ -282,9 +282,7 @@ $(function () {
 
         var ajax = $.ajax({
             type: "GET",
-            url: "/api/recommendations?" + queryString,
-            contentType: "application/json",
-            data: ''
+            url: "/api/recommendations?" + queryString
         })
 
         ajax.done(function(res){
