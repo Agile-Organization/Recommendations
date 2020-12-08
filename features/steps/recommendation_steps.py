@@ -84,7 +84,7 @@ def step_impl(context, element_name, text_string):
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower()
     element = Select(context.driver.find_element_by_id(element_id))
-    element.select_by_visible_text(text)
+    element.select_by_value(text)
 
 
 @when('I press the "{button}" button')
