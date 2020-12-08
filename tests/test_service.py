@@ -299,7 +299,6 @@ class TestRecommendationService(unittest.TestCase):
                 recommendation.product_id, recommendation.type_id
             )
         )
-        
         resp = resp.get_json()[0]
         
         returned_recommendation = Recommendation()
@@ -312,12 +311,11 @@ class TestRecommendationService(unittest.TestCase):
                 recommendation.product_id, recommendation.status
             )
         )
-        if(len(resp.get_json())):
-            resp = resp.get_json()[0]
+        resp = resp.get_json()[0]
 
-            returned_recommendation = Recommendation()
-            returned_recommendation.deserialize(resp)
-            self.assertEqual(recommendation, returned_recommendation)
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
 
         # Test Case 7
         resp = self.app.get(
@@ -325,12 +323,11 @@ class TestRecommendationService(unittest.TestCase):
                 recommendation.product_id, recommendation.type_id, recommendation.status
             )
         )
-        if(len(resp.get_json())):
-            resp = resp.get_json()[0]
+        resp = resp.get_json()[0]
 
-            returned_recommendation = Recommendation()
-            returned_recommendation.deserialize(resp)
-            self.assertEqual(recommendation, returned_recommendation)
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
 
         # Test Case 8
         resp = self.app.get(
@@ -338,12 +335,11 @@ class TestRecommendationService(unittest.TestCase):
                 recommendation.type_id, recommendation.status
             )
         )
-        if(len(resp.get_json())):
-            resp = resp.get_json()[0]
+        resp = resp.get_json()[0]
 
-            returned_recommendation = Recommendation()
-            returned_recommendation.deserialize(resp)
-            self.assertEqual(recommendation, returned_recommendation)
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
 
         # Test Case 9
         resp = self.app.get(
@@ -358,12 +354,12 @@ class TestRecommendationService(unittest.TestCase):
         # Test Case 10
         resp = self.app.get(
             BASE_URL + "?status={}".format(recommendation.status))
-        if(len(resp.get_json())):
-            resp = resp.get_json()[0]
+        
+        resp = resp.get_json()[0]
 
-            returned_recommendation = Recommendation()
-            returned_recommendation.deserialize(resp)
-            self.assertEqual(recommendation, returned_recommendation)
+        returned_recommendation = Recommendation()
+        returned_recommendation.deserialize(resp)
+        self.assertEqual(recommendation, returned_recommendation)
 
         # Test Case 11
         resp = self.app.get(

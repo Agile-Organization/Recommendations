@@ -182,7 +182,7 @@ class SearchResource(Resource):
     # SEARCH recommendations
     # ------------------------------------------------------------------
     @api.doc("search_recommendations")
-    @api.expect(recommendation_args, validate=True)
+    @api.expect(recommendation_args)
     @api.response(404, "Recommendation not found")
     @api.marshal_with(recommendation_model)
     def get(self):
@@ -197,11 +197,6 @@ class SearchResource(Resource):
         related_product_id = args["related-product-id"]
         type_id = args["type-id"]
         by_status = args["status"]
-        # print("rel_id: " + str(related_product_id))
-        print("args: " + json.dumps(args)) 
-        # if(by_status is not None):
-            # print("status: " + json.dumps(by_status))
-            # print("check: " + by_status == "True" or by_status == "true")
 
         app.logger.info("Request for all recommendations in the database")
         
@@ -213,7 +208,7 @@ class SearchResource(Resource):
             elif product_id:
                 if type_id and by_status is not None:
                     recommendations = Recommendation.find_by_id_type_status(
-                        int(product_id), int(type_id), by_status in("True", "true")
+                        int(product_id), int(type_id), by_status
                     )
                 elif type_id:
                     recommendations = Recommendation.find_by_id_type(
@@ -221,14 +216,14 @@ class SearchResource(Resource):
                     )
                 elif by_status is not None:
                     recommendations = Recommendation.find_by_id_status(
-                        int(product_id), by_status in("True", "true")
+                        int(product_id), by_status
                     )
                 else:
                     recommendations = Recommendation.find(int(product_id))
             elif related_product_id:
                 if type_id and by_status is not None:
                     recommendations = Recommendation.find_by_relid_type_status(
-                        int(related_product_id), int(type_id), bool(by_status in("True", "true"))
+                        int(related_product_id), int(type_id), by_status
                         )
                 elif type_id:
                     recommendations = Recommendation.find_by_relid_type(
@@ -242,12 +237,12 @@ class SearchResource(Resource):
                     recommendations = Recommendation.find_by_rel_id(int(related_product_id))
             elif type_id and by_status is not None:
                 recommendations = Recommendation.find_by_type_id_status(
-                    int(type_id), bool(by_status in("True", "true"))
+                    int(type_id), by_status 
                 )
             elif type_id:
                 recommendations = Recommendation.find_by_type_id(int(type_id))
             elif by_status is not None:
-                recommendations = Recommendation.find_by_status(bool(by_status in("True", "true")))
+                recommendations = Recommendation.find_by_status(by_status)
             else:
                 recommendations = Recommendation.all()
         except DataValidationError as error:
@@ -258,7 +253,6 @@ class SearchResource(Resource):
         result = []
         for rec in recommendations:
             record = rec.serialize()
-            print(record)
             result.append(record)
 
         return result, status.HTTP_200_OK    
