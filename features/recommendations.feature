@@ -21,7 +21,7 @@ Scenario: Create a Recommendation
     When I visit the "Home Page"
     And I set the "product_id" to "21"
     And I set the "related_product_id" to "23"
-    And I set the "type_id" to "1"
+    And I select "1" in the "type_id" dropdown
     And I select "True" in the "status" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
@@ -55,7 +55,7 @@ Scenario: List all recommendations of a same related product id
 Scenario: List all recommendations by related product id and type id
     When I visit the "Home Page"
     And I set the "related_product_id" to "2"
-    And I set the "type_id" to "1"
+    And I select "1" in the "type_id" dropdown
     And I press the "Search" button
     Then I should see a recommendation from "1" to "2" with type "1"
     And I should not see a recommendation from "5" to "2" with type "3"
@@ -71,7 +71,7 @@ Scenario: List all recommendations by related product id and status
 Scenario: List all recommendations by related product id and type id and status
     When I visit the "Home Page"
     And I set the "related_product_id" to "2"
-    And I set the "type_id" to "3"
+    And I select "3" in the "type_id" dropdown
     And I select "False" in the "status" dropdown
     And I press the "Search" button
     Then I should see a recommendation from "5" to "2" with type "3"
@@ -137,13 +137,13 @@ Scenario: Delete recommendations by using product ID and type ID
     When I visit the "Home Page"
     And I set the "product_id" to "1"
     And I set the "related_product_id" to "5"
-    And I set the "type_id" to "2"
+    And I select "2" in the "type_id" dropdown
     And I select "True" in the "status" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
     When I press the "Clear" button
     And I set the "product_id" to "1"
-    And I set the "type_id" to "2"
+    And I select "2" in the "type_id" dropdown
     And I press the "Delete" button
     Then I should see the message "Recommendation has been Deleted!"
     When I press the "Clear" button
@@ -199,7 +199,7 @@ Scenario: Update a recommendation with valid ids
     When I visit the "Home Page"
     And I set the "product_id" to "10"
     And I set the "related_product_id" to "22"
-    And I set the "type_id" to "3"
+    And I select "3" in the "type_id" dropdown
     And I select "False" in the "status" dropdown
     And I press the "Update" button
     Then I should see the message "Success"
@@ -214,7 +214,7 @@ Scenario: Update a recommendation with non-exists ids
     When I visit the "Home Page"
     And I set the "product_id" to "10"
     And I set the "related_product_id" to "99"
-    And I set the "type_id" to "2"
+    And I select "2" in the "type_id" dropdown
     And I select "False" in the "status" dropdown
     And I press the "Update" button
     Then I should see the message "404 Not Found"
