@@ -197,6 +197,9 @@ class SearchResource(Resource):
         related_product_id = args["related-product-id"]
         type_id = args["type-id"]
         by_status = args["status"]
+        
+        if (not (type_id is None)) and type_id not in [1, 2, 3]:
+            raise BadRequest("Bad Request invalid type id provided")
 
         app.logger.info("Request for all recommendations in the database")
         
