@@ -356,7 +356,10 @@ class RecommendationResource(Resource):
             )
 
         app.logger.debug('Payload = %s', api.payload)
-        recommendation.deserialize(api.payload)
+        try:
+            recommendation.deserialize(api.payload)
+        except DataValidationError:
+            raise BadRequest("Bad Request invalid data payload") 
         recommendation.save()
 
         return recommendation.serialize(), status.HTTP_200_OK
@@ -379,7 +382,11 @@ class RecommendationResource(Resource):
 
         recommendation = Recommendation()
         app.logger.debug("Payload = %s", api.payload)
-        recommendation.deserialize(api.payload)
+
+        try:
+            recommendation.deserialize(api.payload)
+        except DataValidationError:
+            raise BadRequest("Bad Request invalid data payload")
 
         if recommendation.product_id == recommendation.related_product_id:
             raise BadRequest("product_id cannot be the same as related_product_id")
