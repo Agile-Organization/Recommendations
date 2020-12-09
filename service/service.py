@@ -173,7 +173,7 @@ class SearchResource(Resource):
     SearchResource class
 
     GET /api/recommendations - Returns recommendation based on query parameters
-    PUT /api/recommendations - Create a new recommendation
+    POST /api/recommendations - Create a new recommendation
     """
     # ------------------------------------------------------------------
     # SEARCH recommendations
@@ -336,8 +336,9 @@ class RecommendationResource(Resource):
     RecommendationResource class
 
     Allows the manipulation of a single Recommendation
-    GET /api/recommendations/<product_id>/<related_product_id> - Returns the Recommendation
-    PUT /api/recommendations/<product_id>/<related_product_id> - Update an exist recommendation
+    GET     /api/recommendations/<product_id>/<related_product_id> - Returns the Recommendation
+    PUT     /api/recommendations/<product_id>/<related_product_id> - Update an exist recommendation
+    DELETE  /api/recommendations/<product_id>/<related_product_id> - Delete a Recommendation
     """
 
     # ------------------------------------------------------------------
