@@ -57,7 +57,8 @@ $(function () {
         if (product_id && related_product_id){
             var ajax = $.ajax({
                 type: "POST",
-                url: "/api/recommendations/" + product_id + "/" + related_product_id,
+                url: "/api/recommendations",
+                // + product_id + "/" + related_product_id,
                 contentType: "application/json",
                 data: JSON.stringify(data),
             });

@@ -177,6 +177,7 @@ class SearchResource(Resource):
     SearchResource class
 
     GET /api/recommendations - Returns recommendation based on query parameters
+    PUT /api/recommendations - Create a new recommendation
     """
     # ------------------------------------------------------------------
     # SEARCH recommendations
@@ -260,6 +261,83 @@ class SearchResource(Resource):
 
         return result, status.HTTP_200_OK    
 
+    # ------------------------------------------------------------------
+    # ADD A NEW RECOMMENDATION
+    # ------------------------------------------------------------------
+    @api.doc("create_recommendations")
+    @api.expect(recommendation_model)
+    @api.response(400, "The posted data was not valid")
+    @api.response(201, "Recommendation created successfully")
+    @api.marshal_with(recommendation_model, code=201)
+    def post(self):
+        """
+        Creates a recommendation
+        This endpoint will create a Recommendation based the data that is posted
+
+        """
+        # args = recommendation_args.parse_args()
+        # product_id = args["product-id"]
+        # related_product_id = args["related-product-id"]
+        # type_id = args["type-id"]
+        # by_status = args["status"]
+
+        app.logger.info("Request for create a new recommendation in the database")
+
+        app.logger.debug('Payload = %s', api.payload)
+        recommendation = Recommendation()
+        try:
+            recommendation.deserialize(api.payload)
+        except DataValidationError:
+            raise BadRequest("Bad Request invalid data payload")
+        
+        # if (not (type_id is None)) and type_id not in [1, 2, 3]:
+        #     raise BadRequest("Bad Request invalid type id provided")
+        
+        # recommendation.product_id = product_id
+        # recommendation.related_product_id = related_product_id
+        # recommendation.type_id = type_id
+        # recommendation.status = by_status
+
+        if recommendation.product_id == recommendation.related_product_id:
+            raise BadRequest("product_id cannot be the same as related_product_id")
+
+        existing_recommendation = (
+            Recommendation.find_recommendation(
+                recommendation.product_id, 
+                recommendation.related_product_id
+            ).first()
+            or 
+            Recommendation.find_recommendation(
+                recommendation.product_id,
+                recommendation.related_product_id,
+                by_status=False,
+            ).first()
+        )
+
+        if existing_recommendation:
+            raise BadRequest(
+                "Recommendation with given product id and related product id already exists"
+            )
+
+        recommendation.create()
+        location_url = api.url_for(
+            RecommendationResource, 
+            product_id=recommendation.product_id, 
+            related_product_id=recommendation.related_product_id,
+            _external=True
+            )
+
+        app.logger.info(
+            "recommendation from product ID [%s] to related product ID [%s] created.",
+            recommendation.product_id,
+            recommendation.related_product_id,
+        )
+        return (
+            recommendation.serialize(),
+            status.HTTP_201_CREATED,
+            {"location": location_url}
+        )
+
 
 ######################################################################
 #  PATH: /recommendations/{product-id}/{related-product-id}
@@ -273,7 +351,7 @@ class RecommendationResource(Resource):
 
     Allows the manipulation of a single Recommendation
     GET /api/recommendations/<product_id>/<related_product_id> - Returns the Recommendation
-    POST /recommendations/<product_id>/<related_product_id> - Create a new recommendation
+    PUT /api/recommendations/<product_id>/<related_product_id> - Update an exist recommendation
     """
 
     # ------------------------------------------------------------------
@@ -358,75 +436,14 @@ class RecommendationResource(Resource):
         app.logger.debug('Payload = %s', api.payload)
         try:
             recommendation.deserialize(api.payload)
-        except DataValidationError:
-            raise BadRequest("Bad Request invalid data payload") 
-        recommendation.save()
-
-        return recommendation.serialize(), status.HTTP_200_OK
-
-    # ------------------------------------------------------------------
-    # ADD A NEW RECOMMENDATION
-    # ------------------------------------------------------------------
-    @api.doc("create_recommendations")
-    @api.expect(recommendation_model)
-    @api.response(400, "The posted data was not valid")
-    @api.response(201, "Recommendation created successfully")
-    @api.marshal_with(recommendation_model, code=201)
-    def post(self, product_id, related_product_id):
-        """
-        Creates a recommendation
-        This endpoint will create a Recommendation based the data in the body that is posted
-        """
-        app.logger.info("Request to create a recommendation")
-        check_content_type("application/json")
-
-        recommendation = Recommendation()
-        app.logger.debug("Payload = %s", api.payload)
-
-        try:
-            recommendation.deserialize(api.payload)
+            recommendation.product_id = product_id
+            recommendation.related_product_id = related_product_id 
         except DataValidationError:
             raise BadRequest("Bad Request invalid data payload")
 
-        if recommendation.product_id == recommendation.related_product_id:
-            raise BadRequest("product_id cannot be the same as related_product_id")
+        recommendation.save()
 
-        existing_recommendation = (
-            Recommendation.find_recommendation(
-                recommendation.product_id, 
-                recommendation.related_product_id
-            ).first()
-            or 
-            Recommendation.find_recommendation(
-                recommendation.product_id,
-                recommendation.related_product_id,
-                by_status=False,
-            ).first()
-        )
-
-        if existing_recommendation:
-            raise BadRequest(
-                "Recommendation with given product id and related product id already exists"
-            )
-
-        recommendation.create()
-        location_url = api.url_for(
-            RecommendationResource, 
-            product_id=recommendation.product_id, 
-            related_product_id=recommendation.related_product_id,
-            _external=True
-            )
-
-        app.logger.info(
-            "recommendation from product ID [%s] to related product ID [%s] created.",
-            recommendation.product_id,
-            recommendation.related_product_id,
-        )
-        return (
-            recommendation.serialize(),
-            status.HTTP_201_CREATED,
-            {"location": location_url}
-        )
+        return recommendation.serialize(), status.HTTP_200_OK
 
     ######################################################################
     # DELETE A RELEATIONSHIP BETWEEN A PRODUCT and A RELATED PRODUCT
