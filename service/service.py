@@ -168,10 +168,6 @@ def index():
 #  PATH: /recommendations
 ######################################################################
 @api.route("/recommendations")
-@api.param("product-id", "The product identifier", type=int)
-@api.param("related-product-id", "The related product identifier", type=int)
-@api.param("type-id", "The relationship type of a recommendation", type=int)
-@api.param("status", "The status of a recommendation", type=bool)
 class SearchResource(Resource):
     """
     SearchResource class
@@ -183,6 +179,10 @@ class SearchResource(Resource):
     # SEARCH recommendations
     # ------------------------------------------------------------------
     @api.doc("search_recommendations")
+    @api.param("product-id", "The product identifier", type=int)
+    @api.param("related-product-id", "The related product identifier", type=int)
+    @api.param("type-id", "The relationship type of a recommendation", type=int)
+    @api.param("status", "The status of a recommendation", type=bool)
     @api.expect(recommendation_args)
     @api.response(404, "Recommendation not found")
     @api.marshal_with(recommendation_model)
@@ -199,61 +199,61 @@ class SearchResource(Resource):
         type_id = args["type-id"]
         by_status = args["status"]
         
-        if (not (type_id is None)) and type_id not in [1, 2, 3]:
-            raise BadRequest("Bad Request invalid type id provided")
+        if product_id == related_product_id and product_id is not None:
+            raise BadRequest("product_id cannot be the same as related_product_id")
 
         app.logger.info("Request for all recommendations in the database")
         
         try:
             if product_id and related_product_id:
                 recommendations = Recommendation.find_by_id_relid(
-                    int(product_id), int(related_product_id)
+                    product_id, related_product_id
                 )
             elif product_id:
                 if type_id and by_status is not None:
                     recommendations = Recommendation.find_by_id_type_status(
-                        int(product_id), int(type_id), by_status
+                        product_id, type_id, by_status
                     )
                 elif type_id:
                     recommendations = Recommendation.find_by_id_type(
-                        int(product_id), int(type_id)
+                        product_id, type_id
                     )
                 elif by_status is not None:
                     recommendations = Recommendation.find_by_id_status(
-                        int(product_id), by_status
+                        product_id, by_status
                     )
                 else:
-                    recommendations = Recommendation.find(int(product_id))
+                    recommendations = Recommendation.find(product_id)
             elif related_product_id:
                 if type_id and by_status is not None:
                     recommendations = Recommendation.find_by_relid_type_status(
-                        int(related_product_id), int(type_id), by_status
+                        related_product_id, type_id, by_status
                         )
                 elif type_id:
                     recommendations = Recommendation.find_by_relid_type(
-                        int(related_product_id), int(type_id)
+                        related_product_id, type_id
                         )
                 elif by_status is not None:
                     recommendations = Recommendation.find_by_relid_status(
-                        int(related_product_id), by_status
+                        related_product_id, by_status
                         )
                 else:
-                    recommendations = Recommendation.find_by_rel_id(int(related_product_id))
+                    recommendations = Recommendation.find_by_rel_id(related_product_id)
             elif type_id and by_status is not None:
                 recommendations = Recommendation.find_by_type_id_status(
-                    int(type_id), by_status 
+                    type_id, by_status 
                 )
             elif type_id:
-                recommendations = Recommendation.find_by_type_id(int(type_id))
+                recommendations = Recommendation.find_by_type_id(type_id)
             elif by_status is not None:
                 recommendations = Recommendation.find_by_status(by_status)
             else:
                 recommendations = Recommendation.all()
         except DataValidationError as error:
-            raise DataValidationError(str(error))
+            raise BadRequest(str(error))
         except ValueError as error:
-            raise DataValidationError(str(error))
-
+            raise BadRequest(str(error))
+        
         result = []
         for rec in recommendations:
             record = rec.serialize()
@@ -275,28 +275,14 @@ class SearchResource(Resource):
         This endpoint will create a Recommendation based the data that is posted
 
         """
-        # args = recommendation_args.parse_args()
-        # product_id = args["product-id"]
-        # related_product_id = args["related-product-id"]
-        # type_id = args["type-id"]
-        # by_status = args["status"]
-
         app.logger.info("Request for create a new recommendation in the database")
 
         app.logger.debug('Payload = %s', api.payload)
         recommendation = Recommendation()
         try:
             recommendation.deserialize(api.payload)
-        except DataValidationError:
+        except DataValidationError as error:
             raise BadRequest("Bad Request invalid data payload")
-        
-        # if (not (type_id is None)) and type_id not in [1, 2, 3]:
-        #     raise BadRequest("Bad Request invalid type id provided")
-        
-        # recommendation.product_id = product_id
-        # recommendation.related_product_id = related_product_id
-        # recommendation.type_id = type_id
-        # recommendation.status = by_status
 
         if recommendation.product_id == recommendation.related_product_id:
             raise BadRequest("product_id cannot be the same as related_product_id")
@@ -560,9 +546,6 @@ class RecommendationSubset(Resource):
 
         if  (not (type_id is None)) and type_id not in [1, 2, 3]:
             raise BadRequest("Bad Request invalid type id provided")
-
-        if (not (recommendation_status is None)) and recommendation_status not in [True, False]:
-            raise BadRequest("Bad Request invalid status provided")
 
         if (not (type_id is None)) and (not (recommendation_status is None)):
             app.logger.info("Request to delete recommendations by type_id and status")
