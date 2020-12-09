@@ -45,10 +45,7 @@ def step_impl(context):
         payload = json.dumps(data)
         context.resp = requests.post(
             create_url 
-            + "/api/recommendations/"
-            + str(data["product-id"]) 
-            + "/"
-            + str(data["related-product-id"]),
+            + "/api/recommendations",
             data=payload, 
             headers=headers)
         expect(context.resp.status_code).to_equal(201)

@@ -155,6 +155,17 @@ class TestRecommendation(unittest.TestCase):
             DataValidationError, recommendation.deserialize, invalid_recommendation
         )
 
+        invalid_recommendation = {
+            "product-id": 1,
+            "related-product-id": "invalid",
+            "type-id": 2,
+            "status": True,
+        }
+
+        self.assertRaises(
+            DataValidationError, recommendation.deserialize, invalid_recommendation
+        )
+
     def test_find(self):
         """ Test find class method """
         num_recs = 10
