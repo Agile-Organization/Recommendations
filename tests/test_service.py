@@ -29,7 +29,7 @@ from flask import request
 from flask_api import status
 from service.model import Recommendation, db
 from service import app
-from service.service import init_db, data_load, internal_server_error
+from service.service import init_db, internal_server_error
 from .recommendation_factory import RecommendationFactory
 from werkzeug.exceptions import NotFound
 
@@ -116,7 +116,6 @@ class TestRecommendationService(unittest.TestCase):
             + "/"
             + str(recommendation.related_product_id)
         )
-
         returned_recommendation = Recommendation()
         returned_recommendation.deserialize(resp.get_json())
 
@@ -472,7 +471,7 @@ class TestRecommendationService(unittest.TestCase):
             update_url, json=new_recommendation.serialize(), content_type="not/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-
+ 
 
         old_recommendation = recommendations[1][0]
 
