@@ -288,26 +288,30 @@ $(function () {
         ajax.done(function(res){
             //alert(res.toSource())
             console.log(res)
-            $("#search_results").empty();
-            $("#search_results").append('<table class="table-striped" cellpadding="10">');
-            var header = '<tr>'
-            header += '<th style="width:10%">Product ID</th>'
-            header += '<th style="width:40%">Related Product ID</th>'
-            header += '<th style="width:40%">Type ID</th>'
-            header += '<th style="width:10%">Active Status</th></tr>'
-            $("#search_results").append(header);
+            var tbody = $("#search_results").find("tbody")
+            tbody.empty();
             var firstRecommendation = "";
             for(var i = 0; i < res.length; i++) {
                 var recommendation = res[i];
-                var row = "<tr><td>"+recommendation["product-id"]+"</td><td>"+recommendation["related-product-id"]+"</td><td>"+recommendation["type-id"]+"</td><td>"+recommendation["status"]+"</td></tr>";
-                $("#search_results").append(row);
+                var type = "";
+                    if (recommendation["type-id"] == 1){
+                        type = "Up-sell";
+                    } else if (recommendation["type-id"] == 2){
+                        type = "Cross-sell"
+                    } else if (recommendation["type-id"] == 3){
+                        type = "Accessory"
+                    }
+                var row = "<tr>";
+                    row += "<td>" + recommendation["product-id"] + "</td>"
+                    row += "<td>" + recommendation["related-product-id"] + "</td>"
+                    row += "<td>" + type + "</td>"
+                    row += "<td>" + recommendation["status"] + "</td>"
+                    row += "</tr>";
+                tbody.append(row);
                 if (i == 0) {
                     firstRecommendation = recommendation;
                 }
             }
-
-            $("#search_results").append('</table>');
-
             // copy the first result to the form
             if (firstRecommendation != "") {
                 update_form_data(firstRecommendation)
