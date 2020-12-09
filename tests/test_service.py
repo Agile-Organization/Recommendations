@@ -151,11 +151,7 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            BASE_URL
-            # + "/{}/{}".format(
-            #     recommendation.product_id, recommendation.related_product_id
-            # )
-            ,
+            BASE_URL,
             json=recommendation.serialize(),
             content_type="application/json",
         )
@@ -177,11 +173,7 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            BASE_URL
-            # + "/{}/{}".format(
-            #     recommendation.product_id, recommendation.related_product_id
-            # )
-            ,
+            BASE_URL,
             json=recommendation.serialize(),
             content_type="application/json",
         )
@@ -194,11 +186,7 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            BASE_URL
-            # + "/{}/{}".format(
-            #     recommendation.product_id, recommendation.related_product_id
-            # )
-            ,
+            BASE_URL,
             json=recommendation.serialize(),
             content_type="application/json",
         )
@@ -211,11 +199,7 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            BASE_URL
-            # + "/{}/{}".format(
-            #     recommendation.product_id, recommendation.related_product_id
-            # )
-            ,
+            BASE_URL,
             json=recommendation.serialize(),
             content_type="application/json",
         )
@@ -228,21 +212,13 @@ class TestRecommendationService(unittest.TestCase):
         )
 
         resp = self.app.post(
-            BASE_URL
-            # + "/{}/{}".format(
-            #     recommendation.product_id, recommendation.related_product_id
-            # )
-            ,
+            BASE_URL,
             json=recommendation.serialize(),
             content_type="application/json",
         )
         self.assertEqual(status.HTTP_400_BAD_REQUEST, resp.status_code)
         resp = self.app.post(
-            BASE_URL
-            # + "/{}/{}".format(
-            #     recommendation.product_id, recommendation.related_product_id
-            # )
-            ,
+            BASE_URL,
             json=recommendation.serialize(),
             content_type="application/json",
         )
@@ -867,11 +843,7 @@ class TestRecommendationService(unittest.TestCase):
         for _ in range(count):
             test_recommendation = RecommendationFactory()
             test_recommendation.status = by_status
-            location_url = BASE_URL 
-            # + "/{}/{}".format(
-            #     test_recommendation.product_id, 
-            #     test_recommendation.related_product_id
-            # )
+            location_url = BASE_URL
             resp = self.app.post(
                 location_url,
                 json=test_recommendation.serialize(),
@@ -891,9 +863,6 @@ class TestRecommendationService(unittest.TestCase):
             status=by_status,
         )
         location_url = BASE_URL
-        #  + "/{}/{}".format(
-        #         test_recommendation.product_id, test_recommendation.related_product_id
-        #     )
         resp = self.app.post(
             location_url,
             json=test_recommendation.serialize(),
