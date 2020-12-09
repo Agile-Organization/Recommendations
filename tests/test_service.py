@@ -306,7 +306,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(recommendation, returned_recommendation)
 
         
-        # if the type-id is illegal
+        # if the type-id is invalid
         resp = self.app.get(BASE_URL + "?product-id={}&type-id={}".format(recommendation.product_id,10))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         
@@ -336,7 +336,7 @@ class TestRecommendationService(unittest.TestCase):
         self.assertEqual(recommendation, returned_recommendation)
 
 
-        # if the type-id is illegal
+        # if the type-id is invalid
         resp = self.app.get(BASE_URL + "?product-id={}&type-id={}&status={}".format(
             recommendation.product_id,10, recommendation.status))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
@@ -354,7 +354,7 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # if the type-id is illegal
+        # if the type-id is invalid
         resp = self.app.get(BASE_URL + "?type-id={}&status={}".format(
             10, recommendation.status))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
@@ -370,7 +370,7 @@ class TestRecommendationService(unittest.TestCase):
         returned_recommendation.deserialize(resp)
         self.assertEqual(recommendation, returned_recommendation)
 
-        # if the type-id is illegal
+        # if the type-id is invalid
         resp = self.app.get(BASE_URL + "?type-id={}".format(10))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         
@@ -428,7 +428,7 @@ class TestRecommendationService(unittest.TestCase):
         result = Recommendation().deserialize(resp.get_json()[0])
         self.assertEqual(result, recommendation1)
 
-        # if the type-id is illegal
+        # if the type-id is invalid
         resp = self.app.get(BASE_URL + "?related-product-id={}&type-id={}".format(2,10))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         
@@ -450,7 +450,7 @@ class TestRecommendationService(unittest.TestCase):
         result = Recommendation().deserialize(resp.get_json()[0])
         self.assertEqual(result, recommendation2)
 
-        # if the type-id is illegal
+        # if the type-id is invalid
         resp = self.app.get(BASE_URL + "?related-product-id={}&type-id={}&status={}".format(2,10,False))
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
